@@ -155,7 +155,7 @@ window.AI_CONCEPTS = [
     how: "A learned router selects a small number of experts whose outputs are combined for the current input.",
     example: "Different experts become more useful for code, mathematics or natural-language patterns.",
     tags: ["routing", "experts", "sparse activation"], related: ["transformer", "llm", "throughput"],
-    source: { label: "Switch Transformers — Fedus, Zoph & Shazeer (2021)", url: "https://arxiv.org/abs/2101.03961" }
+    source: { label: "Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer — Shazeer et al. (2017)", url: "https://arxiv.org/abs/1701.06538" }
   },
   {
     slug: "gan", acronym: "GAN", name: "Generative Adversarial Network", category: "architectures",
@@ -394,7 +394,7 @@ window.AI_CONCEPTS = [
     how: "MCP clients connect to servers that expose capabilities such as tools and resources using a defined protocol and message model.",
     example: "One MCP server exposes approved engineering documents to several compatible AI assistants.",
     tags: ["protocol", "tools", "connectivity"], related: ["tool-use", "api", "agent"],
-    source: { label: "Model Context Protocol — official documentation", url: "https://modelcontextprotocol.io/introduction" }
+    source: { label: "Model Context Protocol — official documentation", url: "https://modelcontextprotocol.io/docs/getting-started/intro" }
   },
   {
     slug: "api", acronym: "API", name: "Application Programming Interface", category: "agents",

@@ -2,17 +2,19 @@
 
 A visual, searchable and shareable public website for navigating essential AI concepts.
 
+**Live site:** https://opedoussaut.github.io/ai-concept-atlas/
+
 ## What it includes
 
-- 8 knowledge domains and 60+ concepts
-- Acronym expansions and concise explanations
-- “Why it matters”, “How it works” and concrete examples
-- Search by acronym, full name or keyword
+- 71 concepts across 8 knowledge domains
+- Full acronym expansions and concise explanations
+- Four explanation layers per concept: definition, why it matters, how it works, concrete example
+- Ranked search by acronym, full name, keyword, domain or partial text
 - Related-concept navigation
 - Shareable deep links such as `#concept/qlora`
-- Responsive layout and keyboard navigation
-- GitHub Pages deployment workflow
-- No framework, package manager or build step required
+- Responsive layout, keyboard navigation and visible focus states
+- No framework, package manager or build step
+- No analytics, cookies or third-party requests
 
 ## Run locally
 
@@ -24,36 +26,54 @@ python -m http.server 8000
 
 Then open `http://localhost:8000`.
 
-## Publish with GitHub Pages
+A local server is preferable for testing the **Copy concept link** button: the
+Clipboard API requires a secure context (`https://` or `localhost`).
 
-1. Create a new public GitHub repository, for example `ai-concept-atlas`.
-2. Upload or push all files in this folder to the repository's `main` branch.
-3. In **Settings → Pages**, set **Source** to **GitHub Actions**.
-4. The included workflow deploys the site automatically.
-5. Replace the generic GitHub URL in `index.html` with your repository URL.
-
-Typical commands:
+## Validate
 
 ```bash
-git init
-git add .
-git commit -m "Launch AI Concept Atlas"
-git branch -M main
-git remote add origin https://github.com/YOUR-USERNAME/ai-concept-atlas.git
-git push -u origin main
+node tools/validate.mjs
 ```
+
+Zero dependencies. Checks file layout, JavaScript syntax, the concept data model,
+unique slugs, related-link integrity, HTML metadata and accessibility contracts,
+external-link safety, CSS sanity, the deployment workflow, and scans for secrets.
+Exit code 1 means something must be fixed before shipping. The same script runs
+in CI before every deployment.
+
+## Deployment
+
+Pushing to `main` triggers `.github/workflows/pages.yml`, which validates the
+sources, stages an allow-list of published files into `_site/`, and deploys to
+GitHub Pages.
+
+**Required one-time repository setting:**
+Settings → Pages → Build and deployment → Source → **GitHub Actions**.
+
+Without it the workflow fails at `actions/configure-pages` with
+"Get Pages site failed / Not Found".
 
 ## Customize
 
-- Edit concept content in `data.js`.
+- Edit concept content in `data.js` (see `CLAUDE.md` § 4 for the required shape).
 - Edit appearance in `styles.css`.
 - Replace `assets/ai-concept-map.png` with another social preview image.
-- Update Open Graph metadata in `index.html` before sharing on LinkedIn.
+- Update the canonical and Open Graph URLs in `index.html` if the site moves.
+
+Never rename an existing `slug`: it is a public URL that others may already have shared.
 
 ## Accuracy note
 
-The atlas is an educational overview, not a formal standard. Technical terms can have context-dependent definitions. Primary references are included for several foundational concepts; adding further official documentation and papers is encouraged.
+The atlas is an educational overview, not a formal standard. Technical terms can
+have context-dependent definitions. Primary references are included for 15 of the
+71 concepts; contributions adding further official documentation and papers are
+welcome.
+
+## Contributing
+
+See `CLAUDE.md` for architecture, data model, design principles, validation
+requirements and the Git workflow.
 
 ## License
 
-MIT
+MIT — see `LICENSE`.

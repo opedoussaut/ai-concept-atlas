@@ -1,34 +1,65 @@
-name: Deploy static site to GitHub Pages
+name: Deploy AI Concept Atlas to GitHub Pages
 
 on:
   push:
     branches: ["main"]
   workflow_dispatch:
 
+# Least-privilege token: read the repository, write a Pages deployment,
+# and mint the OIDC token that actions/deploy-pages requires.
 permissions:
   contents: read
   pages: write
   id-token: write
 
+# Allow one concurrent deployment. Queued runs are superseded, but an
+# in-progress production deployment is never cancelled halfway through.
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
+  build:
+    name: Build static site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Validate site sources
+        run: node tools/validate.mjs
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v6
+
+      # Stage an explicit allow-list of published files.
+      # Everything not copied here (.git, .github, .claude, tools, docs,
+      # local configuration, editor files) is never uploaded.
+      - name: Stage published files
+        run: |
+          set -euo pipefail
+          rm -rf _site
+          mkdir -p _site
+          cp index.html styles.css app.js data.js _site/
+          cp -R assets _site/assets
+          echo "Staged for publication:"
+          find _site -type f | sort
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
   deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: .
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

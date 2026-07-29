@@ -1,0 +1,30 @@
+# Claude Code local configuration (never commit)
+.claude/settings.local.json
+.claude/
+CLAUDE.local.md
+
+# Build / deployment staging output
+_site/
+
+# Secrets and local environment
+.env
+.env.*
+*.pem
+*.key
+secrets.json
+
+# Dependencies (the atlas has none, but guard against accidental installs)
+node_modules/
+
+# Editor and OS artifacts
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary validation output
+*.log
+tmp/
