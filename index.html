@@ -12,6 +12,8 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://opedoussaut.github.io/ai-concept-atlas/" />
   <meta property="og:image" content="https://opedoussaut.github.io/ai-concept-atlas/assets/ai-concept-map.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="675" />
   <meta property="og:image:alt" content="Neon concept map of essential AI terms organized into eight knowledge domains." />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="AI Concept Atlas — From LoRA to MCP" />
@@ -19,7 +21,7 @@
   <meta name="twitter:image" content="https://opedoussaut.github.io/ai-concept-atlas/assets/ai-concept-map.png" />
   <title>AI Concept Atlas — From LoRA to MCP</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
-  <link rel="preload" href="assets/ai-concept-map.png" as="image" />
+  <link rel="preload" href="assets/ai-concept-map.webp" as="image" type="image/webp" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -42,6 +44,7 @@
   </header>
 
   <main>
+   <div id="atlasView">
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-copy">
         <p class="eyebrow">Interactive AI knowledge map</p>
@@ -65,8 +68,11 @@
         </div>
       </div>
       <figure class="hero-visual">
-        <img src="assets/ai-concept-map.png" width="1672" height="941" decoding="async"
-             alt="Neon AI concept map organized into eight knowledge domains" />
+        <picture>
+          <source srcset="assets/ai-concept-map.webp" type="image/webp" />
+          <img src="assets/ai-concept-map.png" width="1600" height="900" decoding="async"
+               alt="Neon AI concept map organized into eight knowledge domains" />
+        </picture>
         <span class="visual-glow" aria-hidden="true"></span>
       </figure>
     </section>
@@ -77,14 +83,40 @@
           <p class="eyebrow">Explore by domain</p>
           <h2 id="atlas-title">The AI landscape, one concept at a time</h2>
         </div>
-        <div class="filter-row" id="filters" role="group" aria-label="Filter concepts by domain"></div>
+        <div class="heading-controls">
+          <div class="view-toggle" role="tablist" aria-label="Atlas view">
+            <button class="view-tab" type="button" role="tab" id="tabBands" data-view="bands"
+                    aria-selected="true" aria-controls="bandsPanel">
+              <svg aria-hidden="true" viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="4" rx="1"/><rect x="1" y="9" width="14" height="4" rx="1"/></svg>
+              Domains
+            </button>
+            <button class="view-tab" type="button" role="tab" id="tabGraph" data-view="graph"
+                    aria-selected="false" aria-controls="graphPanel" tabindex="-1">
+              <svg aria-hidden="true" viewBox="0 0 16 16"><circle cx="3" cy="4" r="2"/><circle cx="13" cy="7" r="2"/><circle cx="6" cy="13" r="2"/><path d="M3 4 13 7M13 7 6 13M3 4 6 13"/></svg>
+              Graph
+            </button>
+          </div>
+          <div class="filter-row" id="filters" role="group" aria-label="Filter concepts by domain"></div>
+        </div>
       </div>
 
       <p class="sr-only" id="resultStatus" role="status" aria-live="polite"></p>
 
-      <div class="atlas-layout">
-        <div class="category-rail" id="categoryRail" role="group" aria-label="Filter concepts by AI domain"></div>
-        <div class="concept-grid" id="conceptGrid"></div>
+      <div id="bandsPanel" role="tabpanel" aria-labelledby="tabBands" tabindex="0">
+        <div class="domain-bands" id="domainBands"></div>
+      </div>
+
+      <div id="graphPanel" role="tabpanel" aria-labelledby="tabGraph" tabindex="0" hidden>
+        <p class="graph-hint">
+          Every concept is a node; every line is a relationship declared in the atlas data.
+          Node size reflects how many concepts connect to it. Select a node to open it, or press Tab to
+          step through them.
+        </p>
+        <div class="graph-shell">
+          <svg id="conceptGraph" viewBox="0 0 1000 680" role="group"
+               aria-label="Relationship graph of AI concepts" preserveAspectRatio="xMidYMid meet"></svg>
+        </div>
+        <div class="graph-legend" id="graphLegend"></div>
       </div>
 
       <noscript>
@@ -107,6 +139,60 @@
         <p>Each concept has its own shareable URL. Open a concept, copy the link and use it in a presentation, learning session, technical discussion or LinkedIn post.</p>
       </div>
     </section>
+   </div>
+
+   <!-- Full concept page, routed at #learn/<slug>. Rendered by app.js. -->
+   <article id="learnView" class="learn-view" aria-labelledby="learnName" hidden>
+     <nav class="learn-back" aria-label="Breadcrumb">
+       <a class="ghost-button" id="learnBack" href="#">← Back to the atlas</a>
+       <span class="learn-domain" id="learnDomain"></span>
+     </nav>
+
+     <header class="learn-header">
+       <p class="dialog-acronym" id="learnAcronym"></p>
+       <h1 id="learnName"></h1>
+       <p class="learn-summary" id="learnSummary"></p>
+     </header>
+
+     <div class="learn-body">
+       <div class="learn-main">
+         <section aria-labelledby="learnWhyTitle">
+           <h2 id="learnWhyTitle">Why it matters</h2>
+           <p id="learnWhy"></p>
+         </section>
+         <section aria-labelledby="learnHowTitle">
+           <h2 id="learnHowTitle">How it works</h2>
+           <p id="learnHow"></p>
+         </section>
+         <section id="learnExampleSection" aria-labelledby="learnExampleTitle">
+           <h2 id="learnExampleTitle">Concrete example</h2>
+           <p id="learnExample"></p>
+         </section>
+         <section id="learnMathSection" aria-labelledby="learnMathTitle">
+           <h2 id="learnMathTitle">Mathematical formulation</h2>
+           <div id="learnMath"></div>
+         </section>
+       </div>
+
+       <aside class="learn-aside" aria-label="References and related concepts">
+         <section id="learnSourceSection">
+           <h2>Primary reference</h2>
+           <a class="reference-card" id="learnSource" target="_blank" rel="noopener noreferrer">
+             <span class="reference-label" id="learnSourceLabel"></span>
+             <span class="reference-host" id="learnSourceHost"></span>
+           </a>
+         </section>
+         <section>
+           <h2>Related concepts</h2>
+           <div class="related-links" id="learnRelated"></div>
+         </section>
+         <section>
+           <h2>Share</h2>
+           <button class="ghost-button" id="learnCopy" type="button">Copy page link</button>
+         </section>
+       </aside>
+     </div>
+   </article>
   </main>
 
   <footer>
@@ -142,11 +228,15 @@
         </section>
         <section id="sourceSection">
           <h3>Primary reference</h3>
-          <a id="dialogSource" target="_blank" rel="noopener noreferrer"></a>
+          <a class="reference-card" id="dialogSource" target="_blank" rel="noopener noreferrer">
+            <span class="reference-label" id="dialogSourceLabel"></span>
+            <span class="reference-host" id="dialogSourceHost"></span>
+          </a>
         </section>
       </div>
       <div class="dialog-actions">
-        <button class="primary-button" id="copyLink" type="button">Copy concept link</button>
+        <a class="primary-button" id="openLearn" href="#">Open the full page</a>
+        <button class="ghost-button" id="copyLink" type="button">Copy concept link</button>
         <button class="ghost-button" id="nextConcept" type="button">Next concept</button>
       </div>
     </article>

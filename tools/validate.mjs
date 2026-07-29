@@ -3,10 +3,14 @@
  * AI Concept Atlas — local validation script.
  *
  * Zero dependencies. Run from the repository root:
- *   node tools/validate.mjs
+ *   node tools/validate.mjs           offline checks only (this runs in CI)
+ *   node tools/validate.mjs --links   also HEAD every primary reference URL
+ *
+ * --links is opt-in because it makes 71 network requests and third-party
+ * publishers occasionally rate-limit or block automated requests; a failure
+ * there means "worth a look", not necessarily "broken".
  *
  * Exit code 0 = all checks passed, 1 = at least one check failed.
- * The same script runs in the GitHub Pages workflow before deployment.
  */
 
 import { readFileSync, existsSync, readdirSync } from "node:fs";
@@ -16,6 +20,7 @@ import vm from "node:vm";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (file) => readFileSync(join(ROOT, file), "utf8");
+const CHECK_LINKS = process.argv.includes("--links");
 
 let failures = 0;
 let warnings = 0;
@@ -41,7 +46,8 @@ const REQUIRED_FILES = [
   ".gitignore",
   ".github/workflows/pages.yml",
   "assets/favicon.svg",
-  "assets/ai-concept-map.png"
+  "assets/ai-concept-map.png",
+  "assets/ai-concept-map.webp"
 ];
 
 for (const file of REQUIRED_FILES) {
@@ -136,12 +142,37 @@ for (const category of categories) {
 }
 
 const withoutSource = concepts.filter((concept) => !concept.source).length;
-if (withoutSource) warn(`${withoutSource} of ${concepts.length} concepts have no primary reference (informational)`);
+if (withoutSource) warn(`${withoutSource} of ${concepts.length} concepts have no primary reference`);
+else ok(`all ${concepts.length} concepts carry a primary reference`);
 
+let badSources = 0;
+const referenceUrls = new Map();
 for (const concept of concepts) {
-  const url = concept.source?.url;
-  if (url && !/^https:\/\//.test(url)) fail(`"${concept.slug}" has a non-HTTPS reference: ${url}`);
+  const source = concept.source;
+  if (!source) continue;
+  if (!/^https:\/\//.test(source.url)) { badSources += 1; fail(`"${concept.slug}" has a non-HTTPS reference: ${source.url}`); }
+  if (!source.label || source.label.length < 8) { badSources += 1; fail(`"${concept.slug}" has an empty or too-short reference label`); }
+  try { new URL(source.url); } catch { badSources += 1; fail(`"${concept.slug}" has a malformed reference URL: ${source.url}`); }
+  referenceUrls.set(source.url, (referenceUrls.get(source.url) ?? 0) + 1);
 }
+if (!badSources) ok("every reference is a well-formed HTTPS URL with a label");
+for (const [url, count] of referenceUrls) {
+  if (count > 1) warn(`${count} concepts share the reference ${url}`);
+}
+
+// Optional `math` blocks power the #learn/<slug> pages.
+let mathBlocks = 0;
+let badMath = 0;
+for (const concept of concepts) {
+  if (!concept.math) continue;
+  mathBlocks += 1;
+  const formulas = concept.math.formulas;
+  if (!Array.isArray(formulas) || !formulas.length) { badMath += 1; fail(`"${concept.slug}" has a math block with no formulas`); continue; }
+  for (const formula of formulas) {
+    if (!formula.expression) { badMath += 1; fail(`"${concept.slug}" has a formula with no expression`); }
+  }
+}
+if (mathBlocks && !badMath) ok(`${mathBlocks} concepts carry a well-formed math block`);
 
 /* ------------------------------------------------------------------ */
 /* 3. HTML structure                                                    */
@@ -181,18 +212,24 @@ else ok(`${externalAnchors.length} external anchors use rel="noopener noreferrer
 if (/https:\/\/github\.com\/"/.test(html)) fail("index.html still contains the placeholder GitHub URL");
 else ok("no placeholder GitHub URL");
 
-// Referenced local assets must exist on disk.
-const assetRefs = [...html.matchAll(/(?:href|src)="((?!https?:|#|mailto:|data:)[^"]+)"/g)].map((match) => match[1]);
+// Referenced local assets must exist on disk (href, src and <source srcset>).
+const assetRefs = [...html.matchAll(/(?:href|src|srcset)="((?!https?:|#|mailto:|data:)[^"]+)"/g)].map((match) => match[1]);
 const missingAssets = assetRefs.filter((ref) => !existsSync(join(ROOT, ref.split("?")[0])));
 if (missingAssets.length) missingAssets.forEach((ref) => fail(`index.html references a missing file: ${ref}`));
 else ok(`${assetRefs.length} local references resolve to real files`);
 
-// Every id referenced by app.js via getElementById must exist in the markup.
+// Every id app.js looks up — via getElementById or the $() helper — must
+// exist in the markup, otherwise the script throws on load.
 const appSource = read("app.js");
-const referencedIds = [...appSource.matchAll(/getElementById\("([^"]+)"\)/g)].map((match) => match[1]);
-const missingIds = [...new Set(referencedIds)].filter((id) => !new RegExp(`id="${id}"`).test(html));
+const referencedIds = [
+  ...[...appSource.matchAll(/getElementById\("([^"]+)"\)/g)].map((match) => match[1]),
+  ...[...appSource.matchAll(/(?<![\w.$])\$\("([^"]+)"\)/g)].map((match) => match[1])
+];
+const uniqueIds = new Set(referencedIds);
+if (uniqueIds.size < 10) fail(`only ${uniqueIds.size} element ids detected in app.js — the id check is not matching, fix the pattern`);
+const missingIds = [...uniqueIds].filter((id) => !new RegExp(`id="${id}"`).test(html));
 if (missingIds.length) missingIds.forEach((id) => fail(`app.js expects #${id}, which is absent from index.html`));
-else ok(`${new Set(referencedIds).size} element ids required by app.js exist`);
+else ok(`${uniqueIds.size} element ids required by app.js exist`);
 
 /* ------------------------------------------------------------------ */
 /* 4. CSS sanity                                                        */
@@ -214,7 +251,11 @@ const usedClasses = new Set(
     .flatMap((match) => match[1].split(/\s+/))
     .filter(Boolean)
 );
-for (const critical of ["concept-card", "search-result", "filter-button", "category-link", "concept-dialog"]) {
+const CRITICAL_CLASSES = [
+  "concept-card", "search-result", "filter-button", "concept-dialog",
+  "domain-band", "view-tab", "graph-node", "graph-edge", "learn-view", "reference-card", "formula"
+];
+for (const critical of CRITICAL_CLASSES) {
   if (!css.includes(`.${critical}`)) fail(`.${critical} has no styling rule`);
   else if (!usedClasses.has(critical)) warn(`.${critical} is styled but never used`);
 }
@@ -297,6 +338,39 @@ if (existsSync(join(ROOT, ".claude/settings.local.json"))) {
   const ignore = existsSync(join(ROOT, ".gitignore")) ? read(".gitignore") : "";
   if (/^\.claude\/?$/m.test(ignore) || /settings\.local\.json/.test(ignore)) ok(".claude local settings are git-ignored");
   else fail(".claude/settings.local.json exists but is not git-ignored");
+}
+
+/* ------------------------------------------------------------------ */
+/* Optional: reachability of every primary reference (--links)          */
+/* ------------------------------------------------------------------ */
+if (CHECK_LINKS) {
+  section("Reference reachability (--links)");
+  const targets = concepts.filter((concept) => concept.source?.url);
+  let reachable = 0;
+  const problems = [];
+
+  for (const concept of targets) {
+    const url = concept.source.url;
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 15000);
+      let response = await fetch(url, { method: "HEAD", redirect: "follow", signal: controller.signal });
+      // Some publishers reject HEAD outright; retry once with a ranged GET.
+      if (response.status === 405 || response.status === 501) {
+        response = await fetch(url, { method: "GET", redirect: "follow", headers: { Range: "bytes=0-0" }, signal: controller.signal });
+      }
+      clearTimeout(timer);
+      if (response.ok || response.status === 206) reachable += 1;
+      else problems.push(`${concept.slug}: HTTP ${response.status} — ${url}`);
+    } catch (error) {
+      problems.push(`${concept.slug}: ${error.name === "AbortError" ? "timed out" : error.message} — ${url}`);
+    }
+  }
+
+  ok(`${reachable}/${targets.length} references responded successfully`);
+  // Treated as warnings: bot protection and rate limits produce false alarms.
+  problems.forEach((problem) => warn(problem));
+  if (problems.length) console.warn("  → check these by hand; publishers often block automated requests");
 }
 
 /* ------------------------------------------------------------------ */

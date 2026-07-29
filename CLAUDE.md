@@ -40,7 +40,7 @@ tools/validate.mjs          Zero-dependency validation script (also runs in CI)
 
 `data.js` and `app.js` are loaded as classic scripts at the end of `<body>`.
 `data.js` must load first: it publishes the two globals `app.js` consumes.
-There are currently **71 concepts across 8 domains**.
+There are currently **71 concepts across 8 domains**, each with a primary reference.
 
 **Search.** `app.js` builds an in-memory index at startup. Queries are normalized
 (lower-cased, accent-folded, punctuation and hyphens collapsed to spaces), split
@@ -48,6 +48,24 @@ into tokens, matched with AND semantics, and ranked — exact acronym match scor
 highest, then name/slug, prefixes, tags, domain, summary, then body prose. A
 "compact" form (spaces removed) lets `chainofthought` and `vectordb` match. When
 adding fields to a concept, decide deliberately whether they join the index.
+
+**Atlas views.** Two tab-panels share one filter and search state:
+
+- *Domains* (default) — concepts grouped into coloured bands, one per domain.
+  Bands with no match are omitted entirely when searching or filtering.
+- *Graph* — an SVG relationship map. Every concept is a node, every `related`
+  pair an edge, node radius scales with degree. The layout is a deterministic
+  force simulation (`computeGraphLayout`) run once, synchronously, at first
+  render: pairwise repulsion, springs along edges, and a mild pull toward each
+  domain's anchor. It is cached; filtering only re-renders, never re-simulates.
+  Nodes are focusable and open on Enter, so the graph is keyboard-usable.
+
+**Three levels of depth** for one concept, all sharing the same data:
+
+1. Card — acronym, name, summary.
+2. Dialog at `#concept/<slug>` — the four explanation layers plus the reference.
+3. Page at `#learn/<slug>` — the same content laid out full-width, with the
+   optional `math` block and a prominent reference card.
 
 ---
 
@@ -87,14 +105,34 @@ Every entry in `window.AI_CONCEPTS` follows this shape. All fields except
   example: "…",                   // One concrete, practical example
   tags: ["quantization", "fine-tuning"],  // Search keywords
   related: ["lora", "peft"],      // Slugs that MUST exist
-  source: {                       // Optional, HTTPS only
+  source: {                       // Primary reference, HTTPS only
     label: "QLoRA: Efficient Finetuning of Quantized LLMs — Dettmers et al. (2023)",
     url: "https://arxiv.org/abs/2305.14314"
+  },
+  math: {                         // Optional; renders on #learn/<slug>
+    intro: "One sentence framing the formulation.",
+    formulas: [{
+      label: "Low-rank weight update",
+      expression: "W' = W_0 + ΔW = W_0 + B A",   // plain text, \n for line breaks
+      note: "What each symbol means and why the form matters."
+    }]
   }
 }
 ```
 
 Categories: `{ id, name, short, color }` — `color` must be a `#rrggbb` hex value.
+
+**On `source`.** All 71 concepts carry one. Prefer, in order: the paper that
+introduced the idea, a DOI over a publisher URL (DOIs are permanent), official
+documentation, then an authoritative survey. Every concept currently has a
+*distinct* reference; the validator warns if two share one.
+
+**On `math`.** Optional and deliberately dependency-free: expressions are plain
+text in a `<pre><code>` block, not LaTeX, so the site still makes zero external
+requests. Six concepts carry one today (`transformer`, `lora`, `diffusion`,
+`dpo`, `quantization`, `embeddings`). Concepts without it show a short note
+pointing at the primary reference. Adding a maths library later is a real
+decision — see principle 6.
 
 **Rules for content**
 
@@ -110,19 +148,26 @@ Categories: `{ id, name, short, color }` — `color` must be a `#rrggbb` hex val
 
 ## 5. Navigation and concept URLs
 
-- Each concept has the stable deep link `#concept/<slug>` — e.g.
-  `https://opedoussaut.github.io/ai-concept-atlas/#concept/qlora`.
+Two public routes, both stable contracts:
+
+| Route | Effect |
+|---|---|
+| `#concept/<slug>` | Opens the dialog over the atlas |
+| `#learn/<slug>` | Opens the full concept page, hiding the atlas |
+
+- Example: `https://opedoussaut.github.io/ai-concept-atlas/#concept/qlora`.
 - Opening a concept calls `history.pushState`, so browser back and forward move
   through the concepts the reader visited.
 - `popstate` and `hashchange` both route through `handleRoute()`, which is
-  idempotent: it opens the concept named in the hash, or closes the dialog.
+  idempotent: it opens the page, opens the dialog, or closes both. `#learn` wins
+  over `#concept` so the two can never be shown at once.
 - A deep link opened cold is resolved once at startup by the same function.
 - Closing the dialog pushes the bare path and restores focus to the element that
   opened it.
 - `document.title` reflects the open concept, so shared links and browser history
   read meaningfully.
 
-These URLs are a public contract. Preserve the `#concept/<slug>` form.
+These URLs are a public contract. Preserve both forms.
 
 ---
 
@@ -154,26 +199,33 @@ When bumping action versions, verify the tag actually exists before committing.
 Run before every commit:
 
 ```bash
-node tools/validate.mjs
+node tools/validate.mjs           # offline checks; this is what CI runs
+node tools/validate.mjs --links   # additionally HEADs all 71 reference URLs
 ```
 
 It checks required files, JavaScript syntax (`data.js` evaluated in a VM,
 `app.js` parsed), the concept data model, unique and URL-safe slugs, resolvable
-`related` slugs, valid category references and colours, HTTPS-only sources,
-required HTML structure and metadata, `rel="noopener noreferrer"` on every
-`target="_blank"`, local asset existence, every element id `app.js` expects,
-CSS brace balance and focus-visible presence, the workflow YAML contract, and a
-secret scan. Exit code 1 means the change must not ship.
+`related` slugs, valid category references and colours, HTTPS-only sources with
+labels, well-formed `math` blocks, required HTML structure and metadata,
+`rel="noopener noreferrer"` on every `target="_blank"`, local asset existence,
+every element id `app.js` expects (via `getElementById` **or** the `$()`
+helper), CSS brace balance and focus-visible presence, the workflow YAML
+contract, and a secret scan. Exit code 1 means the change must not ship.
+
+`--links` reports failures as warnings only: publishers rate-limit and block
+automated requests, so a red line there means "check by hand", not "broken".
 
 Also confirm manually:
 
 - `node --check app.js` and `node --check data.js`
 - Search for `MCP`, `QLoRA`, `RAG`, `JEPA`, and multi-word `retrieval augmented`
-- Direct navigation to `#concept/qlora`; then browser back and forward
+- Both views: domain bands and the graph, including filtering in each
+- Direct navigation to `#concept/qlora` and `#learn/lora`; then back and forward
 - Copy-link behaviour over HTTPS (the Clipboard API needs a secure context)
 - Keyboard-only pass: `/` focuses search, arrows move suggestions, Enter opens,
-  Escape closes, focus returns to the triggering card
-- Desktop, tablet (≤1180px), and mobile (≤820px, ≤600px) layouts
+  Tab reaches graph nodes and Enter opens them, Escape closes, focus returns to
+  the triggering card
+- Desktop, tablet (≤1180px, ≤980px), and mobile (≤820px, ≤600px) layouts
 
 ---
 
@@ -225,9 +277,16 @@ pushed. Deleting files unrelated to the current task is equally out of bounds.
 
 ## 10. Recommended next improvements
 
-- Expand primary references beyond the current 15 of 71 concepts.
-- Add a visual relationship graph mode alongside the card grid.
+- Write `math` blocks for the remaining 65 concepts (6 done). This is the main
+  open content task and the reason the field exists.
 - Add a glossary index and a compare mode for two concepts.
 - Add downloadable PNG/PDF concept cards.
 - Add optional French localization.
-- Compress `assets/ai-concept-map.png` (~1.8 MB, by far the heaviest asset).
+- Consider persisting the chosen view, if it can be done without anything a
+  reader would reasonably call tracking.
+- Reassess plain-text formulas once several dozen `math` blocks exist; if they
+  become unreadable, a self-hosted KaTeX build is the only option that keeps the
+  no-third-party-requests promise.
+
+Done and no longer open: primary references (all 71), the relationship graph,
+the per-concept page, and image weight (1.78 MB → 218 KB via WebP).
