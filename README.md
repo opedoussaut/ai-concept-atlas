@@ -1,4 +1,4 @@
-# AI Concept Atlas — From LoRA to MCP
+# AI Concept Atlas - From LoRA to MCP
 
 A visual, searchable and shareable public website for navigating essential AI concepts.
 
