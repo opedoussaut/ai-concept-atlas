@@ -1,0 +1,288 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1700 1150" width="1700" height="1150" role="img" aria-label="Concept map of 71 artificial intelligence terms grouped into 8 domains around a central AI core.">
+<style>text{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}</style>
+<defs>
+  <radialGradient id="bg" cx="50%" cy="42%" r="78%">
+    <stop offset="0%" stop-color="#0b1d33"/>
+    <stop offset="55%" stop-color="#071224"/>
+    <stop offset="100%" stop-color="#03070e"/>
+  </radialGradient>
+  <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#5de7ff" stop-opacity="0.42"/>
+    <stop offset="55%" stop-color="#2f8ad0" stop-opacity="0.14"/>
+    <stop offset="100%" stop-color="#5de7ff" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="coreEdge" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#7ef0ff"/>
+    <stop offset="100%" stop-color="#8f7bff"/>
+  </linearGradient>
+  <pattern id="grid" width="58" height="58" patternUnits="userSpaceOnUse">
+    <path d="M58 0H0v58" fill="none" stroke="#71b1e9" stroke-opacity="0.075" stroke-width="1"/>
+  </pattern>
+  <filter id="soft" x="-60%" y="-60%" width="220%" height="220%">
+    <feGaussianBlur stdDeviation="16"/>
+  </filter>
+  <filter id="tight" x="-40%" y="-40%" width="180%" height="180%">
+    <feGaussianBlur stdDeviation="4"/>
+  </filter>
+</defs>
+<rect width="1700" height="1150" fill="url(#bg)"/>
+<rect width="1700" height="1150" fill="url(#grid)"/>
+<path d="M744.3 471.4 Q 608.2 204.5 472.0 204.5" fill="none" stroke="#5de7ff" stroke-opacity="0.34" stroke-width="1.4"/>
+<circle cx="472.0" cy="204.5" r="3.4" fill="#5de7ff" fill-opacity="0.85"/>
+<circle cx="744.3" cy="471.4" r="2.6" fill="#5de7ff"/>
+<path d="M850.0 427.0 Q 850.0 353.0 850.0 279.0" fill="none" stroke="#b58cff" stroke-opacity="0.34" stroke-width="1.4"/>
+<circle cx="850.0" cy="279.0" r="3.4" fill="#b58cff" fill-opacity="0.85"/>
+<circle cx="850.0" cy="427.0" r="2.6" fill="#b58cff"/>
+<path d="M957.3 473.1 Q 1092.7 216.0 1228.0 216.0" fill="none" stroke="#6ea8ff" stroke-opacity="0.34" stroke-width="1.4"/>
+<circle cx="1228.0" cy="216.0" r="3.4" fill="#6ea8ff" fill-opacity="0.85"/>
+<circle cx="957.3" cy="473.1" r="2.6" fill="#6ea8ff"/>
+<path d="M703.8 552.0 Q 587.9 515.5 472.0 515.5" fill="none" stroke="#62e4d2" stroke-opacity="0.34" stroke-width="1.4"/>
+<circle cx="472.0" cy="515.5" r="3.4" fill="#62e4d2" fill-opacity="0.85"/>
+<circle cx="703.8" cy="552.0" r="2.6" fill="#62e4d2"/>
+<path d="M997.8 566.8 Q 1112.9 554.0 1228.0 554.0" fill="none" stroke="#cf8cff" stroke-opacity="0.34" stroke-width="1.4"/>
+<circle cx="1228.0" cy="554.0" r="3.4" fill="#cf8cff" fill-opacity="0.85"/>
+<circle cx="997.8" cy="566.8" r="2.6" fill="#cf8cff"/>
+<path d="M723.3 651.4 Q 597.6 803.0 472.0 803.0" fill="none" stroke="#75b8ff" stroke-opacity="0.34" stroke-width="1.4"/>
+<circle cx="472.0" cy="803.0" r="3.4" fill="#75b8ff" fill-opacity="0.85"/>
+<circle cx="723.3" cy="651.4" r="2.6" fill="#75b8ff"/>
+<path d="M850.0 723.0 Q 850.0 814.5 850.0 906.0" fill="none" stroke="#5de7e1" stroke-opacity="0.34" stroke-width="1.4"/>
+<circle cx="850.0" cy="906.0" r="3.4" fill="#5de7e1" fill-opacity="0.85"/>
+<circle cx="850.0" cy="723.0" r="2.6" fill="#5de7e1"/>
+<path d="M970.0 661.7 Q 1099.0 848.0 1228.0 848.0" fill="none" stroke="#6ce6af" stroke-opacity="0.34" stroke-width="1.4"/>
+<circle cx="1228.0" cy="848.0" r="3.4" fill="#6ce6af" fill-opacity="0.85"/>
+<circle cx="970.0" cy="661.7" r="2.6" fill="#6ce6af"/>
+<g>
+<rect x="40" y="62" width="432" height="285" rx="20" fill="#08172a" fill-opacity="0.82" stroke="#5de7ff" stroke-opacity="0.38" stroke-width="1.3"/>
+<rect x="62" y="61" width="388" height="2.4" rx="1.2" fill="#5de7ff" fill-opacity="0.85"/>
+<rect x="62" y="61" width="388" height="2.4" rx="1.2" fill="#5de7ff" filter="url(#tight)" opacity="0.6"/>
+<circle cx="73" cy="93" r="13" fill="#5de7ff" fill-opacity="0.14" stroke="#5de7ff" stroke-opacity="0.55"/>
+<text x="73" y="97.5" text-anchor="middle" font-size="12.5" font-weight="700" fill="#5de7ff">1</text>
+<text x="96" y="98" font-size="15" font-weight="700" letter-spacing="0.9" fill="#f4f8ff">FOUNDATIONS</text>
+<text x="452" y="98" text-anchor="end" font-size="11.5" fill="#7f92aa">9</text>
+<line x1="60" y1="110" x2="452" y2="110" stroke="#9dd2ff" stroke-opacity="0.14"/>
+<circle cx="63" cy="127" r="2.6" fill="#5de7ff" fill-opacity="0.9"/>
+<text x="74" y="131" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">AI</tspan><tspan> — Artificial Intelligence</tspan></text>
+<circle cx="63" cy="150" r="2.6" fill="#5de7ff" fill-opacity="0.9"/>
+<text x="74" y="154" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">ML</tspan><tspan> — Machine Learning</tspan></text>
+<circle cx="63" cy="173" r="2.6" fill="#5de7ff" fill-opacity="0.9"/>
+<text x="74" y="177" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">DL</tspan><tspan> — Deep Learning</tspan></text>
+<circle cx="63" cy="196" r="2.6" fill="#5de7ff" fill-opacity="0.9"/>
+<text x="74" y="200" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">NLP</tspan><tspan> — Natural Language Processing</tspan></text>
+<circle cx="63" cy="219" r="2.6" fill="#5de7ff" fill-opacity="0.9"/>
+<text x="74" y="223" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">CV</tspan><tspan> — Computer Vision</tspan></text>
+<circle cx="63" cy="242" r="2.6" fill="#5de7ff" fill-opacity="0.9"/>
+<text x="74" y="246" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">RL</tspan><tspan> — Reinforcement Learning</tspan></text>
+<circle cx="63" cy="265" r="2.6" fill="#5de7ff" fill-opacity="0.9"/>
+<text x="74" y="269" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">GenAI</tspan><tspan> — Generative AI</tspan></text>
+<circle cx="63" cy="288" r="2.6" fill="#5de7ff" fill-opacity="0.9"/>
+<text x="74" y="292" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">SL</tspan><tspan> — Supervised Learning</tspan></text>
+<circle cx="63" cy="311" r="2.6" fill="#5de7ff" fill-opacity="0.9"/>
+<text x="74" y="315" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">SSL</tspan><tspan> — Self-Supervised Learning</tspan></text>
+</g>
+<g>
+<rect x="556" y="40" width="588" height="239" rx="20" fill="#08172a" fill-opacity="0.82" stroke="#b58cff" stroke-opacity="0.38" stroke-width="1.3"/>
+<rect x="578" y="39" width="544" height="2.4" rx="1.2" fill="#b58cff" fill-opacity="0.85"/>
+<rect x="578" y="39" width="544" height="2.4" rx="1.2" fill="#b58cff" filter="url(#tight)" opacity="0.6"/>
+<circle cx="589" cy="71" r="13" fill="#b58cff" fill-opacity="0.14" stroke="#b58cff" stroke-opacity="0.55"/>
+<text x="589" y="75.5" text-anchor="middle" font-size="12.5" font-weight="700" fill="#b58cff">2</text>
+<text x="612" y="76" font-size="15" font-weight="700" letter-spacing="0.9" fill="#f4f8ff">MODEL ARCHITECTURES</text>
+<text x="1124" y="76" text-anchor="end" font-size="11.5" fill="#7f92aa">13</text>
+<line x1="576" y1="88" x2="1124" y2="88" stroke="#9dd2ff" stroke-opacity="0.14"/>
+<circle cx="579" cy="105" r="2.6" fill="#b58cff" fill-opacity="0.9"/>
+<text x="590" y="109" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">NN</tspan><tspan> — Neural Network</tspan></text>
+<circle cx="579" cy="128" r="2.6" fill="#b58cff" fill-opacity="0.9"/>
+<text x="590" y="132" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">CNN</tspan><tspan> — Convolutional Neural Network</tspan></text>
+<circle cx="579" cy="151" r="2.6" fill="#b58cff" fill-opacity="0.9"/>
+<text x="590" y="155" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">RNN</tspan><tspan> — Recurrent Neural Network</tspan></text>
+<circle cx="579" cy="174" r="2.6" fill="#b58cff" fill-opacity="0.9"/>
+<text x="590" y="178" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">LSTM</tspan><tspan> — Long Short-Term Memory</tspan></text>
+<circle cx="579" cy="197" r="2.6" fill="#b58cff" fill-opacity="0.9"/>
+<text x="590" y="201" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Transformer</tspan></text>
+<circle cx="579" cy="220" r="2.6" fill="#b58cff" fill-opacity="0.9"/>
+<text x="590" y="224" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">LLM</tspan><tspan> — Large Language Model</tspan></text>
+<circle cx="579" cy="243" r="2.6" fill="#b58cff" fill-opacity="0.9"/>
+<text x="590" y="247" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">SLM</tspan><tspan> — Small Language Model</tspan></text>
+<circle cx="862" cy="105" r="2.6" fill="#b58cff" fill-opacity="0.9"/>
+<text x="873" y="109" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">VLM</tspan><tspan> — Vision-Language Model</tspan></text>
+<circle cx="862" cy="128" r="2.6" fill="#b58cff" fill-opacity="0.9"/>
+<text x="873" y="132" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">MoE</tspan><tspan> — Mixture of Experts</tspan></text>
+<circle cx="862" cy="151" r="2.6" fill="#b58cff" fill-opacity="0.9"/>
+<text x="873" y="155" font-size="12.00" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">GAN</tspan><tspan> — Generative Adversarial Network</tspan></text>
+<circle cx="862" cy="174" r="2.6" fill="#b58cff" fill-opacity="0.9"/>
+<text x="873" y="178" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">VAE</tspan><tspan> — Variational Autoencoder</tspan></text>
+<circle cx="862" cy="197" r="2.6" fill="#b58cff" fill-opacity="0.9"/>
+<text x="873" y="201" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Diffusion</tspan></text>
+<circle cx="862" cy="220" r="2.6" fill="#b58cff" fill-opacity="0.9"/>
+<text x="873" y="224" font-size="9.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">JEPA</tspan><tspan> — Joint Embedding Predictive Architecture</tspan></text>
+</g>
+<g>
+<rect x="1228" y="62" width="432" height="308" rx="20" fill="#08172a" fill-opacity="0.82" stroke="#6ea8ff" stroke-opacity="0.38" stroke-width="1.3"/>
+<rect x="1250" y="61" width="388" height="2.4" rx="1.2" fill="#6ea8ff" fill-opacity="0.85"/>
+<rect x="1250" y="61" width="388" height="2.4" rx="1.2" fill="#6ea8ff" filter="url(#tight)" opacity="0.6"/>
+<circle cx="1261" cy="93" r="13" fill="#6ea8ff" fill-opacity="0.14" stroke="#6ea8ff" stroke-opacity="0.55"/>
+<text x="1261" y="97.5" text-anchor="middle" font-size="12.5" font-weight="700" fill="#6ea8ff">3</text>
+<text x="1284" y="98" font-size="15" font-weight="700" letter-spacing="0.9" fill="#f4f8ff">TRAINING &amp; ADAPTATION</text>
+<text x="1640" y="98" text-anchor="end" font-size="11.5" fill="#7f92aa">10</text>
+<line x1="1248" y1="110" x2="1640" y2="110" stroke="#9dd2ff" stroke-opacity="0.14"/>
+<circle cx="1251" cy="127" r="2.6" fill="#6ea8ff" fill-opacity="0.9"/>
+<text x="1262" y="131" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Pre-training</tspan></text>
+<circle cx="1251" cy="150" r="2.6" fill="#6ea8ff" fill-opacity="0.9"/>
+<text x="1262" y="154" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Fine-tuning</tspan></text>
+<circle cx="1251" cy="173" r="2.6" fill="#6ea8ff" fill-opacity="0.9"/>
+<text x="1262" y="177" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">SFT</tspan><tspan> — Supervised Fine-Tuning</tspan></text>
+<circle cx="1251" cy="196" r="2.6" fill="#6ea8ff" fill-opacity="0.9"/>
+<text x="1262" y="200" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">PEFT</tspan><tspan> — Parameter-Efficient Fine-Tuning</tspan></text>
+<circle cx="1251" cy="219" r="2.6" fill="#6ea8ff" fill-opacity="0.9"/>
+<text x="1262" y="223" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">LoRA</tspan><tspan> — Low-Rank Adaptation</tspan></text>
+<circle cx="1251" cy="242" r="2.6" fill="#6ea8ff" fill-opacity="0.9"/>
+<text x="1262" y="246" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">QLoRA</tspan><tspan> — Quantized Low-Rank Adaptation</tspan></text>
+<circle cx="1251" cy="265" r="2.6" fill="#6ea8ff" fill-opacity="0.9"/>
+<text x="1262" y="269" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">RLHF</tspan><tspan> — Reinforcement Learning from Human Feedback</tspan></text>
+<circle cx="1251" cy="288" r="2.6" fill="#6ea8ff" fill-opacity="0.9"/>
+<text x="1262" y="292" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">DPO</tspan><tspan> — Direct Preference Optimization</tspan></text>
+<circle cx="1251" cy="311" r="2.6" fill="#6ea8ff" fill-opacity="0.9"/>
+<text x="1262" y="315" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">PPO</tspan><tspan> — Proximal Policy Optimization</tspan></text>
+<circle cx="1251" cy="334" r="2.6" fill="#6ea8ff" fill-opacity="0.9"/>
+<text x="1262" y="338" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Distillation</tspan></text>
+</g>
+<g>
+<rect x="40" y="396" width="432" height="239" rx="20" fill="#08172a" fill-opacity="0.82" stroke="#62e4d2" stroke-opacity="0.38" stroke-width="1.3"/>
+<rect x="62" y="395" width="388" height="2.4" rx="1.2" fill="#62e4d2" fill-opacity="0.85"/>
+<rect x="62" y="395" width="388" height="2.4" rx="1.2" fill="#62e4d2" filter="url(#tight)" opacity="0.6"/>
+<circle cx="73" cy="427" r="13" fill="#62e4d2" fill-opacity="0.14" stroke="#62e4d2" stroke-opacity="0.55"/>
+<text x="73" y="431.5" text-anchor="middle" font-size="12.5" font-weight="700" fill="#62e4d2">4</text>
+<text x="96" y="432" font-size="15" font-weight="700" letter-spacing="0.9" fill="#f4f8ff">RETRIEVAL &amp; KNOWLEDGE</text>
+<text x="452" y="432" text-anchor="end" font-size="11.5" fill="#7f92aa">7</text>
+<line x1="60" y1="444" x2="452" y2="444" stroke="#9dd2ff" stroke-opacity="0.14"/>
+<circle cx="63" cy="461" r="2.6" fill="#62e4d2" fill-opacity="0.9"/>
+<text x="74" y="465" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">RAG</tspan><tspan> — Retrieval-Augmented Generation</tspan></text>
+<circle cx="63" cy="484" r="2.6" fill="#62e4d2" fill-opacity="0.9"/>
+<text x="74" y="488" font-size="12.00" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">GraphRAG</tspan><tspan> — Graph-based Retrieval-Augmented Generation</tspan></text>
+<circle cx="63" cy="507" r="2.6" fill="#62e4d2" fill-opacity="0.9"/>
+<text x="74" y="511" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Embeddings</tspan></text>
+<circle cx="63" cy="530" r="2.6" fill="#62e4d2" fill-opacity="0.9"/>
+<text x="74" y="534" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Vector DB</tspan><tspan> — Vector Database</tspan></text>
+<circle cx="63" cy="553" r="2.6" fill="#62e4d2" fill-opacity="0.9"/>
+<text x="74" y="557" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">KG</tspan><tspan> — Knowledge Graph</tspan></text>
+<circle cx="63" cy="576" r="2.6" fill="#62e4d2" fill-opacity="0.9"/>
+<text x="74" y="580" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Semantic Search</tspan></text>
+<circle cx="63" cy="599" r="2.6" fill="#62e4d2" fill-opacity="0.9"/>
+<text x="74" y="603" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Grounding</tspan></text>
+</g>
+<g>
+<rect x="1228" y="400" width="432" height="308" rx="20" fill="#08172a" fill-opacity="0.82" stroke="#cf8cff" stroke-opacity="0.38" stroke-width="1.3"/>
+<rect x="1250" y="399" width="388" height="2.4" rx="1.2" fill="#cf8cff" fill-opacity="0.85"/>
+<rect x="1250" y="399" width="388" height="2.4" rx="1.2" fill="#cf8cff" filter="url(#tight)" opacity="0.6"/>
+<circle cx="1261" cy="431" r="13" fill="#cf8cff" fill-opacity="0.14" stroke="#cf8cff" stroke-opacity="0.55"/>
+<text x="1261" y="435.5" text-anchor="middle" font-size="12.5" font-weight="700" fill="#cf8cff">5</text>
+<text x="1284" y="436" font-size="15" font-weight="700" letter-spacing="0.9" fill="#f4f8ff">AGENTS &amp; ORCHESTRATION</text>
+<text x="1640" y="436" text-anchor="end" font-size="11.5" fill="#7f92aa">10</text>
+<line x1="1248" y1="448" x2="1640" y2="448" stroke="#9dd2ff" stroke-opacity="0.14"/>
+<circle cx="1251" cy="465" r="2.6" fill="#cf8cff" fill-opacity="0.9"/>
+<text x="1262" y="469" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Prompt Engineering</tspan></text>
+<circle cx="1251" cy="488" r="2.6" fill="#cf8cff" fill-opacity="0.9"/>
+<text x="1262" y="492" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">CoT</tspan><tspan> — Chain of Thought</tspan></text>
+<circle cx="1251" cy="511" r="2.6" fill="#cf8cff" fill-opacity="0.9"/>
+<text x="1262" y="515" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Function Calling</tspan></text>
+<circle cx="1251" cy="534" r="2.6" fill="#cf8cff" fill-opacity="0.9"/>
+<text x="1262" y="538" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Tool Use</tspan></text>
+<circle cx="1251" cy="557" r="2.6" fill="#cf8cff" fill-opacity="0.9"/>
+<text x="1262" y="561" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Agent</tspan></text>
+<circle cx="1251" cy="580" r="2.6" fill="#cf8cff" fill-opacity="0.9"/>
+<text x="1262" y="584" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">MAS</tspan><tspan> — Multi-Agent System</tspan></text>
+<circle cx="1251" cy="603" r="2.6" fill="#cf8cff" fill-opacity="0.9"/>
+<text x="1262" y="607" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">MCP</tspan><tspan> — Model Context Protocol</tspan></text>
+<circle cx="1251" cy="626" r="2.6" fill="#cf8cff" fill-opacity="0.9"/>
+<text x="1262" y="630" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">API</tspan><tspan> — Application Programming Interface</tspan></text>
+<circle cx="1251" cy="649" r="2.6" fill="#cf8cff" fill-opacity="0.9"/>
+<text x="1262" y="653" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Context Window</tspan></text>
+<circle cx="1251" cy="672" r="2.6" fill="#cf8cff" fill-opacity="0.9"/>
+<text x="1262" y="676" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Memory</tspan></text>
+</g>
+<g>
+<rect x="40" y="672" width="432" height="262" rx="20" fill="#08172a" fill-opacity="0.82" stroke="#75b8ff" stroke-opacity="0.38" stroke-width="1.3"/>
+<rect x="62" y="671" width="388" height="2.4" rx="1.2" fill="#75b8ff" fill-opacity="0.85"/>
+<rect x="62" y="671" width="388" height="2.4" rx="1.2" fill="#75b8ff" filter="url(#tight)" opacity="0.6"/>
+<circle cx="73" cy="703" r="13" fill="#75b8ff" fill-opacity="0.14" stroke="#75b8ff" stroke-opacity="0.55"/>
+<text x="73" y="707.5" text-anchor="middle" font-size="12.5" font-weight="700" fill="#75b8ff">6</text>
+<text x="96" y="708" font-size="15" font-weight="700" letter-spacing="0.9" fill="#f4f8ff">INFERENCE &amp; OPTIMIZATION</text>
+<text x="452" y="708" text-anchor="end" font-size="11.5" fill="#7f92aa">8</text>
+<line x1="60" y1="720" x2="452" y2="720" stroke="#9dd2ff" stroke-opacity="0.14"/>
+<circle cx="63" cy="737" r="2.6" fill="#75b8ff" fill-opacity="0.9"/>
+<text x="74" y="741" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Tokenization</tspan></text>
+<circle cx="63" cy="760" r="2.6" fill="#75b8ff" fill-opacity="0.9"/>
+<text x="74" y="764" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">BPE</tspan><tspan> — Byte Pair Encoding</tspan></text>
+<circle cx="63" cy="783" r="2.6" fill="#75b8ff" fill-opacity="0.9"/>
+<text x="74" y="787" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">KV Cache</tspan><tspan> — Key-Value Cache</tspan></text>
+<circle cx="63" cy="806" r="2.6" fill="#75b8ff" fill-opacity="0.9"/>
+<text x="74" y="810" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Quantization</tspan></text>
+<circle cx="63" cy="829" r="2.6" fill="#75b8ff" fill-opacity="0.9"/>
+<text x="74" y="833" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Pruning</tspan></text>
+<circle cx="63" cy="852" r="2.6" fill="#75b8ff" fill-opacity="0.9"/>
+<text x="74" y="856" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Batching</tspan></text>
+<circle cx="63" cy="875" r="2.6" fill="#75b8ff" fill-opacity="0.9"/>
+<text x="74" y="879" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Latency</tspan></text>
+<circle cx="63" cy="898" r="2.6" fill="#75b8ff" fill-opacity="0.9"/>
+<text x="74" y="902" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Throughput</tspan></text>
+</g>
+<g>
+<rect x="556" y="906" width="588" height="170" rx="20" fill="#08172a" fill-opacity="0.82" stroke="#5de7e1" stroke-opacity="0.38" stroke-width="1.3"/>
+<rect x="578" y="905" width="544" height="2.4" rx="1.2" fill="#5de7e1" fill-opacity="0.85"/>
+<rect x="578" y="905" width="544" height="2.4" rx="1.2" fill="#5de7e1" filter="url(#tight)" opacity="0.6"/>
+<circle cx="589" cy="937" r="13" fill="#5de7e1" fill-opacity="0.14" stroke="#5de7e1" stroke-opacity="0.55"/>
+<text x="589" y="941.5" text-anchor="middle" font-size="12.5" font-weight="700" fill="#5de7e1">7</text>
+<text x="612" y="942" font-size="15" font-weight="700" letter-spacing="0.9" fill="#f4f8ff">MULTIMODAL AI</text>
+<text x="1124" y="942" text-anchor="end" font-size="11.5" fill="#7f92aa">8</text>
+<line x1="576" y1="954" x2="1124" y2="954" stroke="#9dd2ff" stroke-opacity="0.14"/>
+<circle cx="579" cy="971" r="2.6" fill="#5de7e1" fill-opacity="0.9"/>
+<text x="590" y="975" font-size="9.25" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Multimodal AI</tspan><tspan> — Multimodal Artificial Intelligence</tspan></text>
+<circle cx="579" cy="994" r="2.6" fill="#5de7e1" fill-opacity="0.9"/>
+<text x="590" y="998" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">OCR</tspan><tspan> — Optical Character Recognition</tspan></text>
+<circle cx="579" cy="1017" r="2.6" fill="#5de7e1" fill-opacity="0.9"/>
+<text x="590" y="1021" font-size="12.25" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">ASR</tspan><tspan> — Automatic Speech Recognition</tspan></text>
+<circle cx="579" cy="1040" r="2.6" fill="#5de7e1" fill-opacity="0.9"/>
+<text x="590" y="1044" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">TTS</tspan><tspan> — Text-to-Speech</tspan></text>
+<circle cx="862" cy="971" r="2.6" fill="#5de7e1" fill-opacity="0.9"/>
+<text x="873" y="975" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Text</tspan></text>
+<circle cx="862" cy="994" r="2.6" fill="#5de7e1" fill-opacity="0.9"/>
+<text x="873" y="998" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Image</tspan></text>
+<circle cx="862" cy="1017" r="2.6" fill="#5de7e1" fill-opacity="0.9"/>
+<text x="873" y="1021" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Audio</tspan></text>
+<circle cx="862" cy="1040" r="2.6" fill="#5de7e1" fill-opacity="0.9"/>
+<text x="873" y="1044" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Video</tspan></text>
+</g>
+<g>
+<rect x="1228" y="740" width="432" height="216" rx="20" fill="#08172a" fill-opacity="0.82" stroke="#6ce6af" stroke-opacity="0.38" stroke-width="1.3"/>
+<rect x="1250" y="739" width="388" height="2.4" rx="1.2" fill="#6ce6af" fill-opacity="0.85"/>
+<rect x="1250" y="739" width="388" height="2.4" rx="1.2" fill="#6ce6af" filter="url(#tight)" opacity="0.6"/>
+<circle cx="1261" cy="771" r="13" fill="#6ce6af" fill-opacity="0.14" stroke="#6ce6af" stroke-opacity="0.55"/>
+<text x="1261" y="775.5" text-anchor="middle" font-size="12.5" font-weight="700" fill="#6ce6af">8</text>
+<text x="1284" y="776" font-size="15" font-weight="700" letter-spacing="0.9" fill="#f4f8ff">EVALUATION, SAFETY &amp; RELIABILITY</text>
+<text x="1640" y="776" text-anchor="end" font-size="11.5" fill="#7f92aa">6</text>
+<line x1="1248" y1="788" x2="1640" y2="788" stroke="#9dd2ff" stroke-opacity="0.14"/>
+<circle cx="1251" cy="805" r="2.6" fill="#6ce6af" fill-opacity="0.9"/>
+<text x="1262" y="809" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Evals</tspan><tspan> — AI Evaluations</tspan></text>
+<circle cx="1251" cy="828" r="2.6" fill="#6ce6af" fill-opacity="0.9"/>
+<text x="1262" y="832" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Benchmark</tspan></text>
+<circle cx="1251" cy="851" r="2.6" fill="#6ce6af" fill-opacity="0.9"/>
+<text x="1262" y="855" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Hallucination</tspan></text>
+<circle cx="1251" cy="874" r="2.6" fill="#6ce6af" fill-opacity="0.9"/>
+<text x="1262" y="878" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Alignment</tspan></text>
+<circle cx="1251" cy="897" r="2.6" fill="#6ce6af" fill-opacity="0.9"/>
+<text x="1262" y="901" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Interpretability</tspan></text>
+<circle cx="1251" cy="920" r="2.6" fill="#6ce6af" fill-opacity="0.9"/>
+<text x="1262" y="924" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Guardrails</tspan></text>
+</g>
+<circle cx="850" cy="575" r="330" fill="url(#coreGlow)"/>
+<circle cx="850" cy="575" r="178" fill="none" stroke="#5de7ff" stroke-opacity="0.16" stroke-width="1" stroke-dasharray="3 9"/>
+<circle cx="850" cy="575" r="158" fill="none" stroke="#5de7ff" stroke-opacity="0.26" stroke-width="1"/>
+<circle cx="850" cy="575" r="142" fill="none" stroke="#5de7ff" stroke-opacity="0.4" stroke-width="1"/>
+<circle cx="850" cy="575" r="132" fill="#061426"/>
+<circle cx="850" cy="575" r="132" fill="none" stroke="url(#coreEdge)" stroke-width="2.2"/>
+<circle cx="850" cy="575" r="132" fill="none" stroke="#5de7ff" stroke-width="6" opacity="0.32" filter="url(#soft)"/>
+<text x="850" y="563" text-anchor="middle" font-size="62" font-weight="800" letter-spacing="-2" fill="#ffffff">AI</text>
+<line x1="816" y1="581" x2="884" y2="581" stroke="#5de7ff" stroke-opacity="0.5"/>
+<text x="850" y="607" text-anchor="middle" font-size="16" font-weight="600" fill="#9fb3c9">Artificial</text>
+<text x="850" y="629" text-anchor="middle" font-size="16" font-weight="600" fill="#9fb3c9">Intelligence</text>
+<text x="850" y="1128" text-anchor="middle" font-size="12.5" letter-spacing="2.4" fill="#5c7a99" opacity="0.9">AI CONCEPT ATLAS &#183; 71 CONCEPTS &#183; 8 DOMAINS</text>
+</svg>

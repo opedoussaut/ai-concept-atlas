@@ -33,10 +33,25 @@ index.html                  Markup, metadata, dialog template
 styles.css                  All styling (single stylesheet, CSS custom properties)
 app.js                      Search, filtering, routing, dialog, clipboard (one IIFE)
 data.js                     Concept + category data (window.AI_CONCEPTS, window.AI_CATEGORIES)
-assets/                     favicon.svg, ai-concept-map.png (social preview)
+assets/                     favicon.svg, ai-concept-map.svg (hero), .png (social preview)
 tools/validate.mjs          Zero-dependency validation script (also runs in CI)
+tools/build-map.mjs         Regenerates assets/ai-concept-map.svg from data.js
 .github/workflows/pages.yml GitHub Pages build + deploy
 ```
+
+**The hero map is generated, not drawn.** `tools/build-map.mjs` reads `data.js`
+and emits `assets/ai-concept-map.svg` — eight domain panels around a central AI
+core, in the site's own palette. It is vector (26 KB, sharp at any zoom) and can
+never drift out of sync with the data. After adding or renaming a concept:
+
+```bash
+node tools/build-map.mjs
+```
+
+The validator fails the build if the map is missing any concept or domain, so a
+forgotten regeneration cannot ship. `assets/ai-concept-map.png` is a 1200×812
+raster of the same map, kept only because social crawlers will not render SVG;
+regenerate it by screenshotting the SVG at 2× and downscaling.
 
 `data.js` and `app.js` are loaded as classic scripts at the end of `<body>`.
 `data.js` must load first: it publishes the two globals `app.js` consumes.
@@ -199,6 +214,7 @@ When bumping action versions, verify the tag actually exists before committing.
 Run before every commit:
 
 ```bash
+node tools/build-map.mjs          # only if data.js changed
 node tools/validate.mjs           # offline checks; this is what CI runs
 node tools/validate.mjs --links   # additionally HEADs all 71 reference URLs
 ```
@@ -206,7 +222,8 @@ node tools/validate.mjs --links   # additionally HEADs all 71 reference URLs
 It checks required files, JavaScript syntax (`data.js` evaluated in a VM,
 `app.js` parsed), the concept data model, unique and URL-safe slugs, resolvable
 `related` slugs, valid category references and colours, HTTPS-only sources with
-labels, well-formed `math` blocks, required HTML structure and metadata,
+labels, well-formed `math` blocks, that the generated concept map still contains
+every concept and domain, required HTML structure and metadata,
 `rel="noopener noreferrer"` on every `target="_blank"`, local asset existence,
 every element id `app.js` expects (via `getElementById` **or** the `$()`
 helper), CSS brace balance and focus-visible presence, the workflow YAML
@@ -289,4 +306,5 @@ pushed. Deleting files unrelated to the current task is equally out of bounds.
   no-third-party-requests promise.
 
 Done and no longer open: primary references (all 71), the relationship graph,
-the per-concept page, and image weight (1.78 MB → 218 KB via WebP).
+the per-concept page, and image weight — the hero is now a generated 26 KB SVG
+rather than the original 1.78 MB raster.

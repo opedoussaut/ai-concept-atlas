@@ -41,6 +41,19 @@ Then open `http://localhost:8000`.
 A local server is preferable for testing the **Copy concept link** button: the
 Clipboard API requires a secure context (`https://` or `localhost`).
 
+## The hero map is generated
+
+`assets/ai-concept-map.svg` is not hand-drawn — it is built from `data.js`:
+
+```bash
+node tools/build-map.mjs
+```
+
+26 KB of vector, sharp at any zoom, in the site's own palette, and impossible to
+leave out of date: the validator fails if the map is missing any concept or
+domain. The `.png` beside it is a raster of the same map, kept only because
+social crawlers do not render SVG.
+
 ## Validate
 
 ```bash
@@ -74,8 +87,8 @@ Without it the workflow fails at `actions/configure-pages` with
 
 - Edit concept content in `data.js` (see `CLAUDE.md` § 4 for the required shape).
 - Add a `math` block to a concept and its formulation appears on `#learn/<slug>`.
+- Run `node tools/build-map.mjs` to regenerate the hero map from the data.
 - Edit appearance in `styles.css`.
-- Replace both `assets/ai-concept-map.webp` (page) and `.png` (social preview).
 - Update the canonical and Open Graph URLs in `index.html` if the site moves.
 
 Never rename an existing `slug`: it is a public URL that others may already have shared.

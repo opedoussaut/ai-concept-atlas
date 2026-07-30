@@ -46,8 +46,9 @@ const REQUIRED_FILES = [
   ".gitignore",
   ".github/workflows/pages.yml",
   "assets/favicon.svg",
+  "assets/ai-concept-map.svg",
   "assets/ai-concept-map.png",
-  "assets/ai-concept-map.webp"
+  "tools/build-map.mjs"
 ];
 
 for (const file of REQUIRED_FILES) {
@@ -175,7 +176,39 @@ for (const concept of concepts) {
 if (mathBlocks && !badMath) ok(`${mathBlocks} concepts carry a well-formed math block`);
 
 /* ------------------------------------------------------------------ */
-/* 3. HTML structure                                                    */
+/* 3. Generated concept map                                             */
+/* ------------------------------------------------------------------ */
+section("Concept map (assets/ai-concept-map.svg)");
+
+const mapSvg = read("assets/ai-concept-map.svg");
+const svgEscape = (value) => String(value).replace(/[&<>"']/g, (c) =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+const missingFromMap = concepts.filter((concept) =>
+  !mapSvg.includes(`>${svgEscape(concept.acronym)}</tspan>`));
+if (missingFromMap.length) {
+  missingFromMap.slice(0, 8).forEach((concept) =>
+    fail(`"${concept.acronym}" is missing from the map — run: node tools/build-map.mjs`));
+  if (missingFromMap.length > 8) fail(`…and ${missingFromMap.length - 8} more missing from the map`);
+} else {
+  ok(`all ${concepts.length} concepts appear in the map`);
+}
+
+let missingDomains = 0;
+for (const category of categories) {
+  if (!mapSvg.includes(svgEscape(category.name.toUpperCase()))) {
+    missingDomains += 1;
+    fail(`domain "${category.name}" is missing from the map — run: node tools/build-map.mjs`);
+  }
+}
+if (!missingDomains) ok(`all ${categories.length} domain panels present`);
+if (!mapSvg.includes(`${concepts.length} CONCEPTS`)) {
+  fail(`the map's footer count is stale — run: node tools/build-map.mjs`);
+} else {
+  ok("map footer matches the concept count");
+}
+
+/* ------------------------------------------------------------------ */
+/* 4. HTML structure                                                    */
 /* ------------------------------------------------------------------ */
 section("HTML structure");
 
