@@ -49,6 +49,7 @@
     learning: null,
     math: null,
     mathIndex: false,
+    mathOrigin: null,
     mathCategory: "all",
     mathDifficulty: "all",
     graphLayer: "both",
@@ -998,7 +999,8 @@
     container.innerHTML = intensityBadge(concept.mathIntensity) + none + note + groups + more;
     container.onclick = (event) => {
       const button = event.target.closest("button[data-math]");
-      if (button) openMath(button.dataset.math);
+      // Pass the concept along so the mathematics page can offer a way back.
+      if (button) openMath(button.dataset.math, true, concept.slug);
     };
   }
 
@@ -1064,6 +1066,7 @@
     state.learning = concept;
     state.math = null;
     state.mathIndex = false;
+    state.mathOrigin = null;
 
     const category = categoryOf(concept);
     learnView.style.setProperty("--card-accent", category.color);
@@ -1174,6 +1177,7 @@
     state.learning = null;
     state.math = null;
     state.mathIndex = true;
+    state.mathOrigin = null;
 
     renderMathFilters();
     renderMathIndex();
@@ -1238,13 +1242,30 @@
     };
   }
 
-  function openMath(slug, updateHash = true) {
+  /**
+   * `origin` is the AI concept this excursion started from, used for the return
+   * breadcrumb. An explicit origin wins; hopping between mathematics pages keeps
+   * the thread, so LoRA → matrix rank → low-rank factorization still offers
+   * "Back to LoRA"; arriving any other way (a deep link, the overview, a graph
+   * node) has no origin and falls back to the mathematics index.
+   */
+  function openMath(slug, updateHash = true, origin = undefined) {
     const item = mathBySlug.get(slug);
     if (!item) return;
     if (dialog.open) dialog.close();
+
+    const wasInMath = Boolean(state.math);
+    if (origin !== undefined) state.mathOrigin = origin;
+    else if (!wasInMath) state.mathOrigin = null;
+
     state.learning = null;
     state.mathIndex = false;
     state.math = item;
+
+    const back = state.mathOrigin ? conceptBySlug.get(state.mathOrigin) : null;
+    $("mathBack").textContent = back ? `← Back to ${back.acronym}` : "← All mathematics";
+    $("mathBack").setAttribute("href", back ? `#learn/${back.slug}` : "#mathematics");
+    $("mathBackAll").hidden = !back;
 
     const category = mathCategoryOf(item);
     mathView.style.setProperty("--card-accent", category.color);
@@ -1320,6 +1341,7 @@
     state.learning = null;
     state.math = null;
     state.mathIndex = false;
+    state.mathOrigin = null;
     showView("atlas");
     document.title = BASE_TITLE;
 

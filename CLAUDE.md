@@ -299,10 +299,26 @@ Four public routes, all stable contracts:
 - A deep link opened cold is resolved once at startup by the same function.
 - Closing the dialog pushes the bare path and restores focus to the element that
   opened it.
+- A mathematics page opened from a concept remembers where it came from
+  (`state.mathOrigin`) and offers "← Back to LoRA" instead of only
+  "← All mathematics". The thread survives hops deeper into the mathematics
+  layer, and clears the moment you open any AI concept, the overview, or the
+  atlas. It is navigation state, not a route: a cold deep link has no origin and
+  falls back to the index.
 - `document.title` reflects the open concept, so shared links and browser history
   read meaningfully.
 
 These URLs are a public contract. Preserve both forms.
+
+---
+
+**Cache busting.** `styles.css`, `data.js`, `math-data.js` and `app.js` are all
+referenced with a shared `?v=<date>` token. GitHub Pages serves everything with
+`max-age=600`, so without it a returning visitor can pair a fresh `index.html`
+with a stale `app.js` and get a half-rendered page — which is exactly what
+happened on the first mathematics-layer deployment. **Bump the token whenever any
+of those four files changes.** The validator fails the build if they disagree,
+because a partial bump is worse than none.
 
 ---
 

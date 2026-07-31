@@ -609,8 +609,12 @@ footer {
 /* Full concept page — routed at #learn/<slug>                         */
 /* ------------------------------------------------------------------ */
 .learn-view { padding: 34px 0 110px; }
-.learn-back { display: flex; align-items: center; gap: 14px; margin-bottom: 40px; }
+.learn-back { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-bottom: 40px; }
 .learn-back .ghost-button { display: inline-flex; align-items: center; text-decoration: none; }
+/* Secondary escape hatch, shown beside "Back to <concept>" so the mathematics
+   index stays one click away without competing with the return path. */
+.subtle-link { border-color: transparent; color: var(--muted); }
+.subtle-link:hover { color: var(--text); }
 .learn-domain {
   display: inline-flex;
   align-items: center;

@@ -22,7 +22,12 @@
   <title>AI Concept Atlas — From LoRA to MCP</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
   <link rel="preload" href="assets/ai-concept-map.svg" as="image" type="image/svg+xml" />
-  <link rel="stylesheet" href="styles.css" />
+  <!-- Version token on every local script and stylesheet. GitHub Pages serves
+       these with max-age=600, so without it a returning visitor can get a fresh
+       index.html alongside a stale app.js and see half a page. Bump the token
+       whenever app.js, styles.css, data.js or math-data.js changes; the
+       validator fails the build if the four ever disagree. -->
+  <link rel="stylesheet" href="styles.css?v=2026-07-31" />
 </head>
 <body>
   <a class="skip-link" href="#atlas">Skip to the atlas</a>
@@ -241,7 +246,8 @@
    <!-- Mathematics concept page, routed at #math/<slug>. Rendered by app.js. -->
    <article id="mathView" class="learn-view math-view" aria-labelledby="mathName" hidden>
      <nav class="learn-back" aria-label="Breadcrumb">
-       <a class="ghost-button" href="#mathematics">← All mathematics</a>
+       <a class="ghost-button" id="mathBack" href="#mathematics">← All mathematics</a>
+       <a class="ghost-button subtle-link" id="mathBackAll" href="#mathematics" hidden>All mathematics</a>
        <span class="learn-domain" id="mathBranch"></span>
        <span class="difficulty-chip" id="mathDifficultyChip"></span>
      </nav>
@@ -357,8 +363,8 @@
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="data.js"></script>
-  <script src="math-data.js"></script>
-  <script src="app.js"></script>
+  <script src="data.js?v=2026-07-31"></script>
+  <script src="math-data.js?v=2026-07-31"></script>
+  <script src="app.js?v=2026-07-31"></script>
 </body>
 </html>

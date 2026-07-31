@@ -415,9 +415,9 @@ const HTML_CHECKS = [
   [/property="og:image"\s+content="https:\/\//, "Open Graph image uses an absolute URL"],
   [/<main[\s>]/, "main landmark present"],
   [/<noscript>/, "noscript fallback present"],
-  [/<script src="data\.js"/, "data.js is loaded"],
-  [/<script src="math-data\.js"/, "math-data.js is loaded"],
-  [/<script src="app\.js"/, "app.js is loaded"],
+  [/<script src="data\.js(\?[^"]*)?"/, "data.js is loaded"],
+  [/<script src="math-data\.js(\?[^"]*)?"/, "math-data.js is loaded"],
+  [/<script src="app\.js(\?[^"]*)?"/, "app.js is loaded"],
   [/href="#mathematics"/, "the mathematics layer is linked from the page"]
 ];
 
@@ -435,6 +435,24 @@ else ok(`${externalAnchors.length} external anchors use rel="noopener noreferrer
 
 if (/https:\/\/github\.com\/"/.test(html)) fail("index.html still contains the placeholder GitHub URL");
 else ok("no placeholder GitHub URL");
+
+// Cache busting. GitHub Pages serves with max-age=600, so a returning visitor
+// can pair a fresh index.html with a stale app.js and see a half-rendered page.
+// A shared version token prevents that — but only if every file carries the
+// same one, so a partial bump must fail rather than ship a subtler mismatch.
+const VERSIONED = ["styles.css", "data.js", "math-data.js", "app.js"];
+const versions = new Map();
+for (const file of VERSIONED) {
+  const match = html.match(new RegExp(`(?:href|src)="${file.replace(".", "\\.")}\\?v=([^"]+)"`));
+  if (!match) fail(`${file} carries no ?v= cache-busting token in index.html`);
+  else versions.set(file, match[1]);
+}
+const distinct = new Set(versions.values());
+if (versions.size === VERSIONED.length && distinct.size === 1) {
+  ok(`all ${VERSIONED.length} local assets share the cache token ?v=${[...distinct][0]}`);
+} else if (distinct.size > 1) {
+  fail(`cache tokens disagree: ${[...versions].map(([f, v]) => `${f}=${v}`).join(", ")}`);
+}
 
 // Referenced local assets must exist on disk (href, src and <source srcset>).
 const assetRefs = [...html.matchAll(/(?:href|src|srcset)="((?!https?:|#|mailto:|data:)[^"]+)"/g)].map((match) => match[1]);
