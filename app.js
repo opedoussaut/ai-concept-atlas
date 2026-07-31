@@ -7,12 +7,52 @@
   const MAX_SUGGESTIONS = 7;
   const BASE_TITLE = "AI Concept Atlas — From LoRA to MCP";
 
+  /* ----------------------------------------------------------------- */
+  /* Mathematics layer                                                   */
+  /*                                                                     */
+  /* Mathematics is a cross-cutting layer over the eight AI domains, not */
+  /* a ninth domain. The AI → mathematics direction is declared once, on */
+  /* the AI concept, in `mathFoundations`. The mathematics → AI direction */
+  /* is derived below rather than stored, so the two can never disagree. */
+  /* ----------------------------------------------------------------- */
+
+  const mathConcepts = window.MATH_CONCEPTS ?? [];
+  const mathCategories = window.MATH_CATEGORIES ?? [];
+  const mathBySlug = new Map(mathConcepts.map((item) => [item.slug, item]));
+  const mathCategoryById = new Map(mathCategories.map((item) => [item.id, item]));
+  const FALLBACK_MATH_CATEGORY = { id: "all", name: "Mathematics", short: "Mathematics", color: "#ffc978" };
+
+  const INTENSITY_LABEL = { high: "High", medium: "Medium", low: "Low" };
+  const DIFFICULTY_LABEL = {
+    introductory: "Introductory",
+    intermediate: "Intermediate",
+    advanced: "Advanced"
+  };
+
+  /** mathSlug → [{ concept, importance, note }], the reverse of mathFoundations. */
+  const usedByMath = new Map(mathConcepts.map((item) => [item.slug, []]));
+  let mathLinkCount = 0;
+  for (const concept of concepts) {
+    for (const link of concept.mathFoundations ?? []) {
+      const bucket = usedByMath.get(link.slug);
+      if (!bucket) continue; // The validator fails the build on a broken link.
+      bucket.push({ concept, importance: link.importance ?? "supporting", note: link.note ?? "" });
+      mathLinkCount += 1;
+    }
+  }
+
   const state = {
     category: "all",
     query: "",
     view: "bands",
     current: null,
     learning: null,
+    math: null,
+    mathIndex: false,
+    mathCategory: "all",
+    mathDifficulty: "all",
+    graphLayer: "both",
+    graphFocus: null,
     activeSuggestion: -1,
     lastTrigger: null
   };
@@ -32,11 +72,30 @@
   const dialog = $("conceptDialog");
   const toast = $("toast");
   const tabs = [$("tabBands"), $("tabGraph")];
+  const mathIndexView = $("mathIndexView");
+  const mathView = $("mathView");
+  const mathBranches = $("mathBranches");
+  const mathFilters = $("mathFilters");
+  const mathDifficultyFilters = $("mathDifficultyFilters");
+  const mathSearchInput = $("mathSearchInput");
+  const mathStatus = $("mathStatus");
+  const graphLayers = $("graphLayers");
+  const graphFocusSelect = $("graphFocus");
 
   $("conceptCount").textContent = String(concepts.length);
   $("categoryCount").textContent = String(categories.length);
+  $("mathCount").textContent = String(mathConcepts.length);
+  $("mathBranchCount").textContent = String(mathCategories.length);
+  $("mathLinkCount").textContent = String(mathLinkCount);
+
+  /** The four top-level panels are mutually exclusive; this is the only switch. */
+  const VIEWS = { atlas: atlasView, learn: learnView, mathIndex: mathIndexView, math: mathView };
+  function showView(name) {
+    for (const key of Object.keys(VIEWS)) VIEWS[key].hidden = key !== name;
+  }
 
   const categoryOf = (concept) => categoryById.get(concept.category) ?? FALLBACK_CATEGORY;
+  const mathCategoryOf = (item) => mathCategoryById.get(item.category) ?? FALLBACK_MATH_CATEGORY;
 
   const escapeHtml = (value) => String(value).replace(/[&<>'"]/g, (char) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
@@ -117,67 +176,206 @@
       : ranked.filter((concept) => concept.category === state.category);
   }
 
+  /**
+   * The mathematics index uses the same entry shape and the same scorer, so a
+   * query ranks both layers on one scale. `symbol` stands in for `acronym`, and
+   * the words "mathematics", "maths" and "math" are folded into the category
+   * field so that typing any of them surfaces the whole layer.
+   */
+  const mathSearchIndex = new Map(mathConcepts.map((item) => {
+    const category = mathCategoryOf(item);
+    return [item.slug, {
+      acronym: normalize(item.symbol),
+      name: normalize(item.name),
+      slug: normalize(item.slug),
+      tags: normalize((item.tags ?? []).join(" ")),
+      summary: normalize(item.summary),
+      category: normalize(`${category.name} ${category.short ?? ""} mathematics maths math`),
+      prose: normalize(`${item.summary} ${item.intuition} ${(item.whyInAI ?? []).join(" ")}`),
+      compact: normalize(`${item.symbol} ${item.name} ${item.slug}`).replace(/ /g, "")
+    }];
+  }));
+
+  function rank(items, indexMap, tokens, kind, into) {
+    for (const item of items) {
+      const entry = indexMap.get(item.slug);
+      let total = 0;
+      for (const token of tokens) {
+        const score = scoreToken(entry, token);
+        if (!score) { total = 0; break; }
+        total += score;
+      }
+      if (total) into.push({ item, kind, score: total });
+    }
+  }
+
+  function searchMath(rawQuery) {
+    const tokens = normalize(rawQuery).split(" ").filter(Boolean);
+    if (!tokens.length) return mathConcepts.slice();
+    const scored = [];
+    rank(mathConcepts, mathSearchIndex, tokens, "math", scored);
+    return scored
+      .sort((a, b) => b.score - a.score || a.item.name.localeCompare(b.item.name))
+      .map((entry) => entry.item);
+  }
+
+  /** Both layers, one ranking. Each result carries the kind it came from. */
+  function searchEverything(rawQuery) {
+    const tokens = normalize(rawQuery).split(" ").filter(Boolean);
+    if (!tokens.length) return [];
+    const scored = [];
+    rank(concepts, searchIndex, tokens, "concept", scored);
+    rank(mathConcepts, mathSearchIndex, tokens, "math", scored);
+    return scored
+      .sort((a, b) => b.score - a.score || a.item.name.localeCompare(b.item.name))
+      .map((entry) => ({ kind: entry.kind, item: entry.item }));
+  }
+
   /* ================================================================= */
-  /* Relationship graph — small force-directed layout, computed once    */
+  /* Relationship graph — two node types, typed edges                   */
+  /*                                                                     */
+  /* One node list spans both layers. Mathematics node ids are prefixed  */
+  /* "math:" so the two namespaces can never collide. Edges carry a      */
+  /* relation verb and a layer, which is what the styling and the focus  */
+  /* view read; nothing about the relationships is invented here, they   */
+  /* come from `related`, `prerequisites` and `mathFoundations`.         */
   /* ================================================================= */
 
   const GRAPH = { width: 1000, height: 680 };
+  const MATH_ID = (slug) => `math:${slug}`;
 
-  const graphEdges = (() => {
+  const RELATION_LABEL = {
+    USES: "uses",
+    DEPENDS_ON: "depends on",
+    MEASURED_WITH: "measured with",
+    OPTIMIZED_BY: "optimized by",
+    APPROXIMATES: "approximates",
+    GENERALIZES: "generalizes",
+    RELATED_TO: "related to"
+  };
+
+  const graphNodeList = [
+    ...concepts.map((item) => ({
+      id: item.slug, kind: "concept", item,
+      token: item.acronym, group: item.category, anchor: `concept:${item.category}`
+    })),
+    ...mathConcepts.map((item) => ({
+      id: MATH_ID(item.slug), kind: "math", item,
+      token: item.symbol, group: item.category, anchor: `math:${item.category}`
+    }))
+  ];
+  const graphNodeById = new Map(graphNodeList.map((node) => [node.id, node]));
+
+  /**
+   * Undirected and deduplicated. `weight` drives spring strength and stroke
+   * weight: a prerequisite or a core mathematical foundation is a stronger tie
+   * than a "related" cross-reference. Prerequisites are collected before plain
+   * relations so the stronger verb wins a duplicated pair.
+   */
+  const graphEdgeList = (() => {
     const seen = new Set();
     const list = [];
+    const add = (source, target, relation, weight, layer) => {
+      if (source === target) return;
+      const key = [source, target].sort().join("|");
+      if (seen.has(key)) return;
+      seen.add(key);
+      list.push({ source, target, relation, weight, layer });
+    };
+
+    for (const item of mathConcepts) {
+      for (const slug of item.prerequisites ?? []) {
+        if (mathBySlug.has(slug)) add(MATH_ID(item.slug), MATH_ID(slug), "DEPENDS_ON", 2, "math");
+      }
+    }
+    for (const item of mathConcepts) {
+      for (const slug of item.related ?? []) {
+        if (mathBySlug.has(slug)) add(MATH_ID(item.slug), MATH_ID(slug), "RELATED_TO", 1, "math");
+      }
+    }
     for (const concept of concepts) {
-      for (const other of concept.related ?? []) {
-        if (!conceptBySlug.has(other) || other === concept.slug) continue;
-        const key = [concept.slug, other].sort().join("|");
-        if (seen.has(key)) continue;
-        seen.add(key);
-        list.push({ source: concept.slug, target: other });
+      for (const link of concept.mathFoundations ?? []) {
+        const target = mathBySlug.get(link.slug);
+        if (!target) continue;
+        add(concept.slug, MATH_ID(link.slug),
+          link.relation ?? target.relation ?? "USES",
+          link.importance === "primary" ? 2 : 1,
+          link.importance === "primary" ? "bridge" : "bridge-soft");
+      }
+      for (const slug of concept.related ?? []) {
+        if (conceptBySlug.has(slug)) add(concept.slug, slug, "RELATED_TO", 1, "ai");
       }
     }
     return list;
   })();
 
-  const degreeBySlug = new Map(concepts.map((concept) => [concept.slug, 0]));
-  for (const edge of graphEdges) {
-    degreeBySlug.set(edge.source, degreeBySlug.get(edge.source) + 1);
-    degreeBySlug.set(edge.target, degreeBySlug.get(edge.target) + 1);
+  const graphDegree = new Map(graphNodeList.map((node) => [node.id, 0]));
+  const graphNeighbours = new Map(graphNodeList.map((node) => [node.id, new Set()]));
+  for (const edge of graphEdgeList) {
+    graphDegree.set(edge.source, graphDegree.get(edge.source) + 1);
+    graphDegree.set(edge.target, graphDegree.get(edge.target) + 1);
+    graphNeighbours.get(edge.source).add(edge.target);
+    graphNeighbours.get(edge.target).add(edge.source);
   }
 
-  const neighboursBySlug = new Map(concepts.map((concept) => [concept.slug, new Set()]));
-  for (const edge of graphEdges) {
-    neighboursBySlug.get(edge.source).add(edge.target);
-    neighboursBySlug.get(edge.target).add(edge.source);
+  /** Direct mathematical dependencies of one AI concept, in declared order. */
+  function mathDependenciesOf(concept) {
+    return (concept.mathFoundations ?? [])
+      .map((link) => ({ link, item: mathBySlug.get(link.slug) }))
+      .filter((entry) => entry.item);
+  }
+
+  /**
+   * Anchor rings. In the combined view the eight AI domains sit on an outer
+   * ring and the seven mathematics branches on an inner one, so the picture
+   * reads as "the mathematics underneath, the techniques around it". Viewing
+   * one layer alone gives that layer the whole ring.
+   */
+  function anchorsFor(mode) {
+    const anchors = new Map();
+    const cx = GRAPH.width / 2;
+    const cy = GRAPH.height / 2;
+
+    if (mode !== "math") {
+      const rx = mode === "both" ? 330 : 250;
+      const ry = mode === "both" ? 252 : 190;
+      categories.forEach((category, index) => {
+        const spoke = index / categories.length * Math.PI * 2;
+        anchors.set(`concept:${category.id}`, { x: cx + Math.cos(spoke) * rx, y: cy + Math.sin(spoke) * ry });
+      });
+    }
+    if (mode !== "ai") {
+      const rx = mode === "both" ? 122 : 250;
+      const ry = mode === "both" ? 94 : 190;
+      mathCategories.forEach((category, index) => {
+        // Offset half a step so inner nodes do not sit directly under an outer spoke.
+        const spoke = index / mathCategories.length * Math.PI * 2 + Math.PI / mathCategories.length;
+        anchors.set(`math:${category.id}`, { x: cx + Math.cos(spoke) * rx, y: cy + Math.sin(spoke) * ry });
+      });
+    }
+    return anchors;
   }
 
   /**
    * Deterministic force-directed layout: repulsion between every pair,
-   * springs along declared relationships, mild gravity toward each domain's
-   * anchor so the clusters stay legible. Runs once, synchronously.
+   * springs along declared relationships, mild gravity toward each group's
+   * anchor so the clusters stay legible. Runs once per layer mode.
    */
-  function computeGraphLayout() {
-    const nodes = concepts.map((concept, index) => {
-      const domainIndex = categories.findIndex((category) => category.id === concept.category);
-      const spoke = (domainIndex < 0 ? 0 : domainIndex) / Math.max(categories.length, 1) * Math.PI * 2;
+  function computeGraphLayout(source, edges, anchors) {
+    const nodes = source.map((entry, index) => {
+      const anchor = anchors.get(entry.anchor);
       const jitter = ((index * 2654435761) % 1000) / 1000;
+      const spoke = jitter * Math.PI * 2;
       return {
-        slug: concept.slug,
-        category: concept.category,
-        x: GRAPH.width / 2 + Math.cos(spoke) * (150 + jitter * 110),
-        y: GRAPH.height / 2 + Math.sin(spoke) * (150 + jitter * 110),
+        slug: entry.id,
+        anchor: entry.anchor,
+        x: (anchor?.x ?? GRAPH.width / 2) + Math.cos(spoke) * 60,
+        y: (anchor?.y ?? GRAPH.height / 2) + Math.sin(spoke) * 60,
         vx: 0,
         vy: 0
       };
     });
     const nodeBySlug = new Map(nodes.map((node) => [node.slug, node]));
-
-    const anchors = new Map(categories.map((category, index) => {
-      const spoke = index / categories.length * Math.PI * 2;
-      return [category.id, {
-        x: GRAPH.width / 2 + Math.cos(spoke) * 250,
-        y: GRAPH.height / 2 + Math.sin(spoke) * 190
-      }];
-    }));
 
     const REPULSION = 5200;
     const SPRING = 0.010;
@@ -204,13 +402,15 @@
         }
       }
 
-      for (const edge of graphEdges) {
+      for (const edge of edges) {
         const a = nodeBySlug.get(edge.source);
         const b = nodeBySlug.get(edge.target);
+        if (!a || !b) continue;
         const dx = b.x - a.x;
         const dy = b.y - a.y;
         const distance = Math.sqrt(dx * dx + dy * dy) || 1;
-        const force = (distance - REST) * SPRING;
+        // A prerequisite or a core foundation pulls harder than a cross-reference.
+        const force = (distance - REST) * SPRING * (edge.weight ?? 1);
         const fx = (dx / distance) * force;
         const fy = (dy / distance) * force;
         a.vx += fx; a.vy += fy;
@@ -218,7 +418,7 @@
       }
 
       for (const node of nodes) {
-        const anchor = anchors.get(node.category);
+        const anchor = anchors.get(node.anchor);
         if (anchor) {
           node.vx += (anchor.x - node.x) * DOMAIN_PULL;
           node.vy += (anchor.y - node.y) * DOMAIN_PULL;
@@ -265,12 +465,12 @@
    * and reappears on hover or keyboard focus, so nothing becomes unreachable.
    * Measurement needs a real layout engine, so this is a no-op elsewhere.
    */
-  function deconflictLabels() {
+  function deconflictLabels(positions) {
     const groups = [...graphSvg.querySelectorAll(".graph-node")];
     if (!groups.length || typeof groups[0].querySelector(".graph-label")?.getBBox !== "function") return;
 
     groups.sort((a, b) =>
-      (degreeBySlug.get(b.dataset.slug) ?? 0) - (degreeBySlug.get(a.dataset.slug) ?? 0));
+      (graphDegree.get(b.dataset.id) ?? 0) - (graphDegree.get(a.dataset.id) ?? 0));
 
     const PADDING = 2;
     const placed = [];
@@ -280,7 +480,8 @@
       try { box = label.getBBox(); } catch { return; }
       if (!box.width) { label.classList.remove("crowded"); continue; }
 
-      const node = graphNodes.get(group.dataset.slug);
+      const node = positions.get(group.dataset.id);
+      if (!node) continue;
       const rect = {
         x1: node.x + box.x - PADDING, x2: node.x + box.x + box.width + PADDING,
         y1: node.y + box.y - PADDING, y2: node.y + box.y + box.height + PADDING
@@ -292,43 +493,168 @@
     }
   }
 
-  let graphNodes = null;
+  /** One cached layout per layer mode, simulated lazily on first view. */
+  const graphLayouts = new Map();
+  function layoutFor(mode) {
+    if (graphLayouts.has(mode)) return graphLayouts.get(mode);
+    const source = graphNodeList.filter((node) =>
+      mode === "both" || (mode === "ai" ? node.kind === "concept" : node.kind === "math"));
+    const ids = new Set(source.map((node) => node.id));
+    const edges = graphEdgeList.filter((edge) => ids.has(edge.source) && ids.has(edge.target));
+    const layout = computeGraphLayout(source, edges, anchorsFor(mode));
+    graphLayouts.set(mode, layout);
+    return layout;
+  }
 
-  function radiusOf(slug) {
-    return 6.5 + Math.min(degreeBySlug.get(slug) ?? 0, 9) * 0.95;
+  const colourOfNode = (node) =>
+    (node.kind === "math" ? mathCategoryOf(node.item) : categoryOf(node.item)).color;
+  const groupNameOfNode = (node) =>
+    (node.kind === "math" ? mathCategoryOf(node.item) : categoryOf(node.item)).name;
+
+  function radiusOf(id, degree) {
+    return 6.5 + Math.min(degree ?? graphDegree.get(id) ?? 0, 9) * 0.95;
+  }
+
+  /** Mathematics nodes are diamonds so the two layers are told apart by shape. */
+  function nodeShape(node, r) {
+    return node.kind === "math"
+      ? `<path class="graph-dot" d="M0 ${-r} L ${r} 0 L 0 ${r} L ${-r} 0 Z" style="fill:${escapeHtml(colourOfNode(node))}" />`
+      : `<circle class="graph-dot" r="${r.toFixed(1)}" style="fill:${escapeHtml(colourOfNode(node))}" />`;
+  }
+
+  // Written out rather than interpolated so the class names are greppable —
+  // and so the validator can confirm every one of them has a styling rule.
+  const NODE_CLASS = { concept: "graph-concept", math: "graph-math" };
+  const EDGE_CLASS = {
+    ai: "edge-ai", math: "edge-math", bridge: "edge-bridge", "bridge-soft": "edge-bridge-soft"
+  };
+
+  function nodeMarkup(node, position, { dim = false, r = null, degree = null, label = null } = {}) {
+    const size = r ?? radiusOf(node.id, degree);
+    const kindWord = node.kind === "math" ? "Mathematics" : "AI concept";
+    const connections = degree ?? graphDegree.get(node.id) ?? 0;
+    return `<g class="graph-node ${NODE_CLASS[node.kind]}${dim ? " dim" : ""}"
+      data-id="${escapeHtml(node.id)}" data-kind="${escapeHtml(node.kind)}"
+      data-slug="${escapeHtml(node.item.slug)}"
+      transform="translate(${position.x.toFixed(1)} ${position.y.toFixed(1)})"
+      role="button" tabindex="${dim ? -1 : 0}"
+      aria-label="${escapeHtml(`${node.token}, ${node.item.name}. ${kindWord}, ${groupNameOfNode(node)}. ${connections} connections.`)}">
+      <circle class="graph-halo" r="${(size + 6).toFixed(1)}" />
+      ${nodeShape(node, size)}
+      <text class="graph-label" y="${(size + 12).toFixed(1)}">${escapeHtml(label ?? node.token)}</text>
+    </g>`;
+  }
+
+  function edgeMarkup(edge, a, b, { dim = false, label = false } = {}) {
+    const classes = ["graph-edge", EDGE_CLASS[edge.layer] ?? "edge-ai"];
+    if (dim) classes.push("dim");
+    const line = `<line class="${classes.join(" ")}"
+      x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}"
+      data-a="${escapeHtml(edge.source)}" data-b="${escapeHtml(edge.target)}"
+      data-relation="${escapeHtml(edge.relation)}" />`;
+    if (!label) return line;
+    const mx = (a.x + b.x) / 2;
+    const my = (a.y + b.y) / 2;
+    return `${line}<text class="edge-label" x="${mx.toFixed(1)}" y="${(my - 5).toFixed(1)}">${escapeHtml(RELATION_LABEL[edge.relation] ?? edge.relation)}</text>`;
+  }
+
+  /**
+   * Focus view: one AI concept at the centre with its *direct* mathematical
+   * dependencies around it. Laid out radially rather than simulated — with a
+   * handful of edges the relation verbs finally fit, which is the one place
+   * they are readable.
+   */
+  function renderFocusGraph(concept) {
+    const centre = graphNodeById.get(concept.slug);
+    const dependencies = mathDependenciesOf(concept);
+
+    if (!centre || !dependencies.length) {
+      graphSvg.innerHTML = "";
+      graphLegend.innerHTML =
+        `<p class="graph-empty">${escapeHtml(concept.name)} declares no mathematical foundations. ${escapeHtml(concept.mathNote ?? "")}</p>`;
+      resultStatus.textContent = `${concept.name} has no mapped mathematical dependencies.`;
+      return;
+    }
+
+    const cx = GRAPH.width / 2;
+    const cy = GRAPH.height / 2;
+    const radius = Math.min(232, 116 + dependencies.length * 17);
+    const positions = new Map([[centre.id, { x: cx, y: cy }]]);
+
+    const spokes = dependencies.map((entry, index) => {
+      const angle = (index / dependencies.length) * Math.PI * 2 - Math.PI / 2;
+      const node = graphNodeById.get(MATH_ID(entry.item.slug));
+      const position = {
+        x: cx + Math.cos(angle) * radius * 1.28,
+        y: cy + Math.sin(angle) * radius * 0.86
+      };
+      positions.set(node.id, position);
+      return { node, position, entry };
+    });
+
+    const edges = spokes.map(({ node, position, entry }) => edgeMarkup({
+      source: centre.id,
+      target: node.id,
+      relation: entry.link.relation ?? entry.item.relation ?? "USES",
+      layer: entry.link.importance === "primary" ? "bridge" : "bridge-soft"
+    }, positions.get(centre.id), position, { label: true })).join("");
+
+    const nodes = [
+      nodeMarkup(centre, positions.get(centre.id), { r: 15, degree: dependencies.length }),
+      ...spokes.map(({ node, position, entry }) =>
+        nodeMarkup(node, position, { r: entry.link.importance === "primary" ? 11 : 8, degree: 1, label: node.item.name }))
+    ].join("");
+
+    graphSvg.innerHTML = `<g class="graph-edges">${edges}</g><g class="graph-nodes focus-nodes">${nodes}</g>`;
+
+    const core = dependencies.filter((entry) => entry.link.importance === "primary").length;
+    graphLegend.innerHTML = `<p class="graph-empty">
+      <strong>${escapeHtml(concept.acronym)}</strong> — ${dependencies.length} direct mathematical dependenc${dependencies.length === 1 ? "y" : "ies"},
+      ${core} core. Larger diamonds are core mathematics.
+    </p>`;
+    resultStatus.textContent =
+      `${concept.name}: ${dependencies.length} direct mathematical dependencies, ${core} core.`;
   }
 
   function renderGraph() {
-    if (!graphNodes) graphNodes = computeGraphLayout();
-    const visible = new Set(getVisibleConcepts().map((concept) => concept.slug));
+    if (state.graphFocus) {
+      const concept = conceptBySlug.get(state.graphFocus);
+      if (concept) { renderFocusGraph(concept); return; }
+      state.graphFocus = null;
+    }
 
-    const edgeMarkup = graphEdges.map((edge) => {
-      const a = graphNodes.get(edge.source);
-      const b = graphNodes.get(edge.target);
-      const dim = !visible.has(edge.source) || !visible.has(edge.target);
-      return `<line class="graph-edge${dim ? " dim" : ""}" x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" data-a="${escapeHtml(edge.source)}" data-b="${escapeHtml(edge.target)}" />`;
-    }).join("");
+    const mode = state.graphLayer;
+    const positions = layoutFor(mode);
+    const inMode = graphNodeList.filter((node) => positions.has(node.id));
 
-    const nodeMarkup = concepts.map((concept) => {
-      const node = graphNodes.get(concept.slug);
-      const category = categoryOf(concept);
-      const dim = !visible.has(concept.slug);
-      const r = radiusOf(concept.slug);
-      const degree = degreeBySlug.get(concept.slug) ?? 0;
-      return `<g class="graph-node${dim ? " dim" : ""}" data-slug="${escapeHtml(concept.slug)}" transform="translate(${node.x.toFixed(1)} ${node.y.toFixed(1)})"
-        role="button" tabindex="${dim ? -1 : 0}"
-        aria-label="${escapeHtml(`${concept.acronym}, ${concept.name}. ${category.name}. ${degree} connections.`)}">
-        <circle class="graph-halo" r="${(r + 6).toFixed(1)}" />
-        <circle class="graph-dot" r="${r.toFixed(1)}" style="fill:${escapeHtml(category.color)}" />
-        <text class="graph-label" y="${(r + 12).toFixed(1)}">${escapeHtml(concept.acronym)}</text>
-      </g>`;
-    }).join("");
+    // The domain filter and the search box still drive the AI layer only;
+    // mathematics nodes dim when none of the concepts using them are visible.
+    const visibleConcepts = new Set(getVisibleConcepts().map((concept) => concept.slug));
+    const isVisible = (node) => node.kind === "concept"
+      ? visibleConcepts.has(node.id)
+      : (usedByMath.get(node.item.slug) ?? []).some((entry) => visibleConcepts.has(entry.concept.slug));
+    const visible = new Set(inMode.filter(isVisible).map((node) => node.id));
 
-    graphSvg.innerHTML =
-      `<g class="graph-edges">${edgeMarkup}</g><g class="graph-nodes">${nodeMarkup}</g>`;
-    deconflictLabels();
+    const edges = graphEdgeList
+      .filter((edge) => positions.has(edge.source) && positions.has(edge.target))
+      .map((edge) => edgeMarkup(edge, positions.get(edge.source), positions.get(edge.target),
+        { dim: !visible.has(edge.source) || !visible.has(edge.target) }))
+      .join("");
 
-    graphLegend.innerHTML = categories.map((category) => {
+    const nodes = inMode
+      .map((node) => nodeMarkup(node, positions.get(node.id), { dim: !visible.has(node.id) }))
+      .join("");
+
+    graphSvg.innerHTML = `<g class="graph-edges">${edges}</g><g class="graph-nodes">${nodes}</g>`;
+    deconflictLabels(positions);
+    renderGraphLegend(mode, inMode);
+  }
+
+  function renderGraphLegend(mode, inMode) {
+    const shapes = `<span class="legend-shape"><span class="legend-dot legend-circle"></span>AI concept</span>
+      <span class="legend-shape"><span class="legend-dot legend-diamond"></span>Mathematics</span>`;
+
+    const domains = mode === "math" ? "" : categories.map((category) => {
       const count = concepts.filter((concept) => concept.category === category.id).length;
       const active = state.category === category.id;
       return `<button class="legend-chip${active ? " active" : ""}" type="button" data-category="${escapeHtml(category.id)}" aria-pressed="${active}">
@@ -336,21 +662,73 @@
         ${escapeHtml(category.name)} <em>${count}</em>
       </button>`;
     }).join("");
+
+    const branches = mode === "ai" ? "" : mathCategories.map((category) => {
+      const count = mathConcepts.filter((item) => item.category === category.id).length;
+      return `<span class="legend-chip legend-static">
+        <span class="legend-dot legend-diamond" style="background:${escapeHtml(category.color)}"></span>
+        ${escapeHtml(category.short ?? category.name)} <em>${count}</em>
+      </span>`;
+    }).join("");
+
+    graphLegend.innerHTML = `<div class="legend-shapes">${shapes}<span class="legend-count">${inMode.length} nodes</span></div>${domains}${branches}`;
   }
 
-  function highlightGraphNode(slug) {
-    const neighbours = slug ? neighboursBySlug.get(slug) : null;
+  /* Graph controls: layer toggle + single-concept focus ---------------- */
+
+  const GRAPH_LAYERS = [
+    ["both", "Both layers"],
+    ["ai", "AI only"],
+    ["math", "Mathematics only"]
+  ];
+
+  function renderGraphControls() {
+    graphLayers.innerHTML = GRAPH_LAYERS.map(([id, label]) => {
+      const active = !state.graphFocus && state.graphLayer === id;
+      return `<button class="filter-button${active ? " active" : ""}" type="button"
+        data-graph-layer="${escapeHtml(id)}" aria-pressed="${active}">${escapeHtml(label)}</button>`;
+    }).join("");
+
+    // Only concepts that actually declare foundations can be focused.
+    if (!graphFocusSelect.options.length) {
+      const groups = categories.map((category) => {
+        const items = concepts.filter((concept) =>
+          concept.category === category.id && mathDependenciesOf(concept).length);
+        if (!items.length) return "";
+        return `<optgroup label="${escapeHtml(category.name)}">${items.map((concept) =>
+          `<option value="${escapeHtml(concept.slug)}">${escapeHtml(concept.name)}</option>`).join("")}</optgroup>`;
+      }).join("");
+      graphFocusSelect.innerHTML = `<option value="">Whole atlas</option>${groups}`;
+    }
+    graphFocusSelect.value = state.graphFocus ?? "";
+  }
+
+  function setGraphLayer(layer) {
+    state.graphLayer = layer;
+    state.graphFocus = null;
+    renderGraphControls();
+    renderGraph();
+  }
+
+  function setGraphFocus(slug) {
+    state.graphFocus = slug || null;
+    renderGraphControls();
+    renderGraph();
+  }
+
+  function highlightGraphNode(id) {
+    const neighbours = id ? graphNeighbours.get(id) : null;
     graphSvg.querySelectorAll(".graph-node").forEach((node) => {
-      const isFocus = slug != null && node.dataset.slug === slug;
-      const isNeighbour = neighbours ? neighbours.has(node.dataset.slug) : false;
+      const isFocus = id != null && node.dataset.id === id;
+      const isNeighbour = neighbours ? neighbours.has(node.dataset.id) : false;
       node.classList.toggle("focus", isFocus);
       node.classList.toggle("neighbour", isNeighbour);
-      node.classList.toggle("faded", slug != null && !isFocus && !isNeighbour);
+      node.classList.toggle("faded", id != null && !isFocus && !isNeighbour);
     });
     graphSvg.querySelectorAll(".graph-edge").forEach((edge) => {
-      const touches = slug != null && (edge.dataset.a === slug || edge.dataset.b === slug);
+      const touches = id != null && (edge.dataset.a === id || edge.dataset.b === id);
       edge.classList.toggle("active", touches);
-      edge.classList.toggle("faded", slug != null && !touches);
+      edge.classList.toggle("faded", id != null && !touches);
     });
   }
 
@@ -472,17 +850,36 @@
       return;
     }
 
-    const matches = search(state.query).slice(0, MAX_SUGGESTIONS);
+    // Suggestions span both layers; the atlas below still shows AI concepts only.
+    const matches = searchEverything(state.query).slice(0, MAX_SUGGESTIONS);
     searchResults.innerHTML = matches.length
-      ? matches.map((concept, index) => `<button class="search-result" type="button" role="option" tabindex="-1" aria-selected="false" id="suggestion-${index}" data-slug="${escapeHtml(concept.slug)}">
-          <b>${escapeHtml(concept.acronym)}</b>
-          <span>${escapeHtml(concept.name)}<br><small>${escapeHtml(concept.summary)}</small></span>
-        </button>`).join("")
+      ? matches.map(({ kind, item }, index) => {
+          const isMath = kind === "math";
+          const category = isMath ? mathCategoryOf(item) : categoryOf(item);
+          const token = isMath ? item.symbol : item.acronym;
+          return `<button class="search-result" type="button" role="option" tabindex="-1"
+            aria-selected="false" id="suggestion-${index}"
+            data-kind="${escapeHtml(kind)}" data-slug="${escapeHtml(item.slug)}">
+            <b class="${isMath ? "is-math" : ""}">${escapeHtml(token)}</b>
+            <span>
+              ${escapeHtml(item.name)}
+              <small class="result-kind">${isMath ? "Mathematics" : "AI concept"} · ${escapeHtml(category.name)}</small>
+              <small>${escapeHtml(item.summary)}</small>
+            </span>
+          </button>`;
+        }).join("")
       : `<p class="empty-state" style="padding:24px">No concept found.</p>`;
 
     state.activeSuggestion = -1;
     searchInput.removeAttribute("aria-activedescendant");
     setSuggestionsOpen(true);
+  }
+
+  /** A suggestion routes to whichever layer it came from. */
+  function openSuggestion(option) {
+    setSuggestionsOpen(false);
+    if (option.dataset.kind === "math") openMath(option.dataset.slug);
+    else openConcept(option.dataset.slug);
   }
 
   /* ================================================================= */
@@ -532,6 +929,80 @@
   }
 
   /* ================================================================= */
+  /* Mathematical foundations — shared by the dialog and concept page   */
+  /* ================================================================= */
+
+  function intensityBadge(level) {
+    const known = INTENSITY_LABEL[level];
+    const filled = { high: 3, medium: 2, low: 1 }[level] ?? 0;
+    const bars = [1, 2, 3]
+      .map((step) => `<i class="${step <= filled ? "on" : ""}"></i>`).join("");
+    return `<p class="intensity-badge intensity-${escapeHtml(level ?? "none")}">
+      <span class="intensity-bars" aria-hidden="true">${bars}</span>
+      Mathematical intensity: <b>${escapeHtml(known ?? "not mapped")}</b>
+    </p>`;
+  }
+
+  function mathChip(item, note) {
+    const category = mathCategoryOf(item);
+    return `<button class="math-chip" type="button" data-math="${escapeHtml(item.slug)}"
+      style="--card-accent:${escapeHtml(category.color)}"
+      aria-label="${escapeHtml(`${item.name}. ${category.name}. Open the mathematics page.`)}">
+      <span class="math-chip-symbol" aria-hidden="true">${escapeHtml(item.symbol)}</span>
+      <span class="math-chip-name">${escapeHtml(item.name)}</span>
+      ${note ? "" : `<small>${escapeHtml(category.short ?? category.name)}</small>`}
+    </button>`;
+  }
+
+  /**
+   * `mathIntensity` + `mathFoundations` on an AI concept. `compact` is the
+   * dialog treatment (chips only); the full form adds the per-link explanation.
+   * A concept with no intrinsic mathematics says so rather than showing nothing.
+   */
+  function renderFoundations(container, concept, { compact = false } = {}) {
+    container.onclick = null;
+
+    if (!concept.mathIntensity) {
+      container.innerHTML =
+        `<p class="math-pending">The mathematical foundations of this concept have not been mapped yet.</p>`;
+      return;
+    }
+
+    const links = (concept.mathFoundations ?? [])
+      .map((link) => ({ ...link, item: mathBySlug.get(link.slug) }))
+      .filter((link) => link.item);
+
+    const groups = [["primary", "Core mathematics"], ["supporting", "Supporting mathematics"]]
+      .map(([importance, heading]) => {
+        const items = links.filter((link) => link.importance === importance);
+        if (!items.length) return "";
+        const body = compact
+          ? `<div class="math-chips">${items.map((link) => mathChip(link.item)).join("")}</div>`
+          : `<ul class="foundation-list">${items.map((link) => `<li>
+              ${mathChip(link.item, true)}
+              ${link.note ? `<p>${escapeHtml(link.note)}</p>` : ""}
+            </li>`).join("")}</ul>`;
+        return `<div class="foundation-group"><h4>${heading}</h4>${body}</div>`;
+      }).join("");
+
+    const none = links.length
+      ? ""
+      : `<p class="foundation-none">Core mathematical foundation: none.</p>`;
+    const note = concept.mathNote
+      ? `<p class="foundation-note">${escapeHtml(concept.mathNote)}</p>`
+      : "";
+    const more = compact
+      ? ""
+      : `<p class="foundation-more"><a href="#mathematics">Browse the whole mathematics layer →</a></p>`;
+
+    container.innerHTML = intensityBadge(concept.mathIntensity) + none + note + groups + more;
+    container.onclick = (event) => {
+      const button = event.target.closest("button[data-math]");
+      if (button) openMath(button.dataset.math);
+    };
+  }
+
+  /* ================================================================= */
   /* Concept dialog                                                     */
   /* ================================================================= */
 
@@ -556,6 +1027,7 @@
       $("dialogSource"), $("dialogSourceLabel"), $("dialogSourceHost"), concept
     );
 
+    renderFoundations($("dialogFoundations"), concept, { compact: true });
     renderRelated($("relatedLinks"), concept, (next) => openConcept(next));
     $("openLearn").setAttribute("href", `#learn/${concept.slug}`);
 
@@ -571,7 +1043,7 @@
   function closeConcept(updateHash = true) {
     state.current = null;
     if (dialog.open) dialog.close();
-    if (!state.learning) document.title = BASE_TITLE;
+    if (!state.learning && !state.math && !state.mathIndex) document.title = BASE_TITLE;
     if (updateHash && location.hash.startsWith("#concept/")) {
       history.pushState({}, "", location.pathname + location.search);
     }
@@ -590,6 +1062,8 @@
     if (dialog.open) dialog.close();
     state.current = concept;
     state.learning = concept;
+    state.math = null;
+    state.mathIndex = false;
 
     const category = categoryOf(concept);
     learnView.style.setProperty("--card-accent", category.color);
@@ -605,11 +1079,11 @@
     $("learnSourceSection").hidden = !renderReference(
       $("learnSource"), $("learnSourceLabel"), $("learnSourceHost"), concept
     );
+    renderFoundations($("learnFoundations"), concept);
     renderMath($("learnMath"), concept);
     renderRelated($("learnRelated"), concept, (next) => openLearn(next));
 
-    atlasView.hidden = true;
-    learnView.hidden = false;
+    showView("learn");
     document.title = `${concept.acronym} — ${concept.name} | AI Concept Atlas`;
     window.scrollTo({ top: 0, behavior: "auto" });
     $("learnName").setAttribute("tabindex", "-1");
@@ -620,25 +1094,235 @@
     }
   }
 
-  function closeLearn() {
-    if (!state.learning) return;
+  /* ================================================================= */
+  /* Mathematics overview (#mathematics)                                */
+  /* ================================================================= */
+
+  function difficultyChip(level) {
+    return `<span class="difficulty-chip difficulty-${escapeHtml(level)}">${escapeHtml(DIFFICULTY_LABEL[level] ?? level)}</span>`;
+  }
+
+  function mathCard(item) {
+    const category = mathCategoryOf(item);
+    const uses = usedByMath.get(item.slug)?.length ?? 0;
+    return `<button class="concept-card math-card" type="button" data-math="${escapeHtml(item.slug)}"
+      style="--card-accent:${escapeHtml(category.color)}">
+      <span class="arrow" aria-hidden="true">↗</span>
+      <p class="acronym">${escapeHtml(item.symbol)}</p>
+      <h4>${escapeHtml(item.name)}</h4>
+      <p>${escapeHtml(item.summary)}</p>
+      <span class="card-meta">
+        ${difficultyChip(item.difficulty)}
+        <span>${uses} AI concept${uses === 1 ? "" : "s"}</span>
+      </span>
+    </button>`;
+  }
+
+  function getVisibleMath() {
+    return searchMath(mathSearchInput.value.trim()).filter((item) =>
+      (state.mathCategory === "all" || item.category === state.mathCategory) &&
+      (state.mathDifficulty === "all" || item.difficulty === state.mathDifficulty));
+  }
+
+  function renderMathFilters() {
+    const branches = [{ id: "all", short: "All branches" }, ...mathCategories];
+    mathFilters.innerHTML = branches.map((category) => {
+      const active = state.mathCategory === category.id;
+      const accent = category.color ? ` style="--chip-accent:${escapeHtml(category.color)}"` : "";
+      return `<button class="filter-button${active ? " active" : ""}" type="button"
+        data-math-category="${escapeHtml(category.id)}" aria-pressed="${active}"${accent}>
+        ${escapeHtml(category.short || category.name)}
+      </button>`;
+    }).join("");
+
+    const levels = [["all", "Any level"], ...Object.entries(DIFFICULTY_LABEL)];
+    mathDifficultyFilters.innerHTML = levels.map(([id, label]) => {
+      const active = state.mathDifficulty === id;
+      return `<button class="filter-button${active ? " active" : ""}" type="button"
+        data-math-difficulty="${escapeHtml(id)}" aria-pressed="${active}">${escapeHtml(label)}</button>`;
+    }).join("");
+  }
+
+  function renderMathIndex() {
+    const visible = getVisibleMath();
+    const bySlug = new Set(visible.map((item) => item.slug));
+
+    mathBranches.innerHTML = mathCategories.map((category) => {
+      const items = mathConcepts.filter((item) => item.category === category.id && bySlug.has(item.slug));
+      if (!items.length) return "";
+      return `<section class="domain-band" style="--band-accent:${escapeHtml(category.color)}"
+        aria-labelledby="branch-${escapeHtml(category.id)}">
+        <div class="band-heading">
+          <h3 id="branch-${escapeHtml(category.id)}">${escapeHtml(category.name)}</h3>
+          <span class="band-count">${items.length} concept${items.length === 1 ? "" : "s"}</span>
+          <button class="band-filter" type="button" data-math-category="${escapeHtml(category.id)}"
+                  aria-pressed="${state.mathCategory === category.id}">
+            ${state.mathCategory === category.id ? "Show all branches" : "Focus"}
+          </button>
+        </div>
+        <div class="concept-grid">${items.map(mathCard).join("")}</div>
+      </section>`;
+    }).join("") || `<div class="empty-state"><h3>No matching concept</h3><p>Try another name, symbol, keyword or branch.</p></div>`;
+
+    mathStatus.textContent = visible.length
+      ? `${visible.length} mathematical concept${visible.length === 1 ? "" : "s"} shown.`
+      : "No mathematical concepts match the current filters.";
+  }
+
+  function openMathIndex(updateHash = true) {
+    if (dialog.open) dialog.close();
     state.learning = null;
-    learnView.hidden = true;
-    atlasView.hidden = false;
-    document.title = BASE_TITLE;
+    state.math = null;
+    state.mathIndex = true;
+
+    renderMathFilters();
+    renderMathIndex();
+    showView("mathIndex");
+    document.title = `Mathematics Behind AI | AI Concept Atlas`;
+    window.scrollTo({ top: 0, behavior: "auto" });
+    $("mathIndexTitle").setAttribute("tabindex", "-1");
+    $("mathIndexTitle").focus({ preventScroll: true });
+
+    if (updateHash && location.hash !== "#mathematics") {
+      history.pushState({ mathIndex: true }, "", "#mathematics");
+    }
+  }
+
+  /* ================================================================= */
+  /* Mathematics concept page (#math/<slug>)                            */
+  /* ================================================================= */
+
+  function renderMathLinks(container, slugs, emptyMessage) {
+    const items = (slugs ?? []).map((slug) => mathBySlug.get(slug)).filter(Boolean);
+    container.innerHTML = items.length
+      ? items.map((item) => `<button type="button" data-math="${escapeHtml(item.slug)}">${escapeHtml(item.name)}</button>`).join("")
+      : `<p class="related-empty">${escapeHtml(emptyMessage)}</p>`;
+    container.onclick = (event) => {
+      const button = event.target.closest("button[data-math]");
+      if (button) openMath(button.dataset.math);
+    };
+  }
+
+  /** The reverse direction: every AI concept that declared this mathematics. */
+  function renderUsedBy(container, item) {
+    const users = usedByMath.get(item.slug) ?? [];
+    if (!users.length) {
+      container.innerHTML = `<p class="math-pending">No AI concept in the atlas has been mapped to this mathematics yet.</p>`;
+      container.onclick = null;
+      return;
+    }
+
+    const groups = [["primary", "Core to"], ["supporting", "Supporting"]].map(([importance, heading]) => {
+      const rows = users.filter((entry) => entry.importance === importance);
+      if (!rows.length) return "";
+      return `<div class="foundation-group"><h4>${heading}</h4>
+        <ul class="foundation-list">${rows.map((entry) => {
+          const category = categoryOf(entry.concept);
+          return `<li>
+            <button class="math-chip" type="button" data-slug="${escapeHtml(entry.concept.slug)}"
+              style="--card-accent:${escapeHtml(category.color)}"
+              aria-label="${escapeHtml(`${entry.concept.name}. ${category.name}. Open the concept page.`)}">
+              <span class="math-chip-symbol" aria-hidden="true">${escapeHtml(entry.concept.acronym)}</span>
+              <span class="math-chip-name">${escapeHtml(entry.concept.name)}</span>
+            </button>
+            ${entry.note ? `<p>${escapeHtml(entry.note)}</p>` : ""}
+          </li>`;
+        }).join("")}</ul>
+      </div>`;
+    }).join("");
+
+    container.innerHTML = groups;
+    container.onclick = (event) => {
+      const button = event.target.closest("button[data-slug]");
+      if (button) openLearn(button.dataset.slug);
+    };
+  }
+
+  function openMath(slug, updateHash = true) {
+    const item = mathBySlug.get(slug);
+    if (!item) return;
+    if (dialog.open) dialog.close();
+    state.learning = null;
+    state.mathIndex = false;
+    state.math = item;
+
+    const category = mathCategoryOf(item);
+    mathView.style.setProperty("--card-accent", category.color);
+    $("mathBranch").textContent = category.name;
+    $("mathDifficultyChip").textContent = DIFFICULTY_LABEL[item.difficulty] ?? item.difficulty;
+    $("mathDifficultyChip").className = `difficulty-chip difficulty-${item.difficulty}`;
+    $("mathSymbol").textContent = item.symbol;
+    $("mathName").textContent = item.name;
+    $("mathSummary").textContent = item.summary;
+    $("mathIntuition").textContent = item.intuition;
+
+    $("mathEquationSection").hidden = !item.equation;
+    if (item.equation) {
+      $("mathEquation").innerHTML = `<figure class="formula">
+        <pre><code>${escapeHtml(item.equation)}</code></pre>
+        ${item.equationNote ? `<p class="formula-note">${escapeHtml(item.equationNote)}</p>` : ""}
+      </figure>`;
+    }
+
+    const legend = item.legend ?? [];
+    $("mathLegendSection").hidden = !legend.length;
+    $("mathLegend").innerHTML = legend.map((entry) => `
+      <dt><code>${escapeHtml(entry.symbol)}</code></dt>
+      <dd>${escapeHtml(entry.meaning)}</dd>`).join("");
+
+    $("mathWorkedSection").hidden = !item.worked;
+    if (item.worked) {
+      $("mathWorked").innerHTML = `<figure class="formula"><pre><code>${escapeHtml(item.worked)}</code></pre></figure>`;
+    }
+
+    $("mathWhy").innerHTML = (item.whyInAI ?? [])
+      .map((line) => `<li>${escapeHtml(line)}</li>`).join("");
+
+    renderUsedBy($("mathUsedBy"), item);
+    renderMathLinks($("mathRelated"), item.related, "No related mathematics recorded yet.");
+    $("mathPrereqSection").hidden = !(item.prerequisites ?? []).length;
+    renderMathLinks($("mathPrereq"), item.prerequisites, "None — this is a starting point.");
+
+    $("mathSourceSection").hidden = !renderReference(
+      $("mathSource"), $("mathSourceLabel"), $("mathSourceHost"), item
+    );
+
+    showView("math");
+    document.title = `${item.name} — Mathematics | AI Concept Atlas`;
+    window.scrollTo({ top: 0, behavior: "auto" });
+    $("mathName").setAttribute("tabindex", "-1");
+    $("mathName").focus({ preventScroll: true });
+
+    if (updateHash && location.hash !== `#math/${slug}`) {
+      history.pushState({ math: slug }, "", `#math/${slug}`);
+    }
   }
 
   /* ================================================================= */
   /* Routing                                                            */
   /* ================================================================= */
 
+  /**
+   * Idempotent and fully authoritative: given a hash it decides which of the
+   * four panels is showing. `#learn` and `#math` win over `#concept`, so a
+   * page and the dialog can never be open at once.
+   */
   function handleRoute() {
     const hash = decodeURIComponent(location.hash);
+    const math = hash.match(/^#math\/(.+)$/);
     const learn = hash.match(/^#learn\/(.+)$/);
     const concept = hash.match(/^#concept\/(.+)$/);
 
+    if (math && mathBySlug.has(math[1])) { openMath(math[1], false); return; }
+    if (hash === "#mathematics") { openMathIndex(false); return; }
     if (learn && conceptBySlug.has(learn[1])) { openLearn(learn[1], false); return; }
-    closeLearn();
+
+    state.learning = null;
+    state.math = null;
+    state.mathIndex = false;
+    showView("atlas");
+    document.title = BASE_TITLE;
+
     if (concept && conceptBySlug.has(concept[1])) openConcept(concept[1], false);
     else if (dialog.open) closeConcept(false);
   }
@@ -694,33 +1378,74 @@
     });
   });
 
+  /** A node opens whichever layer it belongs to. */
+  function openGraphNode(node) {
+    if (node.dataset.kind === "math") openMath(node.dataset.slug);
+    else openConcept(node.dataset.slug);
+  }
+
+  graphLayers.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-graph-layer]");
+    if (button) setGraphLayer(button.dataset.graphLayer);
+  });
+
+  graphFocusSelect.addEventListener("change", () => setGraphFocus(graphFocusSelect.value));
+
   graphSvg.addEventListener("click", (event) => {
     const node = event.target.closest(".graph-node");
-    if (node && !node.classList.contains("dim")) openConcept(node.dataset.slug);
+    if (node && !node.classList.contains("dim")) openGraphNode(node);
   });
   graphSvg.addEventListener("keydown", (event) => {
     if (event.key !== "Enter" && event.key !== " ") return;
     const node = event.target.closest(".graph-node");
     if (!node || node.classList.contains("dim")) return;
     event.preventDefault();
-    openConcept(node.dataset.slug);
+    openGraphNode(node);
   });
   graphSvg.addEventListener("pointerover", (event) => {
     const node = event.target.closest(".graph-node");
-    highlightGraphNode(node && !node.classList.contains("dim") ? node.dataset.slug : null);
+    highlightGraphNode(node && !node.classList.contains("dim") ? node.dataset.id : null);
   });
   graphSvg.addEventListener("pointerleave", () => highlightGraphNode(null));
   graphSvg.addEventListener("focusin", (event) => {
     const node = event.target.closest(".graph-node");
-    if (node) highlightGraphNode(node.dataset.slug);
+    if (node) highlightGraphNode(node.dataset.id);
   });
   graphSvg.addEventListener("focusout", () => highlightGraphNode(null));
 
   searchResults.addEventListener("click", (event) => {
     const option = event.target.closest(".search-result");
-    if (!option) return;
-    setSuggestionsOpen(false);
-    openConcept(option.dataset.slug);
+    if (option) openSuggestion(option);
+  });
+
+  /* Mathematics overview: branch filters, difficulty filters, cards, search. */
+  function setMathCategory(id) {
+    state.mathCategory = state.mathCategory === id && id !== "all" ? "all" : id;
+    renderMathFilters();
+    renderMathIndex();
+  }
+
+  mathIndexView.addEventListener("click", (event) => {
+    const branch = event.target.closest("button[data-math-category]");
+    if (branch) { setMathCategory(branch.dataset.mathCategory); return; }
+
+    const level = event.target.closest("button[data-math-difficulty]");
+    if (level) {
+      state.mathDifficulty = level.dataset.mathDifficulty;
+      renderMathFilters();
+      renderMathIndex();
+      return;
+    }
+
+    const card = event.target.closest(".math-card");
+    if (card) openMath(card.dataset.math);
+  });
+
+  mathSearchInput.addEventListener("input", renderMathIndex);
+  mathSearchInput.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || !mathSearchInput.value) return;
+    mathSearchInput.value = "";
+    renderMathIndex();
   });
 
   searchInput.addEventListener("input", renderSearchResults);
@@ -736,8 +1461,7 @@
       const target = options[state.activeSuggestion] ?? options[0];
       if (target) {
         event.preventDefault();
-        setSuggestionsOpen(false);
-        openConcept(target.dataset.slug);
+        openSuggestion(target);
       }
     } else if (event.key === "Escape") {
       if (!searchResults.hidden) setSuggestionsOpen(false);
@@ -753,10 +1477,12 @@
     if (event.key !== "/" || event.ctrlKey || event.metaKey || event.altKey) return;
     const active = document.activeElement;
     const typing = active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.isContentEditable);
-    if (typing || dialog.open || state.learning) return;
+    if (typing || dialog.open || state.learning || state.math) return;
     event.preventDefault();
-    searchInput.focus();
-    searchInput.select();
+    // On the mathematics overview the slash key belongs to that page's own field.
+    const field = state.mathIndex ? mathSearchInput : searchInput;
+    field.focus();
+    field.select();
   });
 
   document.addEventListener("click", (event) => {
@@ -788,10 +1514,17 @@
     copyLink(state.learning ? absolute(`#learn/${state.learning.slug}`) : location.href, "Page link");
   });
 
+  $("mathCopy").addEventListener("click", () => {
+    copyLink(state.math ? absolute(`#math/${state.math.slug}`) : location.href, "Page link");
+  });
+
   window.addEventListener("popstate", handleRoute);
   window.addEventListener("hashchange", handleRoute);
 
   renderFilters();
+  renderMathFilters();
+  renderMathIndex();
+  renderGraphControls();
   setView("bands");
   renderAtlas();
   handleRoute();

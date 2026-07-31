@@ -6,13 +6,15 @@ A visual, searchable and shareable public website for navigating essential AI co
 
 ## What it includes
 
-- 71 concepts across 8 knowledge domains, each with a primary reference
+- 73 concepts across 8 knowledge domains, each with a primary reference
+- **Mathematics Behind AI** — 31 mathematical concepts across 7 branches,
+  connected to the AI techniques that use them
 - Full acronym expansions and concise explanations
 - Four explanation layers per concept: definition, why it matters, how it works, concrete example
-- Two atlas views: concepts grouped into domain bands, or an interactive relationship graph
-- Ranked search by acronym, full name, keyword, domain or partial text
+- Two atlas views: concepts grouped into domain bands, or a two-layer relationship
+  graph — 104 nodes, 350 typed edges, filterable by layer or focused on one concept
+- Ranked search across both layers, by acronym, symbol, full name, keyword, domain or partial text
 - Shareable deep links: `#concept/<slug>` for the quick dialog, `#learn/<slug>` for the full page
-- Mathematical formulations on the concepts that have them
 - Responsive layout, keyboard navigation and visible focus states
 - No framework, package manager or build step
 - No analytics, cookies or third-party requests
@@ -22,11 +24,57 @@ A visual, searchable and shareable public website for navigating essential AI co
 | Level | Where | Contains |
 |---|---|---|
 | Card | Atlas grid | Acronym, name, one-line summary |
-| Dialog | `#concept/qlora` | Why / how / example, related concepts, reference |
+| Dialog | `#concept/qlora` | Why / how / example, mathematical foundations, related concepts, reference |
 | Page | `#learn/qlora` | The same, full width, plus the mathematical formulation |
 
-Concepts that do not yet have a written mathematical treatment link to their
-primary reference instead.
+## The mathematics layer
+
+Mathematics is a **cross-cutting layer**, not a ninth domain. It answers "what is
+this actually built on", and it is navigable in both directions.
+
+| Level | Where | Contains |
+|---|---|---|
+| Overview | `#mathematics` | All 31 concepts by branch, with difficulty and usage filters |
+| Page | `#math/matrix-rank` | Intuition, equation, symbol legend, worked example, and every AI concept that uses it |
+
+Each AI concept carries a **mathematical intensity** — high, medium or low — and
+a split between core and supporting mathematics. Concepts that are principally
+software or protocol work say so plainly: `#learn/mcp` states that its core
+mathematical foundation is none, and explains where the mathematics does live.
+
+Round trip, from either end:
+
+```
+LoRA  →  Matrix rank  →  Low-rank factorization  →  LoRA, QLoRA, PEFT
+```
+
+Equations are plain text in a monospaced block — no maths library, no external
+request, consistent with the no-third-party-requests promise.
+
+## The relationship graph spans both layers
+
+Circles are AI concepts, diamonds are mathematics. Every edge is a relationship
+declared in the data, typed with a verb: `USES`, `DEPENDS_ON`, `MEASURED_WITH`,
+`OPTIMIZED_BY`, `APPROXIMATES` or `RELATED_TO`.
+
+- **Both layers** — the eight AI domains on an outer ring, the seven mathematics
+  branches on an inner one.
+- **AI only** / **Mathematics only** — one layer at a time, each with its own layout.
+- **Focus** — pick a concept and the graph becomes a labelled star of just that
+  concept and the mathematics it depends on directly:
+
+```
+LoRA
+ ├── DEPENDS_ON   → Matrix Rank
+ ├── USES         → Low-Rank Factorization
+ ├── USES         → Matrix Multiplication
+ ├── DEPENDS_ON   → Matrices
+ ├── DEPENDS_ON   → Vector Spaces
+ └── OPTIMIZED_BY → Gradient Descent
+```
+
+Edge verbs are only drawn in the focus view. Labelling all 350 at once would make
+the graph unreadable, so weight and colour carry the structure instead.
 
 ## Run locally
 
@@ -58,7 +106,7 @@ social crawlers do not render SVG.
 
 ```bash
 node tools/validate.mjs           # offline checks — this is what CI runs
-node tools/validate.mjs --links   # also checks all 71 reference URLs respond
+node tools/validate.mjs --links   # also checks all 104 reference URLs respond
 ```
 
 Zero dependencies. Checks file layout, JavaScript syntax, the concept data model,
@@ -66,6 +114,12 @@ unique slugs, related-link integrity, reference and math-block shape, HTML
 metadata and accessibility contracts, external-link safety, CSS sanity, the
 deployment workflow, and scans for secrets. Exit code 1 means something must be
 fixed before shipping.
+
+For the mathematics layer it also checks that every AI → mathematics link
+resolves, that intensities and importances are valid, that a concept declaring an
+intensity explains itself either through foundations or a note, and that **no
+mathematics page is an orphan** — every one must be reachable from at least one
+AI concept.
 
 `--links` is opt-in and reports problems as warnings: academic publishers often
 block automated requests, so a flagged link is worth a manual look rather than
@@ -86,7 +140,11 @@ Without it the workflow fails at `actions/configure-pages` with
 ## Customize
 
 - Edit concept content in `data.js` (see `CLAUDE.md` § 4 for the required shape).
+- Edit mathematics content in `math-data.js` (same section for its shape).
 - Add a `math` block to a concept and its formulation appears on `#learn/<slug>`.
+- Link a concept to mathematics with `mathIntensity` and `mathFoundations`. The
+  reverse direction — which AI concepts use a given piece of mathematics — is
+  derived at runtime, so it can never fall out of sync.
 - Run `node tools/build-map.mjs` to regenerate the hero map from the data.
 - Edit appearance in `styles.css`.
 - Update the canonical and Open Graph URLs in `index.html` if the site moves.

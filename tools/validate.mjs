@@ -40,6 +40,7 @@ const REQUIRED_FILES = [
   "styles.css",
   "app.js",
   "data.js",
+  "math-data.js",
   "README.md",
   "LICENSE",
   "CLAUDE.md",
@@ -66,6 +67,8 @@ vm.createContext(sandbox);
 
 let concepts = [];
 let categories = [];
+let mathConcepts = [];
+let mathCategories = [];
 
 try {
   new vm.Script(read("data.js"), { filename: "data.js" }).runInContext(sandbox);
@@ -74,6 +77,15 @@ try {
   ok("data.js parses and evaluates");
 } catch (error) {
   fail(`data.js failed to evaluate: ${error.message}`);
+}
+
+try {
+  new vm.Script(read("math-data.js"), { filename: "math-data.js" }).runInContext(sandbox);
+  mathConcepts = sandbox.window.MATH_CONCEPTS ?? [];
+  mathCategories = sandbox.window.MATH_CATEGORIES ?? [];
+  ok("math-data.js parses and evaluates");
+} catch (error) {
+  fail(`math-data.js failed to evaluate: ${error.message}`);
 }
 
 try {
@@ -176,6 +188,183 @@ for (const concept of concepts) {
 if (mathBlocks && !badMath) ok(`${mathBlocks} concepts carry a well-formed math block`);
 
 /* ------------------------------------------------------------------ */
+/* 2b. Mathematics layer                                                */
+/*                                                                      */
+/* Mathematics is a cross-cutting layer: the AI → mathematics direction  */
+/* is stored on the AI concept, the reverse direction is derived by      */
+/* app.js. These checks guarantee both directions resolve, so no page    */
+/* can link to something that does not exist and no mathematics page     */
+/* can be orphaned.                                                     */
+/* ------------------------------------------------------------------ */
+section("Mathematics data model");
+
+const MATH_REQUIRED = ["slug", "symbol", "name", "category", "difficulty", "summary", "intuition", "whyInAI", "related", "tags"];
+const DIFFICULTIES = new Set(["introductory", "intermediate", "advanced"]);
+const INTENSITIES = new Set(["low", "medium", "high"]);
+const IMPORTANCES = new Set(["primary", "supporting"]);
+// Graph edge verbs. GENERALIZES is defined but deliberately unused: nothing in
+// the data justifies it yet, and inventing it would be decoration.
+const RELATIONS = new Set([
+  "USES", "DEPENDS_ON", "MEASURED_WITH", "OPTIMIZED_BY",
+  "APPROXIMATES", "GENERALIZES", "RELATED_TO"
+]);
+
+if (!Array.isArray(mathConcepts) || mathConcepts.length === 0) {
+  fail("window.MATH_CONCEPTS is empty or not an array");
+} else {
+  ok(`${mathConcepts.length} mathematics concepts, ${mathCategories.length} branches`);
+}
+
+const mathSlugs = new Set();
+const mathCategoryIds = new Set(mathCategories.map((category) => category.id));
+let mathMissingFields = 0;
+let mathBadSlugs = 0;
+let mathBadDifficulty = 0;
+
+for (const item of mathConcepts) {
+  for (const field of MATH_REQUIRED) {
+    const value = item[field];
+    const empty = value === undefined || value === null || value === "" ||
+      (Array.isArray(value) && value.length === 0);
+    if (empty) { mathMissingFields += 1; fail(`math "${item.slug ?? "(no slug)"}" is missing "${field}"`); }
+  }
+
+  if (mathSlugs.has(item.slug)) { mathBadSlugs += 1; fail(`duplicate mathematics slug "${item.slug}"`); }
+  mathSlugs.add(item.slug);
+
+  if (!SLUG_PATTERN.test(String(item.slug))) {
+    mathBadSlugs += 1;
+    fail(`mathematics slug "${item.slug}" is not URL-safe kebab-case`);
+  }
+  if (!mathCategoryIds.has(item.category)) {
+    fail(`math "${item.slug}" references unknown branch "${item.category}"`);
+  }
+  if (!DIFFICULTIES.has(item.difficulty)) {
+    mathBadDifficulty += 1;
+    fail(`math "${item.slug}" has an invalid difficulty "${item.difficulty}"`);
+  }
+  if (item.equation && !item.equationNote) {
+    warn(`math "${item.slug}" has an equation with no plain-language explanation`);
+  }
+  if (!RELATIONS.has(item.relation)) {
+    fail(`math "${item.slug}" has an invalid or missing relation "${item.relation}"`);
+  }
+  for (const entry of item.legend ?? []) {
+    if (!entry.symbol || !entry.meaning) fail(`math "${item.slug}" has an incomplete legend entry`);
+  }
+}
+
+if (!mathMissingFields) ok("every mathematics concept has all required fields");
+if (!mathBadSlugs) ok("all mathematics slugs are unique and URL-safe");
+if (!mathBadDifficulty) ok("all difficulty values are valid");
+
+// Mathematics slugs share a namespace with nothing: #math/<slug> and
+// #learn/<slug> are distinct routes, but a collision is still confusing.
+const collisions = [...mathSlugs].filter((slug) => slugs.has(slug));
+if (collisions.length) collisions.forEach((slug) => warn(`"${slug}" is both an AI concept and a mathematics slug`));
+else ok("no slug is used by both layers");
+
+let mathBrokenLinks = 0;
+for (const item of mathConcepts) {
+  for (const related of item.related ?? []) {
+    if (!mathSlugs.has(related)) { mathBrokenLinks += 1; fail(`math "${item.slug}" links to unknown mathematics "${related}"`); }
+    if (related === item.slug) { mathBrokenLinks += 1; fail(`math "${item.slug}" lists itself as related`); }
+  }
+  for (const prerequisite of item.prerequisites ?? []) {
+    if (!mathSlugs.has(prerequisite)) { mathBrokenLinks += 1; fail(`math "${item.slug}" requires unknown mathematics "${prerequisite}"`); }
+    if (prerequisite === item.slug) { mathBrokenLinks += 1; fail(`math "${item.slug}" lists itself as a prerequisite`); }
+  }
+}
+if (!mathBrokenLinks) ok("every related and prerequisite slug resolves");
+
+for (const category of mathCategories) {
+  const count = mathConcepts.filter((item) => item.category === category.id).length;
+  if (count === 0) warn(`mathematics branch "${category.id}" has no concepts`);
+  if (!/^#[0-9a-f]{6}$/i.test(String(category.color))) fail(`mathematics branch "${category.id}" has an invalid colour`);
+}
+
+let mathBadSources = 0;
+const mathReferenceUrls = new Map();
+for (const item of mathConcepts) {
+  if (!item.source) { warn(`math "${item.slug}" has no primary reference`); continue; }
+  if (!/^https:\/\//.test(item.source.url)) { mathBadSources += 1; fail(`math "${item.slug}" has a non-HTTPS reference: ${item.source.url}`); }
+  if (!item.source.label || item.source.label.length < 8) { mathBadSources += 1; fail(`math "${item.slug}" has an empty or too-short reference label`); }
+  try { new URL(item.source.url); } catch { mathBadSources += 1; fail(`math "${item.slug}" has a malformed reference URL`); }
+  mathReferenceUrls.set(item.source.url, (mathReferenceUrls.get(item.source.url) ?? 0) + 1);
+}
+if (!mathBadSources) ok("every mathematics reference is a well-formed HTTPS URL with a label");
+for (const [url, count] of mathReferenceUrls) {
+  if (count > 1) warn(`${count} mathematics concepts share the reference ${url}`);
+}
+
+section("AI ↔ mathematics links");
+
+let badIntensity = 0;
+let badFoundations = 0;
+let foundationLinks = 0;
+const referencedMath = new Set();
+const intensityCounts = { low: 0, medium: 0, high: 0 };
+
+for (const concept of concepts) {
+  const intensity = concept.mathIntensity;
+  const foundations = concept.mathFoundations ?? [];
+
+  if (intensity === undefined) {
+    if (foundations.length) { badFoundations += 1; fail(`"${concept.slug}" declares mathFoundations without a mathIntensity`); }
+    continue;
+  }
+  if (!INTENSITIES.has(intensity)) {
+    badIntensity += 1;
+    fail(`"${concept.slug}" has an invalid mathIntensity "${intensity}"`);
+    continue;
+  }
+  intensityCounts[intensity] += 1;
+
+  // A concept with no foundations must say why, rather than showing nothing.
+  if (!foundations.length && !concept.mathNote) {
+    fail(`"${concept.slug}" has mathIntensity "${intensity}" but neither mathFoundations nor a mathNote`);
+    badFoundations += 1;
+  }
+  if (intensity === "high" && !foundations.some((link) => link.importance === "primary")) {
+    warn(`"${concept.slug}" is marked high intensity but declares no primary mathematics`);
+  }
+
+  const seen = new Set();
+  for (const link of foundations) {
+    foundationLinks += 1;
+    if (!mathSlugs.has(link.slug)) {
+      badFoundations += 1;
+      fail(`"${concept.slug}" links to unknown mathematics "${link.slug}"`);
+      continue;
+    }
+    if (seen.has(link.slug)) { badFoundations += 1; fail(`"${concept.slug}" links to "${link.slug}" twice`); }
+    seen.add(link.slug);
+    referencedMath.add(link.slug);
+    if (!IMPORTANCES.has(link.importance)) {
+      badFoundations += 1;
+      fail(`"${concept.slug}" → "${link.slug}" has an invalid importance "${link.importance}"`);
+    }
+    if (link.relation !== undefined && !RELATIONS.has(link.relation)) {
+      badFoundations += 1;
+      fail(`"${concept.slug}" → "${link.slug}" overrides relation with an invalid "${link.relation}"`);
+    }
+    if (!link.note) warn(`"${concept.slug}" → "${link.slug}" has no explanation`);
+  }
+}
+
+if (!badIntensity) ok(`every mathIntensity is one of low, medium, high (${intensityCounts.high} high, ${intensityCounts.medium} medium, ${intensityCounts.low} low)`);
+if (!badFoundations) ok(`${foundationLinks} AI → mathematics links all resolve`);
+
+const mapped = concepts.filter((concept) => concept.mathIntensity !== undefined).length;
+ok(`${mapped} of ${concepts.length} AI concepts carry a mathematics mapping`);
+if (mapped < concepts.length) warn(`${concepts.length - mapped} AI concepts are not mapped yet`);
+
+// An orphan mathematics page is reachable but explains nothing about the atlas.
+const orphans = mathConcepts.filter((item) => !referencedMath.has(item.slug));
+if (orphans.length) orphans.forEach((item) => fail(`mathematics page "${item.slug}" is an orphan — no AI concept uses it`));
+else ok("no orphan mathematics pages — every one is used by at least one AI concept");
+
+/* ------------------------------------------------------------------ */
 /* 3. Generated concept map                                             */
 /* ------------------------------------------------------------------ */
 section("Concept map (assets/ai-concept-map.svg)");
@@ -227,7 +416,9 @@ const HTML_CHECKS = [
   [/<main[\s>]/, "main landmark present"],
   [/<noscript>/, "noscript fallback present"],
   [/<script src="data\.js"/, "data.js is loaded"],
-  [/<script src="app\.js"/, "app.js is loaded"]
+  [/<script src="math-data\.js"/, "math-data.js is loaded"],
+  [/<script src="app\.js"/, "app.js is loaded"],
+  [/href="#mathematics"/, "the mathematics layer is linked from the page"]
 ];
 
 for (const [pattern, label] of HTML_CHECKS) {
@@ -277,16 +468,23 @@ else fail(`unbalanced braces in styles.css (${braceBalance > 0 ? "+" : ""}${brac
 if (!/\/\*(?:(?!\*\/)[\s\S])*$/.test(css)) ok("no unterminated comment");
 else fail("styles.css contains an unterminated comment");
 
-// Class names appear both as plain attributes and inside app.js template
-// literals such as class="filter-button${active ? " active" : ""}".
-const usedClasses = new Set(
-  [...`${html}\n${appSource}`.matchAll(/class="([^"$]+)/g)]
-    .flatMap((match) => match[1].split(/\s+/))
-    .filter(Boolean)
-);
+// Class names appear three ways: as plain attributes, at the head of an app.js
+// template literal such as class="filter-button${active ? " active" : ""}", and
+// as bare string constants that are interpolated in (NODE_CLASS, EDGE_CLASS).
+// The last form is invisible to an attribute-only scan, so quoted single-token
+// strings that look like class names count as references too.
+const combinedSource = `${html}\n${appSource}`;
+const usedClasses = new Set([
+  ...[...combinedSource.matchAll(/class="([^"$]+)/g)]
+    .flatMap((match) => match[1].split(/\s+/)),
+  ...[...combinedSource.matchAll(/"([a-z][a-z0-9]*(?:-[a-z0-9]+)+)"/g)]
+    .map((match) => match[1])
+].filter(Boolean));
 const CRITICAL_CLASSES = [
   "concept-card", "search-result", "filter-button", "concept-dialog",
-  "domain-band", "view-tab", "graph-node", "graph-edge", "learn-view", "reference-card", "formula"
+  "domain-band", "view-tab", "graph-node", "graph-edge", "learn-view", "reference-card", "formula",
+  "math-card", "math-chip", "intensity-badge", "difficulty-chip", "symbol-legend", "foundation-list",
+  "graph-math", "edge-label", "layer-toggle", "graph-focus", "legend-diamond"
 ];
 for (const critical of CRITICAL_CLASSES) {
   if (!css.includes(`.${critical}`)) fail(`.${critical} has no styling rule`);
@@ -322,7 +520,8 @@ const WORKFLOW_CHECKS = [
   [/actions\/configure-pages@v\d+/, "uses actions/configure-pages"],
   [/actions\/upload-pages-artifact@v\d+/, "uses actions/upload-pages-artifact"],
   [/actions\/deploy-pages@v\d+/, "uses actions/deploy-pages"],
-  [/path:\s*_site/, "uploads only the staged _site directory"]
+  [/path:\s*_site/, "uploads only the staged _site directory"],
+  [/cp .*\bmath-data\.js\b.* _site\//, "math-data.js is staged for publication"]
 ];
 
 for (const [pattern, label] of WORKFLOW_CHECKS) {
@@ -378,7 +577,7 @@ if (existsSync(join(ROOT, ".claude/settings.local.json"))) {
 /* ------------------------------------------------------------------ */
 if (CHECK_LINKS) {
   section("Reference reachability (--links)");
-  const targets = concepts.filter((concept) => concept.source?.url);
+  const targets = [...concepts, ...mathConcepts].filter((item) => item.source?.url);
   let reachable = 0;
   const problems = [];
 
@@ -416,3 +615,4 @@ if (failures) {
 }
 console.log(`PASSED — 0 errors, ${warnings} warning(s).`);
 console.log(`${concepts.length} concepts across ${categories.length} domains validated.`);
+console.log(`${mathConcepts.length} mathematics concepts across ${mathCategories.length} branches validated.`);

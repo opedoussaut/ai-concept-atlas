@@ -29,10 +29,11 @@ Static HTML, CSS and vanilla JavaScript. **No build step, no package manager, no
 runtime dependency.** Opening `index.html` from disk is a valid way to run the site.
 
 ```
-index.html                  Markup, metadata, dialog template
+index.html                  Markup, metadata, dialog template, page templates
 styles.css                  All styling (single stylesheet, CSS custom properties)
 app.js                      Search, filtering, routing, dialog, clipboard (one IIFE)
 data.js                     Concept + category data (window.AI_CONCEPTS, window.AI_CATEGORIES)
+math-data.js                Mathematics layer (window.MATH_CONCEPTS, window.MATH_CATEGORIES)
 assets/                     favicon.svg, ai-concept-map.svg (hero), .png (social preview)
 tools/validate.mjs          Zero-dependency validation script (also runs in CI)
 tools/build-map.mjs         Regenerates assets/ai-concept-map.svg from data.js
@@ -53,9 +54,20 @@ forgotten regeneration cannot ship. `assets/ai-concept-map.png` is a 1200×812
 raster of the same map, kept only because social crawlers will not render SVG;
 regenerate it by screenshotting the SVG at 2× and downscaling.
 
-`data.js` and `app.js` are loaded as classic scripts at the end of `<body>`.
-`data.js` must load first: it publishes the two globals `app.js` consumes.
-There are currently **71 concepts across 8 domains**, each with a primary reference.
+`data.js`, `math-data.js` and `app.js` are loaded as classic scripts at the end of
+`<body>`, in that order: the data files publish the four globals `app.js` consumes.
+There are currently **73 concepts across 8 domains** and **31 mathematics concepts
+across 7 branches**, each with a primary reference.
+
+**The mathematics layer is cross-cutting, not a ninth domain.** It is the answer to
+"what mathematics is this built on", and it is navigable in both directions:
+
+- AI → mathematics is declared **once**, on the AI concept, in `mathFoundations`.
+- mathematics → AI is **derived at runtime** in `app.js` (`usedByMath`), never stored.
+
+That asymmetry is deliberate. A stored reverse index is a second source of truth that
+silently drifts; deriving it means the two directions cannot disagree. The validator
+enforces that every forward link resolves and that no mathematics page is an orphan.
 
 **Search.** `app.js` builds an in-memory index at startup. Queries are normalized
 (lower-cased, accent-folded, punctuation and hyphens collapsed to spaces), split
@@ -68,19 +80,58 @@ adding fields to a concept, decide deliberately whether they join the index.
 
 - *Domains* (default) — concepts grouped into coloured bands, one per domain.
   Bands with no match are omitted entirely when searching or filtering.
-- *Graph* — an SVG relationship map. Every concept is a node, every `related`
-  pair an edge, node radius scales with degree. The layout is a deterministic
-  force simulation (`computeGraphLayout`) run once, synchronously, at first
-  render: pairwise repulsion, springs along edges, and a mild pull toward each
-  domain's anchor. It is cached; filtering only re-renders, never re-simulates.
-  Nodes are focusable and open on Enter, so the graph is keyboard-usable.
+- *Graph* — an SVG relationship map spanning **both layers**. 104 nodes: AI
+  concepts as circles, mathematics as diamonds. 350 edges, each carrying a
+  relation verb. Node radius scales with degree. The layout is a deterministic
+  force simulation (`computeGraphLayout`): pairwise repulsion, springs weighted
+  by edge strength, and a mild pull toward each group's anchor. Nodes are
+  focusable and open on Enter — an AI node opens `#concept/<slug>`, a
+  mathematics node opens `#math/<slug>`.
+
+**Graph model.** Mathematics node ids are prefixed `math:` so the two slug
+namespaces can never collide. Edges are undirected, deduplicated, and typed:
+
+| Source | Relation | Weight | Layer class |
+|---|---|---|---|
+| `concept.related` | `RELATED_TO` | 1 | `edge-ai` |
+| `mathFoundations`, primary | the maths concept's `relation` | 2 | `edge-bridge` |
+| `mathFoundations`, supporting | the maths concept's `relation` | 1 | `edge-bridge-soft` |
+| `math.prerequisites` | `DEPENDS_ON` | 2 | `edge-math` |
+| `math.related` | `RELATED_TO` | 1 | `edge-math` |
+
+Prerequisites are collected before plain relations so the stronger verb wins a
+duplicated pair. Weight drives both spring strength and stroke opacity, which is
+how 350 edges stay legible without hiding any of them.
+
+**Three layer modes**, each with its **own cached layout**, simulated lazily on
+first view: `both` (AI domains on an outer ring, mathematics branches on an inner
+one — the picture reads as "the mathematics underneath"), `ai`, and `math`.
+Switching modes never re-simulates a layout already computed; filtering and
+searching only re-render.
+
+**Focus view.** Selecting a concept in the focus control replaces the force graph
+with a radial star: that concept at the centre, its *direct* mathematical
+dependencies around it, and — this is the only place they fit — the relation verb
+written on every edge. Core dependencies get a larger diamond. Only the 34
+concepts that declare foundations appear in the selector.
+
+Do not label edges in the force view. 350 labels is unreadable, which is exactly
+the failure mode the original brief warned about.
 
 **Three levels of depth** for one concept, all sharing the same data:
 
 1. Card — acronym, name, summary.
-2. Dialog at `#concept/<slug>` — the four explanation layers plus the reference.
-3. Page at `#learn/<slug>` — the same content laid out full-width, with the
-   optional `math` block and a prominent reference card.
+2. Dialog at `#concept/<slug>` — the four explanation layers, a compact
+   Mathematical foundations block, plus the reference.
+3. Page at `#learn/<slug>` — the same content laid out full-width, with the full
+   Mathematical foundations section, the optional `math` block and a prominent
+   reference card.
+
+**Four top-level panels**, mutually exclusive, switched only through `showView()`:
+`atlasView`, `learnView`, `mathIndexView` and `mathView`. `handleRoute()` is fully
+authoritative — given a hash it decides which single panel is showing — so a page
+and the dialog can never be open at once, and a deep link opened cold resolves
+through exactly the same function.
 
 ---
 
@@ -137,6 +188,73 @@ Every entry in `window.AI_CONCEPTS` follows this shape. All fields except
 
 Categories: `{ id, name, short, color }` — `color` must be a `#rrggbb` hex value.
 
+**Mathematics fields on an AI concept.** Both optional; a concept without them shows
+"not mapped yet" rather than an empty section.
+
+```js
+mathIntensity: "high",          // "low" | "medium" | "high"
+mathNote: "…",                  // Required when there are no foundations
+mathFoundations: [
+  { slug: "matrix-rank", importance: "primary", note: "Why this matters here." }
+]
+```
+
+A link may also carry `relation` to override the verb it would otherwise inherit
+from the mathematics concept. Do this only when the general rule genuinely does
+not hold — the point of storing the verb on the mathematics concept is that a
+dot product is *always* something a technique computes with, and a vector space
+is *always* the setting it presupposes. That is one decision instead of 141.
+
+- **low** — a protocol, architecture, governance or software concept.
+- **medium** — mathematics is used internally, but the concept can be understood
+  without deriving it.
+- **high** — the concept is directly defined by mathematical operations.
+
+Do not assign mathematics to a concept where the relationship is not real. MCP,
+tokenization, batching and guardrails are `low` and say so in `mathNote`; the
+validator fails a concept that declares an intensity with neither foundations nor a
+note. Do not chain: RAG declares cosine similarity, and cosine similarity declares
+the dot product as a *prerequisite*. Repeating the whole chain on every concept
+makes the layer noise.
+
+### Mathematics concept data structure
+
+Every entry in `window.MATH_CONCEPTS`. Required except `legend`, `worked`,
+`prerequisites` and `source`.
+
+```js
+{
+  slug: "matrix-rank",            // Routed at #math/<slug>. Permanent — never rename.
+  symbol: "rank(A)",              // Display token; the counterpart of `acronym`
+  name: "Matrix Rank",
+  category: "linear-algebra",     // Must equal an id in window.MATH_CATEGORIES
+  difficulty: "intermediate",     // introductory | intermediate | advanced
+  relation: "DEPENDS_ON",         // How an AI concept relates to this; graph edge verb
+  summary: "…",                   // One sentence, shown on the card
+  intuition: "…",                 // Must stand alone without the equation
+  equation: "rank(A) ≤ min(m, n)",// Plain text, \n for line breaks
+  equationNote: "…",              // What the equation says, in words
+  legend: [{ symbol: "m", meaning: "…" }],
+  worked: "…",                    // Small numerical example, plain text
+  whyInAI: ["…", "…"],            // Rendered as a list
+  related: ["low-rank-factorization"],  // Mathematics slugs; must resolve
+  prerequisites: ["matrices"],    // Mathematics slugs; must resolve
+  tags: ["independence", "redundancy"],
+  source: { label: "…", url: "https://…" }
+}
+```
+
+`usedByConceptIds` is deliberately **absent** — it is derived, see §2.
+
+**Rules for mathematics content**
+
+1. The intuition must be readable by an engineer who is not a mathematician, and
+   must work without the equation. An equation never replaces the explanation.
+2. Worked examples are small, concrete and arithmetically correct. Check the numbers.
+3. Never claim more than the mathematics supports.
+4. Slugs are public URLs. `#math/<slug>` and `#learn/<slug>` are separate namespaces,
+   but the validator warns on a collision because it confuses readers.
+
 **On `source`.** All 71 concepts carry one. Prefer, in order: the paper that
 introduced the idea, a DOI over a publisher URL (DOIs are permanent), official
 documentation, then an authoritative survey. Every concept currently has a
@@ -163,19 +281,21 @@ decision — see principle 6.
 
 ## 5. Navigation and concept URLs
 
-Two public routes, both stable contracts:
+Four public routes, all stable contracts:
 
 | Route | Effect |
 |---|---|
 | `#concept/<slug>` | Opens the dialog over the atlas |
 | `#learn/<slug>` | Opens the full concept page, hiding the atlas |
+| `#mathematics` | Opens the mathematics overview |
+| `#math/<slug>` | Opens a mathematics concept page |
 
 - Example: `https://opedoussaut.github.io/ai-concept-atlas/#concept/qlora`.
 - Opening a concept calls `history.pushState`, so browser back and forward move
   through the concepts the reader visited.
 - `popstate` and `hashchange` both route through `handleRoute()`, which is
-  idempotent: it opens the page, opens the dialog, or closes both. `#learn` wins
-  over `#concept` so the two can never be shown at once.
+  idempotent: it opens one panel, opens the dialog, or closes both. `#math` and
+  `#learn` win over `#concept`, so a page and the dialog can never be shown at once.
 - A deep link opened cold is resolved once at startup by the same function.
 - Closing the dialog pushes the bare path and restores focus to the element that
   opened it.
@@ -216,28 +336,50 @@ Run before every commit:
 ```bash
 node tools/build-map.mjs          # only if data.js changed
 node tools/validate.mjs           # offline checks; this is what CI runs
-node tools/validate.mjs --links   # additionally HEADs all 71 reference URLs
+node tools/validate.mjs --links   # additionally HEADs all 104 reference URLs
 ```
 
-It checks required files, JavaScript syntax (`data.js` evaluated in a VM,
-`app.js` parsed), the concept data model, unique and URL-safe slugs, resolvable
-`related` slugs, valid category references and colours, HTTPS-only sources with
-labels, well-formed `math` blocks, that the generated concept map still contains
-every concept and domain, required HTML structure and metadata,
-`rel="noopener noreferrer"` on every `target="_blank"`, local asset existence,
-every element id `app.js` expects (via `getElementById` **or** the `$()`
-helper), CSS brace balance and focus-visible presence, the workflow YAML
+It checks required files, JavaScript syntax (`data.js` and `math-data.js`
+evaluated in a VM, `app.js` parsed), the concept data model, unique and URL-safe
+slugs, resolvable `related` slugs, valid category references and colours,
+HTTPS-only sources with labels, well-formed `math` blocks, that the generated
+concept map still contains every concept and domain, required HTML structure and
+metadata, `rel="noopener noreferrer"` on every `target="_blank"`, local asset
+existence, every element id `app.js` expects (via `getElementById` **or** the
+`$()` helper), CSS brace balance and focus-visible presence, the workflow YAML
 contract, and a secret scan. Exit code 1 means the change must not ship.
+
+For the mathematics layer it additionally checks the mathematics data model,
+unique URL-safe mathematics slugs, valid branches and difficulty values,
+resolvable `related` and `prerequisites`, that every `mathIntensity` is one of
+low/medium/high, that every `mathFoundations` entry resolves to a real
+mathematics concept with a valid `importance` and is not declared twice, that a
+concept declaring an intensity has either foundations or a `mathNote`, and that
+**no mathematics page is an orphan** — every one must be used by at least one AI
+concept. It warns on a high-intensity concept with no primary mathematics, an
+equation with no plain-language explanation, and a slug used by both layers.
 
 `--links` reports failures as warnings only: publishers rate-limit and block
 automated requests, so a red line there means "check by hand", not "broken".
 
 Also confirm manually:
 
-- `node --check app.js` and `node --check data.js`
+- `node --check app.js`, `node --check data.js`, `node --check math-data.js`
 - Search for `MCP`, `QLoRA`, `RAG`, `JEPA`, and multi-word `retrieval augmented`
+- Search for `dot product` and `softmax`: results must be labelled
+  "Mathematics · <branch>" or "AI concept · <domain>", and route accordingly
 - Both views: domain bands and the graph, including filtering in each
+- Graph: all three layer modes; circles for AI and diamonds for mathematics;
+  a mathematics node opens `#math/<slug>` and an AI node opens the dialog
+- Graph focus: pick LoRA and confirm six labelled spokes reading
+  "depends on / uses / optimized by"; pick Attention and confirm the same for
+  dot product, matrix multiplication, softmax and vector spaces
 - Direct navigation to `#concept/qlora` and `#learn/lora`; then back and forward
+- Direct navigation to `#mathematics` and `#math/dot-product`; branch and
+  difficulty filters; the overview's own search field
+- Round trip both ways: LoRA → Matrix rank → back to LoRA from "AI concepts using it"
+- `#learn/mcp` states "Core mathematical foundation: none." rather than showing
+  an empty section
 - Copy-link behaviour over HTTPS (the Clipboard API needs a secure context)
 - Keyboard-only pass: `/` focuses search, arrows move suggestions, Enter opens,
   Tab reaches graph nodes and Enter opens them, Escape closes, focus returns to
@@ -294,17 +436,27 @@ pushed. Deleting files unrelated to the current task is equally out of bounds.
 
 ## 10. Recommended next improvements
 
-- Write `math` blocks for the remaining 65 concepts (6 done). This is the main
-  open content task and the reason the field exists.
+- Map the remaining 22 AI concepts to mathematics (51 of 73 done). This is now
+  the largest open item: every one added enriches the graph as well as the pages.
+- Add the mathematics concepts still listed in the brief but not yet written:
+  eigenvalues and eigenvectors, singular value decomposition, basis and
+  projection, Adam, regularization, state-space models, Monte Carlo methods.
+- Write `math` blocks for the remaining concepts (8 of 73 done). Less urgent now
+  that `mathFoundations` carries the conceptual link; `math` is for the
+  concept's own formulation.
 - Add a glossary index and a compare mode for two concepts.
 - Add downloadable PNG/PDF concept cards.
 - Add optional French localization.
 - Consider persisting the chosen view, if it can be done without anything a
   reader would reasonably call tracking.
-- Reassess plain-text formulas once several dozen `math` blocks exist; if they
-  become unreadable, a self-hosted KaTeX build is the only option that keeps the
-  no-third-party-requests promise.
+- Reassess plain-text formulas now that 31 mathematics pages carry equations. If
+  they become unreadable, a **self-hosted** KaTeX build is the only option that
+  keeps the no-third-party-requests promise — vendored into `assets/`, added to
+  the workflow allow-list, never a CDN.
 
-Done and no longer open: primary references (all 71), the relationship graph,
-the per-concept page, and image weight — the hero is now a generated 26 KB SVG
-rather than the original 1.78 MB raster.
+Done and no longer open: primary references (all 104), the per-concept page,
+image weight (the hero is a generated 26 KB SVG rather than the original 1.78 MB
+raster), the mathematics layer itself — 31 concepts, 141 typed links, both
+navigation directions, its own overview and detail routes, and validator
+coverage — and the two-layer relationship graph: 104 nodes, 350 typed edges,
+three cached layer layouts and a per-concept focus view.

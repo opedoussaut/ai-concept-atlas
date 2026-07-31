@@ -38,6 +38,7 @@
     </a>
     <nav class="top-actions" aria-label="Primary navigation">
       <button class="ghost-button" id="randomButton" type="button">Surprise me</button>
+      <a class="ghost-button" href="#mathematics">Mathematics</a>
       <a class="ghost-button" href="#about">About</a>
       <a class="primary-button" href="https://github.com/opedoussaut/ai-concept-atlas" target="_blank" rel="noopener noreferrer">View on GitHub</a>
     </nav>
@@ -105,13 +106,22 @@
 
       <div id="graphPanel" role="tabpanel" aria-labelledby="tabGraph" tabindex="0" hidden>
         <p class="graph-hint">
-          Every concept is a node; every line is a relationship declared in the atlas data.
-          Node size reflects how many concepts connect to it. Select a node to open it, or press Tab to
-          step through them.
+          Circles are AI concepts, diamonds are mathematics. Every line is a relationship declared in
+          the atlas data, and node size reflects how many things connect to it. Select a node to open
+          it, or press Tab to step through them. Focus a single concept to see only the mathematics it
+          depends on directly, with each relationship named.
         </p>
+        <div class="graph-controls">
+          <div class="layer-toggle" id="graphLayers" role="group" aria-label="Graph layers"></div>
+          <label class="graph-focus">
+            <span>Focus</span>
+            <select id="graphFocus"></select>
+          </label>
+        </div>
         <div class="graph-shell">
           <svg id="conceptGraph" viewBox="0 0 1000 680" role="group"
-               aria-label="Relationship graph of AI concepts" preserveAspectRatio="xMidYMid meet"></svg>
+               aria-label="Relationship graph of AI concepts and the mathematics they use"
+               preserveAspectRatio="xMidYMid meet"></svg>
         </div>
         <div class="graph-legend" id="graphLegend"></div>
       </div>
@@ -165,6 +175,10 @@
            <h2 id="learnExampleTitle">Concrete example</h2>
            <p id="learnExample"></p>
          </section>
+         <section id="learnFoundationsSection" aria-labelledby="learnFoundationsTitle">
+           <h2 id="learnFoundationsTitle">Mathematical foundations</h2>
+           <div id="learnFoundations"></div>
+         </section>
          <section id="learnMathSection" aria-labelledby="learnMathTitle">
            <h2 id="learnMathTitle">Mathematical formulation</h2>
            <div id="learnMath"></div>
@@ -186,6 +200,105 @@
          <section>
            <h2>Share</h2>
            <button class="ghost-button" id="learnCopy" type="button">Copy page link</button>
+         </section>
+       </aside>
+     </div>
+   </article>
+
+   <!-- Mathematics overview, routed at #mathematics. Rendered by app.js. -->
+   <section id="mathIndexView" class="math-index" aria-labelledby="mathIndexTitle" hidden>
+     <nav class="learn-back" aria-label="Breadcrumb">
+       <a class="ghost-button" href="#">← Back to the atlas</a>
+       <span class="math-layer-badge">Cross-cutting layer</span>
+     </nav>
+
+     <header class="math-index-header">
+       <p class="eyebrow">A supporting layer, not a ninth domain</p>
+       <h1 id="mathIndexTitle">Mathematics Behind AI</h1>
+       <p class="learn-summary">Modern AI rests on a surprisingly small set of recurring mathematical ideas: vectors, matrices, probability distributions, optimization, information theory, graph theory and numerical approximation. This section connects each idea to the techniques that use it. The aim is not to reproduce a textbook, but to make the mathematics behind modern AI intuitive, navigable and tied to concrete technology.</p>
+       <div class="search-shell" role="search">
+         <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m21 21-4.3-4.3m2.3-5.2a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0Z"/></svg>
+         <label class="sr-only" for="mathSearchInput">Search mathematical concepts</label>
+         <input id="mathSearchInput" type="search" autocomplete="off" spellcheck="false"
+                placeholder="Search softmax, matrix rank, entropy…" />
+       </div>
+       <div class="hero-stats" aria-label="Mathematics layer statistics">
+         <span><strong id="mathCount">0</strong> mathematical concepts</span>
+         <span><strong id="mathBranchCount">0</strong> branches</span>
+         <span><strong id="mathLinkCount">0</strong> links to AI concepts</span>
+       </div>
+     </header>
+
+     <div class="math-controls">
+       <div class="filter-row" id="mathFilters" role="group" aria-label="Filter by branch of mathematics"></div>
+       <div class="filter-row" id="mathDifficultyFilters" role="group" aria-label="Filter by difficulty"></div>
+     </div>
+
+     <p class="sr-only" id="mathStatus" role="status" aria-live="polite"></p>
+     <div class="domain-bands" id="mathBranches"></div>
+   </section>
+
+   <!-- Mathematics concept page, routed at #math/<slug>. Rendered by app.js. -->
+   <article id="mathView" class="learn-view math-view" aria-labelledby="mathName" hidden>
+     <nav class="learn-back" aria-label="Breadcrumb">
+       <a class="ghost-button" href="#mathematics">← All mathematics</a>
+       <span class="learn-domain" id="mathBranch"></span>
+       <span class="difficulty-chip" id="mathDifficultyChip"></span>
+     </nav>
+
+     <header class="learn-header">
+       <p class="dialog-acronym" id="mathSymbol"></p>
+       <h1 id="mathName"></h1>
+       <p class="learn-summary" id="mathSummary"></p>
+     </header>
+
+     <div class="learn-body">
+       <div class="learn-main">
+         <section aria-labelledby="mathIntuitionTitle">
+           <h2 id="mathIntuitionTitle">Intuitive explanation</h2>
+           <p id="mathIntuition"></p>
+         </section>
+         <section id="mathEquationSection" aria-labelledby="mathEquationTitle">
+           <h2 id="mathEquationTitle">Essential equation</h2>
+           <div id="mathEquation"></div>
+         </section>
+         <section id="mathLegendSection" aria-labelledby="mathLegendTitle">
+           <h2 id="mathLegendTitle">What each symbol means</h2>
+           <dl class="symbol-legend" id="mathLegend"></dl>
+         </section>
+         <section id="mathWorkedSection" aria-labelledby="mathWorkedTitle">
+           <h2 id="mathWorkedTitle">Worked example</h2>
+           <div id="mathWorked"></div>
+         </section>
+         <section aria-labelledby="mathWhyTitle">
+           <h2 id="mathWhyTitle">Why it matters in AI</h2>
+           <ul class="why-list" id="mathWhy"></ul>
+         </section>
+         <section aria-labelledby="mathUsedByTitle">
+           <h2 id="mathUsedByTitle">AI concepts using it</h2>
+           <div id="mathUsedBy"></div>
+         </section>
+       </div>
+
+       <aside class="learn-aside" aria-label="References and related mathematics">
+         <section id="mathSourceSection">
+           <h2>Primary reference</h2>
+           <a class="reference-card" id="mathSource" target="_blank" rel="noopener noreferrer">
+             <span class="reference-label" id="mathSourceLabel"></span>
+             <span class="reference-host" id="mathSourceHost"></span>
+           </a>
+         </section>
+         <section id="mathPrereqSection">
+           <h2>Prerequisites</h2>
+           <div class="related-links" id="mathPrereq"></div>
+         </section>
+         <section>
+           <h2>Related mathematics</h2>
+           <div class="related-links" id="mathRelated"></div>
+         </section>
+         <section>
+           <h2>Share</h2>
+           <button class="ghost-button" id="mathCopy" type="button">Copy page link</button>
          </section>
        </aside>
      </div>
@@ -220,6 +333,10 @@
           <p id="dialogExample"></p>
         </section>
         <section>
+          <h3>Mathematical foundations</h3>
+          <div id="dialogFoundations"></div>
+        </section>
+        <section>
           <h3>Related concepts</h3>
           <div class="related-links" id="relatedLinks"></div>
         </section>
@@ -241,6 +358,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="data.js"></script>
+  <script src="math-data.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

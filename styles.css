@@ -12,6 +12,9 @@
   --green: #6ce6af;
   --shadow: 0 20px 80px rgba(0, 0, 0, 0.38);
   --focus: #9ff0ff;
+  /* The mathematics layer reads as a warm accent against the cool AI palette.
+     One token; every mathematics branch colour is a variation on it. */
+  --math: #ffc978;
   --max: 1480px;
 }
 
@@ -351,9 +354,27 @@ h2 { margin: 0; font-size: clamp(1.9rem, 3.2vw, 3.2rem); line-height: 1.08; lett
 }
 #conceptGraph { display: block; width: 100%; height: auto; }
 .graph-edge { stroke: rgba(140, 190, 240, .22); stroke-width: 1; transition: stroke .18s ease, stroke-width .18s ease; }
+/* Edge weight carries the layer: a core mathematical foundation reads stronger
+   than a supporting one, which in turn sits below the AI cross-references so
+   350 edges stay legible without hiding any of them. */
+.graph-edge.edge-bridge { stroke: rgba(255, 201, 120, .30); }
+.graph-edge.edge-bridge-soft { stroke: rgba(255, 201, 120, .11); }
+.graph-edge.edge-math { stroke: rgba(255, 201, 120, .20); stroke-dasharray: 3 3; }
 .graph-edge.active { stroke: rgba(93, 231, 255, .85); stroke-width: 1.8; }
+.graph-edge.edge-bridge.active,
+.graph-edge.edge-bridge-soft.active,
+.graph-edge.edge-math.active { stroke: rgba(255, 201, 120, .9); stroke-dasharray: none; }
 .graph-edge.faded { stroke: rgba(140, 190, 240, .07); }
 .graph-edge.dim { stroke: rgba(140, 190, 240, .05); }
+.edge-label {
+  fill: var(--math);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-anchor: middle;
+  text-transform: uppercase;
+  pointer-events: none;
+}
 
 .graph-node { cursor: pointer; transition: opacity .18s ease; }
 .graph-node.dim { opacity: .16; pointer-events: none; }
@@ -382,7 +403,46 @@ h2 { margin: 0; font-size: clamp(1.9rem, 3.2vw, 3.2rem); line-height: 1.08; lett
 .graph-node:focus-visible { outline: none; }
 .graph-node:focus-visible .graph-halo { fill: transparent; stroke: var(--focus); stroke-width: 3; }
 
-.graph-legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+/* Mathematics nodes are diamonds; the stroke keeps them readable at any size. */
+.graph-math .graph-dot { stroke: rgba(3, 12, 22, .85); stroke-width: 1.4; }
+.graph-node.focus .graph-dot,
+.graph-node:hover .graph-dot { stroke: rgba(255, 255, 255, .55); }
+.focus-nodes .graph-label { opacity: 1; font-size: 11px; }
+
+.graph-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+  margin-bottom: 14px;
+}
+.layer-toggle { display: flex; flex-wrap: wrap; gap: 8px; }
+.graph-focus { display: inline-flex; align-items: center; gap: 9px; color: var(--muted); font-size: .82rem; }
+.graph-focus select {
+  min-height: 36px;
+  max-width: 260px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, .04);
+  color: var(--text);
+  font: inherit;
+  font-size: .85rem;
+  cursor: pointer;
+}
+.graph-focus select:hover { border-color: rgba(93, 231, 255, .4); }
+.graph-focus option, .graph-focus optgroup { background: var(--surface-strong); color: var(--text); }
+.graph-empty { margin: 0; color: var(--muted); font-size: .88rem; line-height: 1.6; }
+.graph-empty strong { color: var(--math); }
+
+.graph-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 16px; }
+.legend-shapes { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-right: 6px; }
+.legend-shape { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font-size: .78rem; }
+.legend-count { color: #728299; font-size: .78rem; }
+.legend-circle { background: var(--cyan); }
+.legend-diamond { background: var(--math); border-radius: 2px; transform: rotate(45deg); }
+.legend-chip.legend-static { cursor: default; border-style: dashed; }
+.legend-chip.legend-static:hover { color: var(--muted); border-color: var(--line); }
 .legend-chip {
   display: inline-flex;
   align-items: center;
@@ -651,6 +711,196 @@ footer {
 }
 .formula-note { margin: 14px 0 0 !important; color: var(--muted) !important; font-size: .92rem !important; line-height: 1.6 !important; }
 
+/* ------------------------------------------------------------------ */
+/* Mathematics layer                                                   */
+/*                                                                     */
+/* A cross-cutting layer, not a ninth domain: it reuses the concept     */
+/* card, the domain band and the formula block, and is distinguished    */
+/* by a warm accent, a symbol token and two small badges.               */
+/* ------------------------------------------------------------------ */
+.math-index { padding: 34px 0 110px; }
+.math-layer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 13px;
+  border: 1px solid color-mix(in srgb, var(--math) 32%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--math) 8%, transparent);
+  color: var(--math);
+  font-size: .8rem;
+}
+.math-layer-badge::before { content: "∑"; font-size: 1rem; line-height: 1; }
+.math-index-header {
+  max-width: 900px;
+  padding-bottom: 34px;
+  margin-bottom: 34px;
+  border-bottom: 1px solid var(--line);
+}
+.math-index-header h1 {
+  margin: 0;
+  max-width: none;
+  font-size: clamp(2.2rem, 4vw, 3.6rem);
+  line-height: 1.05;
+  text-align: left;
+}
+.math-index-header h1:focus, .math-index-header h1:focus-visible { outline: none; }
+.math-index-header .eyebrow { color: var(--math); }
+.math-index-header .search-shell { max-width: 620px; margin: 26px 0 0; }
+.math-index-header .hero-stats { justify-content: flex-start; }
+.math-controls { display: grid; gap: 10px; margin-bottom: 28px; }
+.math-controls .filter-row { justify-content: flex-start; }
+
+/* Mathematics card — the concept card with a difficulty and usage footer. */
+.math-card { display: flex; flex-direction: column; min-height: 200px; }
+.math-card h4 + p { flex: 1; }
+/* Mathematical symbols are case-sensitive: "rank(A)" must not become "RANK(A)",
+   and θ must not become Θ. The AI card's uppercasing is undone here. */
+.math-card .acronym {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: .82rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  overflow-wrap: anywhere;
+}
+.card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  color: #728299;
+  font-size: .76rem;
+}
+
+.difficulty-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: .72rem;
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+.difficulty-introductory { border-color: rgba(108,230,175,.4); color: #8ef0c4; }
+.difficulty-intermediate { border-color: rgba(255,201,120,.42); color: var(--math); }
+.difficulty-advanced { border-color: rgba(255,158,125,.45); color: #ff9e7d; }
+
+/* Mathematical-intensity indicator ---------------------------------- */
+.intensity-badge {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 16px !important;
+  padding: 8px 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted) !important;
+  font-size: .82rem !important;
+  line-height: 1.4 !important;
+}
+.intensity-badge b { color: var(--text); }
+.intensity-bars { display: inline-flex; align-items: flex-end; gap: 3px; height: 13px; }
+.intensity-bars i { width: 4px; border-radius: 2px; background: rgba(157,210,255,.22); }
+.intensity-bars i:nth-child(1) { height: 5px; }
+.intensity-bars i:nth-child(2) { height: 9px; }
+.intensity-bars i:nth-child(3) { height: 13px; }
+.intensity-bars i.on { background: var(--math); }
+.intensity-high { border-color: color-mix(in srgb, var(--math) 40%, transparent); }
+.intensity-low .intensity-bars i.on { background: #8d9db4; }
+
+/* Foundation groups, shared by the concept page and the maths page. */
+.foundation-group { margin-top: 20px; }
+.foundation-group:first-of-type { margin-top: 4px; }
+.foundation-group h4 {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: .74rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.foundation-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 14px; }
+.foundation-list li { display: grid; gap: 7px; }
+.foundation-list li p {
+  margin: 0 !important;
+  color: var(--muted) !important;
+  font-size: .92rem !important;
+  line-height: 1.6 !important;
+}
+.math-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.math-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 9px;
+  justify-self: start;
+  max-width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--card-accent, var(--math));
+  border-radius: 11px;
+  background: rgba(255,255,255,.03);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .18s ease, background .18s ease, transform .18s ease;
+}
+.math-chip:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--card-accent, var(--math)) 55%, transparent);
+  border-left-color: var(--card-accent, var(--math));
+  background: color-mix(in srgb, var(--card-accent, var(--math)) 9%, transparent);
+}
+.math-chip-symbol {
+  color: var(--card-accent, var(--math));
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: .82rem;
+  font-weight: 700;
+}
+.math-chip-name { font-size: .93rem; }
+.math-chip small { color: #728299; font-size: .72rem; }
+.foundation-none { margin: 0 0 10px !important; color: var(--text) !important; font-size: .98rem !important; }
+.foundation-note { margin: 0 !important; color: var(--muted) !important; font-size: .94rem !important; line-height: 1.65 !important; }
+.foundation-more { margin: 22px 0 0 !important; font-size: .88rem !important; }
+.foundation-more a { color: var(--math); text-decoration: none; }
+.foundation-more a:hover { text-decoration: underline; }
+
+/* Mathematics concept page ------------------------------------------ */
+.math-view .learn-header .dialog-acronym {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.symbol-legend { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px 18px; margin: 0; }
+.symbol-legend dt { justify-self: start; }
+.symbol-legend dt code {
+  display: inline-block;
+  padding: 3px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(6,16,28,.6);
+  color: var(--card-accent, var(--math));
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: .9rem;
+}
+.symbol-legend dd { margin: 0; color: var(--muted); font-size: .97rem; line-height: 1.6; }
+.why-list { margin: 0; padding-left: 20px; display: grid; gap: 10px; }
+.why-list li { color: var(--text); font-size: 1.02rem; line-height: 1.7; }
+
+/* Typed search results ----------------------------------------------- */
+.search-result span small { display: block; margin-top: 3px; }
+.search-result .result-kind { color: #7f8ea4; font-size: .74rem; letter-spacing: .03em; }
+.search-result b.is-math {
+  color: var(--math);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: .86rem;
+  /* Symbols such as "θ ← θ − η∇L" are wider than the 72px token column. */
+  overflow-wrap: anywhere;
+}
+.math-chip-symbol { overflow-wrap: anywhere; }
+
 @media (max-width: 1180px) {
   .concept-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .learn-body { grid-template-columns: minmax(0, 1fr) 300px; gap: 36px; }
@@ -670,10 +920,15 @@ footer {
   .concept-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .graph-shell { overflow-x: auto; }
   #conceptGraph { min-width: 720px; }
+  .graph-controls { display: grid; justify-items: start; gap: 12px; }
+  .graph-focus select { max-width: min(100%, 320px); }
   .about-section { grid-template-columns: 1fr; gap: 24px; padding: 34px; }
   .dialog-body { grid-template-columns: 1fr; }
   .dialog-body section { border-right: 0; }
   .learn-header h1 { font-size: clamp(2rem, 7vw, 2.6rem); }
+  .math-index-header h1 { font-size: clamp(2rem, 7vw, 2.6rem); }
+  .symbol-legend { grid-template-columns: 1fr; gap: 4px 0; }
+  .symbol-legend dd { margin-bottom: 12px; }
 }
 @media (max-width: 600px) {
   .site-header, main, footer { width: min(calc(100% - 24px), var(--max)); }
@@ -694,6 +949,9 @@ footer {
   .learn-view { padding-top: 22px; }
   .learn-back { flex-wrap: wrap; gap: 10px; }
   .learn-aside { padding: 20px; }
+  .math-index { padding-top: 22px; }
+  .math-chip { flex-wrap: wrap; gap: 4px 9px; }
+  .intensity-badge { width: 100%; justify-content: flex-start; }
   footer { flex-direction: column; }
 }
 @media (prefers-reduced-motion: reduce) {
