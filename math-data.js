@@ -258,6 +258,75 @@ window.MATH_CONCEPTS = [
     source: { label: "The Approximation of One Matrix by Another of Lower Rank — Eckart & Young, Psychometrika (1936)", url: "https://doi.org/10.1007/BF02288367" }
   },
   {
+    slug: "basis-projection", symbol: "proj", name: "Basis and Projection", category: "linear-algebra", difficulty: "intermediate", relation: "USES",
+    summary: "Choosing a set of reference directions, and casting a vector onto them to read off its components.",
+    intuition: "A basis is a set of directions you agree to measure everything against; coordinates are just how far along each one you have travelled. Projection is the act of measuring: it drops a vector onto a direction and asks how much of it points that way. Nearly every learned layer in a model is a projection — it takes a representation and re-expresses it in directions the model found useful.",
+    equation: "proj_u(v) = ((v · u) / (u · u)) u\n\nonto an orthonormal basis:\nv = Σᵢ (v · eᵢ) eᵢ",
+    equationNote: "The scalar (v · u)/(u · u) is how much of v lies along u; multiplying it back by u gives the shadow of v on that direction. When the basis directions are orthonormal the arithmetic collapses: each coordinate is simply a dot product, which is why models overwhelmingly work in such bases.",
+    legend: [
+      { symbol: "v", meaning: "the vector being measured" },
+      { symbol: "u", meaning: "the direction being measured against" },
+      { symbol: "eᵢ", meaning: "the i-th orthonormal basis direction" },
+      { symbol: "v · u", meaning: "the dot product — raw overlap between the two" }
+    ],
+    worked: "Project v = [3, 4] onto u = [1, 0]:\n\n  v · u = 3,  u · u = 1\n  proj = (3 / 1) · [1, 0] = [3, 0]\n\nThe shadow of v on the horizontal axis has length 3 —\nexactly its first coordinate, because [1, 0] is a basis\ndirection.\n\nAttention builds three such projections of the same input:\n\n  Q = X W_Q,   K = X W_K,   V = X W_V\n\nOne representation, read in three different bases.",
+    whyInAI: [
+      "Queries, keys and values are three learned projections of the same representation — the mechanism is projection before it is anything else.",
+      "Every linear layer re-expresses its input in a new basis; what the network learns is which directions are worth measuring.",
+      "Low-rank adaptation works by confining a weight update to a small basis, so only a handful of directions can change."
+    ],
+    related: ["vector-spaces", "dot-product", "low-rank-factorization"],
+    prerequisites: ["vectors", "dot-product"],
+    tags: ["basis", "projection", "coordinates", "orthonormal", "subspace"],
+    source: { label: "Matrix Analysis and Applied Linear Algebra — Carl Meyer (SIAM, 2000)", url: "https://doi.org/10.1137/1.9780898719512" }
+  },
+  {
+    slug: "eigenvalues", symbol: "λ", name: "Eigenvalues and Eigenvectors", category: "linear-algebra", difficulty: "advanced", relation: "DEPENDS_ON",
+    summary: "The directions a matrix leaves pointing the same way, and the factors by which it stretches them.",
+    intuition: "Most vectors get rotated when a matrix acts on them. A few special ones do not — they come out pointing exactly where they went in, only longer or shorter. Those are the eigenvectors, and the scaling factors are the eigenvalues. They expose what a transformation really does, stripped of the coordinate system you happened to write it in.",
+    equation: "A v = λ v,   v ≠ 0\n\nfound by solving:  det(A − λI) = 0",
+    equationNote: "The equation says: acting with A on v does nothing but rescale it. Large eigenvalues mark the directions a transformation amplifies; eigenvalues near zero mark directions it nearly destroys, which is precisely the redundancy that compression exploits.",
+    legend: [
+      { symbol: "λ", meaning: "the eigenvalue — the stretch factor" },
+      { symbol: "v", meaning: "the eigenvector — a direction left unrotated" },
+      { symbol: "I", meaning: "the identity matrix" },
+      { symbol: "det", meaning: "determinant; setting it to zero finds the λ that admit a non-zero v" }
+    ],
+    worked: "  A = ⎡ 2  0 ⎤\n      ⎣ 0  3 ⎦\n\n  A · [1, 0] = [2, 0] = 2 · [1, 0]   → λ = 2\n  A · [0, 1] = [0, 3] = 3 · [0, 1]   → λ = 3\n\nThis matrix stretches horizontally by 2 and vertically\nby 3, and rotates nothing. Any other matrix does the same\nthing — just along axes that are not the ones you drew.",
+    whyInAI: [
+      "The eigenvalues of a transformation say which directions it amplifies, which is how repeated application either explodes or vanishes across layers.",
+      "Spectral analysis of activation covariance is a standard interpretability tool for finding the directions a model actually uses.",
+      "They are the machinery underneath the singular value decomposition, and so underneath every low-rank compression argument."
+    ],
+    related: ["singular-value-decomposition", "matrices", "matrix-rank"],
+    prerequisites: ["matrices", "matrix-multiplication"],
+    tags: ["spectrum", "eigendecomposition", "invariant direction", "stretch"],
+    source: { label: "Numerical Methods for Large Eigenvalue Problems — Yousef Saad (SIAM, 2011)", url: "https://doi.org/10.1137/1.9781611970739" }
+  },
+  {
+    slug: "singular-value-decomposition", symbol: "UΣVᵀ", name: "Singular Value Decomposition", category: "linear-algebra", difficulty: "advanced", relation: "APPROXIMATES",
+    summary: "Factoring any matrix into a rotation, a set of stretches, and another rotation — and reading its rank straight off.",
+    intuition: "Every matrix, whatever its shape, does the same three things in sequence: rotate, stretch along axes, rotate again. The SVD writes that down. The stretch factors, in descending order, say how much of the matrix's action lives in each direction. Keep the big ones and discard the small ones and you have the best possible approximation at that rank — which is the formal statement behind every low-rank method.",
+    equation: "A = U Σ Vᵀ\n\nΣ = diag(σ₁ ≥ σ₂ ≥ … ≥ σᵣ > 0)\n\nbest rank-k approximation:\nA_k = Σ_{i=1}^{k} σᵢ uᵢ vᵢᵀ",
+    equationNote: "U and V hold orthonormal directions; Σ holds the singular values, always non-negative and sorted. The number of non-zero singular values *is* the rank. Truncating after k terms gives the closest rank-k matrix there is — the Eckart–Young result that justifies low-rank factorization.",
+    legend: [
+      { symbol: "σᵢ", meaning: "the i-th singular value — how much the matrix stretches that direction" },
+      { symbol: "U, V", meaning: "orthonormal bases for the output and input spaces" },
+      { symbol: "Vᵀ", meaning: "the transpose of V" },
+      { symbol: "A_k", meaning: "the rank-k truncation, the best approximation at that rank" }
+    ],
+    worked: "For a matrix with singular values:\n\n  σ = [12.0, 7.4, 0.9, 0.05, 0.01]\n\n  rank = 5 (all non-zero), but the first two carry\n\n  (12.0² + 7.4²) / Σσᵢ² = 199.8 / 200.6 = 99.6%\n\nof the total energy. Keeping k = 2 loses under half a\npercent while storing a fraction of the numbers.\n\nThat gap between the true rank and the *useful* rank is\nwhat every low-rank adapter is betting on.",
+    whyInAI: [
+      "It is the formal justification for low-rank adaptation: the best rank-r approximation is the truncated SVD, so choosing a small r is defensible rather than arbitrary.",
+      "Truncating the SVD of a trained weight matrix is a standard, principled way to compress a layer after the fact.",
+      "The decay of the singular values is a direct measurement of how much redundancy a matrix actually contains."
+    ],
+    related: ["low-rank-factorization", "matrix-rank", "eigenvalues"],
+    prerequisites: ["eigenvalues", "matrix-rank"],
+    tags: ["SVD", "decomposition", "singular values", "truncation", "compression"],
+    source: { label: "Calculating the Singular Values and Pseudo-Inverse of a Matrix — Golub & Kahan, SIAM Journal on Numerical Analysis (1965)", url: "https://doi.org/10.1137/0702016" }
+  },
+  {
     slug: "latent-space", symbol: "z", name: "Latent Spaces", category: "linear-algebra", difficulty: "intermediate", relation: "DEPENDS_ON",
     summary: "A learned, compressed coordinate system in which position encodes meaning rather than raw appearance.",
     intuition: "Raw data is enormous and mostly redundant — neighbouring pixels are nearly identical, and most possible pixel grids are noise. A latent space is a much smaller set of coordinates the model invents for itself, where each direction corresponds to something that actually varies in the data. Working in that space is cheaper and, more importantly, closer to meaning.",
@@ -587,6 +656,53 @@ window.MATH_CONCEPTS = [
     source: { label: "The Elements of Statistical Learning, 2nd edition — Hastie, Tibshirani & Friedman (Springer, 2009)", url: "https://hastie.su.domains/ElemStatLearn/" }
   },
 
+  {
+    slug: "adam", symbol: "Adam", name: "Adam Optimization", category: "optimization", difficulty: "intermediate", relation: "OPTIMIZED_BY",
+    summary: "A gradient descent variant that gives every parameter its own adaptive step size, from the running history of its gradients.",
+    intuition: "Plain gradient descent uses one learning rate for millions of parameters, which is a bad compromise: some need bold steps, others tiny ones. Adam keeps two running averages per parameter — the recent direction and the recent size of its gradients — and divides one by the other. Parameters with consistently large gradients get damped; ones that barely move get amplified. It is the default optimizer for almost every model you will meet.",
+    equation: "m_t = β₁ m_{t-1} + (1 − β₁) g_t          (momentum)\nv_t = β₂ v_{t-1} + (1 − β₂) g_t²         (scale)\n\nθ_{t+1} = θ_t − η · m̂_t / (√v̂_t + ε)",
+    equationNote: "m tracks where the gradient has been pointing, smoothing out noise. v tracks how large it has been. Dividing by √v normalises the step, so the effective learning rate adapts per parameter. The hats denote a bias correction that matters only in the first few steps, when the averages start at zero.",
+    legend: [
+      { symbol: "g_t", meaning: "the gradient at step t" },
+      { symbol: "β₁, β₂", meaning: "decay rates for the two averages, typically 0.9 and 0.999" },
+      { symbol: "η", meaning: "the base learning rate" },
+      { symbol: "ε", meaning: "a small constant, typically 1e-8, keeping the denominator away from zero" }
+    ],
+    worked: "One parameter with a steady gradient of 0.1:\n\n  m → 0.1,  v → 0.01,  √v → 0.1\n  step = η · 0.1 / 0.1 = η\n\nAnother with a steady gradient of 10:\n\n  m → 10,  v → 100,  √v → 10\n  step = η · 10 / 10 = η\n\nBoth move by the same amount despite gradients differing\na hundredfold. That scale-invariance is the whole point —\nand the reason Adam needs so little learning-rate tuning.",
+    whyInAI: [
+      "It is the default optimizer for transformer training; the reported learning rate for almost any modern model is an Adam learning rate.",
+      "It stores two extra values per parameter, so the optimizer state costs roughly twice the model itself — a major part of why training needs far more memory than inference.",
+      "Adaptive steps are what make training stable across layers whose gradients differ by orders of magnitude."
+    ],
+    related: ["gradient-descent", "gradients", "loss-functions"],
+    prerequisites: ["gradient-descent"],
+    tags: ["optimizer", "momentum", "adaptive learning rate", "AdamW"],
+    source: { label: "Adam: A Method for Stochastic Optimization — Kingma & Ba (2014)", url: "https://arxiv.org/abs/1412.6980" }
+  },
+  {
+    slug: "regularization", symbol: "λ‖θ‖", name: "Regularization", category: "optimization", difficulty: "intermediate", relation: "OPTIMIZED_BY",
+    summary: "Adding a penalty or a constraint that discourages a model from fitting its training data too exactly.",
+    intuition: "A model with enough capacity can memorise its training set perfectly and still be useless on anything new. Regularization deliberately makes the training objective harder to minimise, so the model has to prefer simpler explanations. The most common form just adds the size of the weights to the loss: fitting the data is rewarded, being large is punished, and the balance between them is a dial you set.",
+    equation: "L_total = L_data + λ · R(θ)\n\nL2 (weight decay):  R(θ) = ‖θ‖₂²\nL1 (sparsity):      R(θ) = ‖θ‖₁\n\ndropout: zero each unit independently with probability p",
+    equationNote: "λ sets how much the penalty matters: zero means no regularization, large means the model prefers small weights over fitting the data. L2 shrinks everything smoothly, L1 drives entries to exactly zero. Dropout is a different mechanism to the same end — it prevents any one unit from being relied on.",
+    legend: [
+      { symbol: "λ", meaning: "regularization strength — the trade-off dial" },
+      { symbol: "R(θ)", meaning: "the penalty term, a function of the weights alone" },
+      { symbol: "‖θ‖₂²", meaning: "the sum of squared weights" },
+      { symbol: "p", meaning: "dropout probability" }
+    ],
+    worked: "Two weight vectors fitting the data equally well:\n\n  θ_A = [3.0, 0.1]   ‖θ‖₂² = 9.01\n  θ_B = [1.5, 1.5]   ‖θ‖₂² = 4.50\n\nWith λ = 0.1 the penalty costs 0.901 against 0.450, so the\nobjective prefers θ_B — the solution that spreads its\nreliance across both inputs rather than leaning on one.\n\nThat preference is the entire mechanism.",
+    whyInAI: [
+      "Weight decay is applied by default in essentially every large-model training run; it is part of what the optimizer means.",
+      "Fine-tuning on a small dataset is where over-fitting bites hardest, which is why adapters and low-rank updates are themselves a form of capacity constraint.",
+      "Magnitude pruning is regularization taken to its conclusion: penalise small weights, then remove them outright."
+    ],
+    related: ["loss-functions", "vector-norms", "gradient-descent"],
+    prerequisites: ["loss-functions", "vector-norms"],
+    tags: ["weight decay", "overfitting", "dropout", "penalty", "generalization"],
+    source: { label: "Ridge Regression: Biased Estimation for Nonorthogonal Problems — Hoerl & Kennard, Technometrics (1970)", url: "https://doi.org/10.1080/00401706.1970.10488634" }
+  },
+
   /* ================================================================= */
   /* Numerical mathematics                                              */
   /* ================================================================= */
@@ -758,6 +874,29 @@ window.MATH_CONCEPTS = [
     prerequisites: ["markov-process"],
     tags: ["reward", "discount", "value function", "Bellman", "credit assignment"],
     source: { label: "A Markovian Decision Process — Richard Bellman, Journal of Mathematics and Mechanics (1957)", url: "https://doi.org/10.1512/iumj.1957.6.56038" }
+  },
+  {
+    slug: "state-space-models", symbol: "x′ = Ax + Bu", name: "State-Space Models", category: "dynamics", difficulty: "advanced", relation: "DEPENDS_ON",
+    summary: "A sequence model that carries a hidden state forward with a linear update, one step at a time.",
+    intuition: "Instead of letting every position look at every other position, a state-space model keeps a running summary — the state — and updates it as each new input arrives. Cost grows with sequence length rather than its square. The reason this became practical is that a linear recurrence can be unrolled into a convolution and evaluated in parallel during training, then run step by step at inference. You get the training speed of a transformer with the inference cost of a recurrent network.",
+    equation: "x_{t+1} = A x_t + B u_t\ny_t     = C x_t + D u_t\n\nunrolled as a convolution:\ny = u * K,   K = (CB, CAB, CA²B, …)",
+    equationNote: "A decides what the state remembers and how fast it forgets; B how new input enters; C how the state is read out. Because the recurrence is linear, the whole sequence can be computed as one convolution with the kernel K — that is what makes training parallel rather than sequential.",
+    legend: [
+      { symbol: "x_t", meaning: "the hidden state at step t — the running summary" },
+      { symbol: "u_t", meaning: "the input at step t" },
+      { symbol: "A, B, C, D", meaning: "learned matrices governing memory, input, readout and pass-through" },
+      { symbol: "K", meaning: "the convolution kernel the recurrence unrolls into" }
+    ],
+    worked: "A one-dimensional state with A = 0.9, B = 1, C = 1:\n\n  x₁ = 0.9·0 + 1 = 1.00\n  x₂ = 0.9·1 + 0 = 0.90\n  x₃ = 0.9·0.9   = 0.81\n\nA single input at step 1 still contributes 0.81 three steps\nlater — the state remembers, decaying geometrically.\n\nSetting A = 0.5 instead gives 0.25 by step 3: a shorter\nmemory. What the model learns in A is how long to hold on.",
+    whyInAI: [
+      "It is the architecture behind recent long-context sequence models, offering linear rather than quadratic scaling in sequence length.",
+      "It gives a precise account of what a recurrent hidden state is, and why gradients through it vanish or explode.",
+      "A world model is a state-space model in substance: predict the next state from the current state and the action taken."
+    ],
+    related: ["dynamical-systems", "markov-process", "matrix-multiplication"],
+    prerequisites: ["dynamical-systems", "matrices"],
+    tags: ["SSM", "Mamba", "S4", "recurrence", "hidden state", "long context"],
+    source: { label: "Efficiently Modeling Long Sequences with Structured State Spaces — Gu, Goel & Ré (2021)", url: "https://arxiv.org/abs/2111.00396" }
   },
   {
     slug: "dynamical-systems", symbol: "ẋ = f(x)", name: "Dynamical Systems", category: "dynamics", difficulty: "advanced", relation: "DEPENDS_ON",

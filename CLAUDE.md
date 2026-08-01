@@ -41,22 +41,48 @@ tools/build-map.mjs         Regenerates assets/ai-concept-map.svg from data.js
 ```
 
 **The hero map is generated, not drawn.** `tools/build-map.mjs` reads `data.js`
-and emits `assets/ai-concept-map.svg` — eight domain panels around a central AI
-core, in the site's own palette. It is vector (26 KB, sharp at any zoom) and can
-never drift out of sync with the data. After adding or renaming a concept:
+*and* `math-data.js` and emits `assets/ai-concept-map.svg` — eight domain panels
+around a centre that carries the atlas's actual argument: a compact AI hub
+encircled by the seven branches of mathematics the domains rest on. It is vector
+(34 KB, sharp at any zoom) and can never drift out of sync with the data. After
+adding or renaming a concept:
 
 ```bash
 node tools/build-map.mjs
 ```
 
-The validator fails the build if the map is missing any concept or domain, so a
-forgotten regeneration cannot ship. `assets/ai-concept-map.png` is a 1200×812
-raster of the same map, kept only because social crawlers will not render SVG;
-regenerate it by screenshotting the SVG at 2× and downscaling.
+Three things in it are computed rather than styled by hand, and should stay that
+way:
+
+- **Concept weight.** Degree — how many other concepts declare a relationship —
+  sorts every concept into hub / mid / leaf, which drives bullet size, glow and
+  text brightness. Uniform weight gives the eye nowhere to land.
+- **Branch size.** Each mathematics diamond is sized by how many
+  `mathFoundations` links point into that branch, so the picture shows what the
+  AI layer actually leans on.
+- **Ring rotation.** The seven branches are offset by half a step so no node
+  sits at 12 or 6 o'clock, where the two wide panels' connectors run.
+
+The validator fails the build if the map is missing any concept, domain or
+mathematics branch, or if either footer count is stale — a forgotten
+regeneration cannot ship.
+
+`assets/ai-concept-map.png` is a 1200×812 raster of the same map, kept only
+because social crawlers will not render SVG. Regenerate it from the SVG at 2×
+and downscale:
+
+```bash
+python3 -c "import cairosvg; cairosvg.svg2png(url='assets/ai-concept-map.svg', write_to='/tmp/og2x.png', output_width=2400)"
+convert /tmp/og2x.png -resize 1200x812! -strip PNG24:assets/ai-concept-map.png
+```
+
+Do **not** verify the SVG with ImageMagick: it renders `radialGradient` with
+`stop-opacity` as opaque and mangles `tspan` whitespace, so a perfectly good map
+comes out as a solid blob. Use a real SVG renderer, or a browser.
 
 `data.js`, `math-data.js` and `app.js` are loaded as classic scripts at the end of
 `<body>`, in that order: the data files publish the four globals `app.js` consumes.
-There are currently **73 concepts across 8 domains** and **31 mathematics concepts
+There are currently **75 concepts across 8 domains** and **37 mathematics concepts
 across 7 branches**, each with a primary reference.
 
 **The mathematics layer is cross-cutting, not a ninth domain.** It is the answer to
@@ -80,8 +106,8 @@ adding fields to a concept, decide deliberately whether they join the index.
 
 - *Domains* (default) — concepts grouped into coloured bands, one per domain.
   Bands with no match are omitted entirely when searching or filtering.
-- *Graph* — an SVG relationship map spanning **both layers**. 104 nodes: AI
-  concepts as circles, mathematics as diamonds. 350 edges, each carrying a
+- *Graph* — an SVG relationship map spanning **both layers**. 112 nodes: AI
+  concepts as circles, mathematics as diamonds. 455 edges, each carrying a
   relation verb. Node radius scales with degree. The layout is a deterministic
   force simulation (`computeGraphLayout`): pairwise repulsion, springs weighted
   by edge strength, and a mild pull toward each group's anchor. Nodes are
@@ -101,7 +127,7 @@ namespaces can never collide. Edges are undirected, deduplicated, and typed:
 
 Prerequisites are collected before plain relations so the stronger verb wins a
 duplicated pair. Weight drives both spring strength and stroke opacity, which is
-how 350 edges stay legible without hiding any of them.
+how 455 edges stay legible without hiding any of them.
 
 **Three layer modes**, each with its **own cached layout**, simulated lazily on
 first view: `both` (AI domains on an outer ring, mathematics branches on an inner
@@ -112,10 +138,10 @@ searching only re-render.
 **Focus view.** Selecting a concept in the focus control replaces the force graph
 with a radial star: that concept at the centre, its *direct* mathematical
 dependencies around it, and — this is the only place they fit — the relation verb
-written on every edge. Core dependencies get a larger diamond. Only the 34
+written on every edge. Core dependencies get a larger diamond. Only the 52
 concepts that declare foundations appear in the selector.
 
-Do not label edges in the force view. 350 labels is unreadable, which is exactly
+Do not label edges in the force view. 455 labels is unreadable, which is exactly
 the failure mode the original brief warned about.
 
 **Three levels of depth** for one concept, all sharing the same data:
@@ -352,7 +378,7 @@ Run before every commit:
 ```bash
 node tools/build-map.mjs          # only if data.js changed
 node tools/validate.mjs           # offline checks; this is what CI runs
-node tools/validate.mjs --links   # additionally HEADs all 104 reference URLs
+node tools/validate.mjs --links   # additionally HEADs all 112 reference URLs
 ```
 
 It checks required files, JavaScript syntax (`data.js` and `math-data.js`
@@ -452,27 +478,33 @@ pushed. Deleting files unrelated to the current task is equally out of bounds.
 
 ## 10. Recommended next improvements
 
-- Map the remaining 22 AI concepts to mathematics (51 of 73 done). This is now
-  the largest open item: every one added enriches the graph as well as the pages.
-- Add the mathematics concepts still listed in the brief but not yet written:
-  eigenvalues and eigenvectors, singular value decomposition, basis and
-  projection, Adam, regularization, state-space models, Monte Carlo methods.
-- Write `math` blocks for the remaining concepts (8 of 73 done). Less urgent now
-  that `mathFoundations` carries the conceptual link; `math` is for the
-  concept's own formulation.
+Every AI concept now carries a mathematics mapping and the validator runs clean
+with **zero warnings**. Keep it that way: a new concept must arrive with a
+`mathIntensity`, and either foundations or an honest `mathNote`.
+
+- Write `math` blocks for the remaining concepts (8 of 75 done). This is the
+  largest open content item. Less urgent than it was — `mathFoundations` already
+  carries the conceptual link — so `math` is now only for a concept's *own*
+  formulation, and only where one genuinely helps.
+- Consider the folded mathematics concepts if any ever needs its own page:
+  derivatives and partial derivatives live inside Gradients, the chain rule
+  inside Backpropagation, SGD inside Gradient Descent, Monte Carlo inside
+  Sampling. Splitting them today would create stubs, not pages.
 - Add a glossary index and a compare mode for two concepts.
 - Add downloadable PNG/PDF concept cards.
 - Add optional French localization.
 - Consider persisting the chosen view, if it can be done without anything a
   reader would reasonably call tracking.
-- Reassess plain-text formulas now that 31 mathematics pages carry equations. If
+- Reassess plain-text formulas now that 37 mathematics pages carry equations. If
   they become unreadable, a **self-hosted** KaTeX build is the only option that
   keeps the no-third-party-requests promise — vendored into `assets/`, added to
   the workflow allow-list, never a CDN.
 
-Done and no longer open: primary references (all 104), the per-concept page,
-image weight (the hero is a generated 26 KB SVG rather than the original 1.78 MB
-raster), the mathematics layer itself — 31 concepts, 141 typed links, both
-navigation directions, its own overview and detail routes, and validator
-coverage — and the two-layer relationship graph: 104 nodes, 350 typed edges,
-three cached layer layouts and a per-concept focus view.
+Done and no longer open: primary references (all 112), the per-concept page,
+image weight (the hero is a generated 35 KB SVG rather than the original 1.78 MB
+raster), the mathematics layer — 37 concepts, 220 typed links, both navigation
+directions, its own overview and detail routes, the return breadcrumb, and
+validator coverage — the two-layer relationship graph (112 nodes, 455 typed
+edges, three cached layer layouts, a per-concept focus view), the hero map
+rebuilt around the mathematics ring with degree-weighted concepts, and cache
+busting across every local asset.

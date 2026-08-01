@@ -17,7 +17,9 @@ window.AI_CONCEPTS = [
     how: "AI systems combine data, algorithms, models, compute and feedback to map inputs to useful predictions, decisions or generated outputs.",
     example: "A maintenance assistant reads a fault description, retrieves the correct procedure and proposes the next diagnostic step.",
     tags: ["intelligence", "automation", "reasoning"], related: ["ml", "genai", "agent"],
-    source: { label: "Computing Machinery and Intelligence — Turing, Mind (1950)", url: "https://doi.org/10.1093/mind/LIX.236.433" }
+    source: { label: "Computing Machinery and Intelligence — Turing, Mind (1950)", url: "https://doi.org/10.1093/mind/LIX.236.433" },
+    mathIntensity: "low",
+    mathNote: "Artificial intelligence is the umbrella term, not a technique. The mathematics lives in the specific methods gathered under it — every one of which has its own foundations."
   },
   {
     slug: "ml", acronym: "ML", name: "Machine Learning", category: "foundations",
@@ -26,7 +28,14 @@ window.AI_CONCEPTS = [
     how: "A learning algorithm adjusts model parameters to reduce error on examples, then applies the learned pattern to new inputs.",
     example: "A model learns from historical sensor data to predict whether a component is likely to fail.",
     tags: ["learning", "data", "prediction"], related: ["ai", "dl", "supervised-learning"],
-    source: { label: "Some Studies in Machine Learning Using the Game of Checkers — Samuel, IBM Journal of Research and Development (1959)", url: "https://doi.org/10.1147/rd.33.0210" }
+    source: { label: "Some Studies in Machine Learning Using the Game of Checkers — Samuel, IBM Journal of Research and Development (1959)", url: "https://doi.org/10.1147/rd.33.0210" },
+    mathIntensity: "medium",
+    mathFoundations: [
+      { slug: "loss-functions", importance: "primary", note: "Machine learning is defined by having an objective to minimise; the loss is where the task is actually stated." },
+      { slug: "gradient-descent", importance: "primary", note: "Learning from data means adjusting parameters to reduce that loss, step by step." },
+      { slug: "probability-distributions", importance: "supporting", note: "Most methods model uncertainty explicitly rather than committing to a single answer." },
+      { slug: "maximum-likelihood", importance: "supporting", note: "Fitting a model to data is, in most cases, maximum likelihood estimation under another name." }
+    ]
   },
   {
     slug: "dl", acronym: "DL", name: "Deep Learning", category: "foundations",
@@ -35,7 +44,15 @@ window.AI_CONCEPTS = [
     how: "Multiple layers progressively transform raw input into increasingly abstract representations while training adjusts millions or billions of parameters.",
     example: "A vision model learns edges, shapes, parts and complete objects across successive layers.",
     tags: ["neural networks", "representation learning"], related: ["ml", "nn", "transformer"],
-    source: { label: "Deep learning — LeCun, Bengio & Hinton, Nature (2015)", url: "https://doi.org/10.1038/nature14539" }
+    source: { label: "Deep learning — LeCun, Bengio & Hinton, Nature (2015)", url: "https://doi.org/10.1038/nature14539" },
+    mathIntensity: "high",
+    mathFoundations: [
+      { slug: "matrix-multiplication", importance: "primary", note: "A deep network is a stack of matrix multiplications separated by non-linearities." },
+      { slug: "backpropagation", importance: "primary", note: "Depth is only trainable because one backward pass yields the gradient for every layer at once." },
+      { slug: "gradients", importance: "primary", note: "Each of those millions of parameters is updated using its own partial derivative of the loss." },
+      { slug: "gradient-descent", importance: "supporting", note: "The optimizer applies them repeatedly; nothing more exotic is happening." },
+      { slug: "loss-functions", importance: "supporting", note: "What the network becomes is decided by the objective, not by the architecture alone." }
+    ]
   },
   {
     slug: "nlp", acronym: "NLP", name: "Natural Language Processing", category: "foundations",
@@ -44,7 +61,13 @@ window.AI_CONCEPTS = [
     how: "Text is converted into tokens and numerical representations that a model processes to classify, retrieve or generate language.",
     example: "An assistant summarizes a technical report and extracts its decisions and action items.",
     tags: ["language", "text", "linguistics"], related: ["tokenization", "transformer", "llm"],
-    source: { label: "Speech and Language Processing — Jurafsky & Martin, Stanford (3rd edition draft)", url: "https://web.stanford.edu/~jurafsky/slp3/" }
+    source: { label: "Speech and Language Processing — Jurafsky & Martin, Stanford (3rd edition draft)", url: "https://web.stanford.edu/~jurafsky/slp3/" },
+    mathIntensity: "medium",
+    mathFoundations: [
+      { slug: "vectors", importance: "primary", note: "Language becomes tractable only once tokens are represented as vectors." },
+      { slug: "probability-distributions", importance: "primary", note: "Most language tasks are framed as a distribution over possible outputs." },
+      { slug: "cosine-similarity", importance: "supporting", note: "Comparing meaning between pieces of text is a geometric operation in that space." }
+    ]
   },
   {
     slug: "cv", acronym: "CV", name: "Computer Vision", category: "foundations",
@@ -53,7 +76,13 @@ window.AI_CONCEPTS = [
     how: "Models learn spatial and semantic patterns to classify images, detect objects, segment regions or estimate motion and depth.",
     example: "A quality-control model detects surface defects on manufactured components.",
     tags: ["vision", "image", "video"], related: ["cnn", "vlm", "image-modality"],
-    source: { label: "Computer Vision: Algorithms and Applications — Szeliski (2nd edition)", url: "https://szeliski.org/Book/" }
+    source: { label: "Computer Vision: Algorithms and Applications — Szeliski (2nd edition)", url: "https://szeliski.org/Book/" },
+    mathIntensity: "medium",
+    mathFoundations: [
+      { slug: "matrix-multiplication", importance: "primary", note: "Convolution over an image is implemented as matrix multiplication over unfolded patches." },
+      { slug: "vectors", importance: "supporting", note: "Pixels, patches and whole images all become vectors before a model reasons about them." },
+      { slug: "latent-space", importance: "supporting", note: "What a vision model learns is a compressed representation in which visual similarity is geometric." }
+    ]
   },
   {
     slug: "rl", acronym: "RL", name: "Reinforcement Learning", category: "foundations",
@@ -79,7 +108,9 @@ window.AI_CONCEPTS = [
     how: "A generative model estimates the structure of its training data and samples or predicts new outputs conditioned on a prompt or context.",
     example: "A model generates a product concept image from a written design brief.",
     tags: ["generation", "content", "foundation model"], related: ["llm", "diffusion", "multimodal"],
-    source: { label: "On the Opportunities and Risks of Foundation Models — Bommasani et al. (2021)", url: "https://arxiv.org/abs/2108.07258" }
+    source: { label: "On the Opportunities and Risks of Foundation Models — Bommasani et al. (2021)", url: "https://arxiv.org/abs/2108.07258" },
+    mathIntensity: "low",
+    mathNote: "Generative AI names a capability rather than a method. The mathematics belongs to the architectures that deliver it: diffusion, transformers, autoencoders."
   },
   {
     slug: "supervised-learning", acronym: "SL", name: "Supervised Learning", category: "foundations",
@@ -88,7 +119,14 @@ window.AI_CONCEPTS = [
     how: "The model predicts an output, compares it with the correct answer and updates its parameters to reduce the difference.",
     example: "Training a classifier on images labeled as acceptable or defective.",
     tags: ["labels", "classification", "regression"], related: ["ml", "sft", "benchmark"],
-    source: { label: "Supervised learning — scikit-learn user guide", url: "https://scikit-learn.org/stable/supervised_learning.html" }
+    source: { label: "Supervised learning — scikit-learn user guide", url: "https://scikit-learn.org/stable/supervised_learning.html" },
+    mathIntensity: "medium",
+    mathFoundations: [
+      { slug: "cross-entropy", importance: "primary", note: "Classification with known labels is trained by cross-entropy against the correct answer." },
+      { slug: "loss-functions", importance: "primary", note: "The choice of loss is the choice of what counts as a mistake." },
+      { slug: "gradient-descent", importance: "supporting", note: "Parameters are fitted by the same optimization loop as everything else." },
+      { slug: "maximum-likelihood", importance: "supporting", note: "Minimising that loss is maximising the likelihood of the labelled data." }
+    ]
   },
   {
     slug: "self-supervised-learning", acronym: "SSL", name: "Self-Supervised Learning", category: "foundations",
@@ -148,7 +186,8 @@ window.AI_CONCEPTS = [
       { slug: "gradients", importance: "primary", note: "Every parameter is updated using the gradient of the loss with respect to it." },
       { slug: "backpropagation", importance: "primary", note: "One backward pass produces all those gradients at once by the chain rule." },
       { slug: "loss-functions", importance: "supporting", note: "The loss defines what the network is actually being trained to do." },
-      { slug: "gradient-descent", importance: "supporting", note: "The optimizer applies those gradients repeatedly until the loss stops falling." }
+      { slug: "gradient-descent", importance: "supporting", note: "The optimizer applies those gradients repeatedly until the loss stops falling." },
+      { slug: "adam", importance: "supporting", note: "In practice the update is not plain gradient descent but Adam, which adapts the step size per parameter." }
     ]
   },
   {
@@ -173,7 +212,15 @@ window.AI_CONCEPTS = [
     how: "At each step, the network combines the current input with a representation of previous steps.",
     example: "An RNN processes a sequence of sensor readings to forecast the next value.",
     tags: ["sequence", "recurrent", "time series"], related: ["lstm", "transformer", "asr"],
-    source: { label: "Finding Structure in Time — Elman, Cognitive Science (1990)", url: "https://doi.org/10.1207/s15516709cog1402_1" }
+    source: { label: "Finding Structure in Time — Elman, Cognitive Science (1990)", url: "https://doi.org/10.1207/s15516709cog1402_1" },
+    mathIntensity: "medium",
+    mathFoundations: [
+      { slug: "dynamical-systems", importance: "primary", note: "A recurrent network is a learned dynamical system: a state carried forward by a fixed update rule." },
+      { slug: "backpropagation", importance: "primary", note: "Training unrolls the recurrence and applies the chain rule back through every step." },
+      { slug: "gradients", importance: "supporting", note: "That long chain of factors is exactly why gradients vanish or explode over sequence length." },
+      { slug: "matrix-multiplication", importance: "supporting", note: "Each step applies the same weight matrices to the state and the new input." },
+      { slug: "state-space-models", importance: "supporting", note: "A linear recurrence is a state-space model, which is how the idea was made parallel-trainable again." }
+    ]
   },
   {
     slug: "lstm", acronym: "LSTM", name: "Long Short-Term Memory", category: "architectures",
@@ -182,7 +229,14 @@ window.AI_CONCEPTS = [
     how: "Input, output and forget gates regulate a persistent cell state as the sequence is processed.",
     example: "An LSTM uses a long sequence of operating conditions to predict energy consumption.",
     tags: ["gates", "memory", "sequence"], related: ["rnn", "memory", "transformer"],
-    source: { label: "Long Short-Term Memory — Hochreiter & Schmidhuber, Neural Computation (1997)", url: "https://doi.org/10.1162/neco.1997.9.8.1735" }
+    source: { label: "Long Short-Term Memory — Hochreiter & Schmidhuber, Neural Computation (1997)", url: "https://doi.org/10.1162/neco.1997.9.8.1735" },
+    mathIntensity: "medium",
+    mathFoundations: [
+      { slug: "dynamical-systems", importance: "primary", note: "The cell state is a state variable with a deliberately near-identity update, so information persists." },
+      { slug: "gradients", importance: "primary", note: "Gates exist to keep the gradient from decaying across many steps — the problem they were designed to solve." },
+      { slug: "backpropagation", importance: "supporting", note: "Training is still backpropagation through the unrolled sequence." },
+      { slug: "matrix-multiplication", importance: "supporting", note: "Every gate is a linear transformation of the input and previous state." }
+    ]
   },
   {
     slug: "transformer", acronym: "Transformer", name: "Transformer Architecture", category: "architectures",
@@ -231,7 +285,8 @@ window.AI_CONCEPTS = [
       { slug: "matrix-multiplication", importance: "primary", note: "Scoring all queries against all keys at once is a single matrix multiplication, Q Kᵀ." },
       { slug: "softmax", importance: "primary", note: "Softmax turns those raw scores into weights that sum to one, so the output is a weighted average of values." },
       { slug: "vector-spaces", importance: "supporting", note: "Queries, keys and values are projections into separate learned subspaces of the same representation." },
-      { slug: "probability-distributions", importance: "supporting", note: "The attention weights for one position form a distribution over the whole sequence." }
+      { slug: "probability-distributions", importance: "supporting", note: "The attention weights for one position form a distribution over the whole sequence." },
+      { slug: "basis-projection", importance: "supporting", note: "Queries, keys and values are three learned projections of one representation into separate bases." }
     ]
   },
   {
@@ -241,7 +296,15 @@ window.AI_CONCEPTS = [
     how: "Most LLMs use transformers to predict tokens from context, then undergo additional adaptation for instruction following and safety.",
     example: "An LLM explains a technical standard, drafts code and calls a search tool when it needs current evidence.",
     tags: ["language model", "foundation model", "tokens"], related: ["transformer", "sft", "rag"],
-    source: { label: "Language Models are Few-Shot Learners — Brown et al. (2020)", url: "https://arxiv.org/abs/2005.14165" }
+    source: { label: "Language Models are Few-Shot Learners — Brown et al. (2020)", url: "https://arxiv.org/abs/2005.14165" },
+    mathIntensity: "high",
+    mathFoundations: [
+      { slug: "conditional-probability", importance: "primary", note: "A language model computes the probability of the next token given everything before it." },
+      { slug: "softmax", importance: "primary", note: "The output layer's scores become a distribution over the whole vocabulary at every step." },
+      { slug: "cross-entropy", importance: "primary", note: "Training is cross-entropy against the token that actually followed, over trillions of positions." },
+      { slug: "matrix-multiplication", importance: "supporting", note: "Nearly all of the compute, in training and inference, is matrix multiplication." },
+      { slug: "sampling", importance: "supporting", note: "How the next token is drawn from the distribution is a separate, tunable decision." }
+    ]
   },
   {
     slug: "slm", acronym: "SLM", name: "Small Language Model", category: "architectures",
@@ -250,7 +313,13 @@ window.AI_CONCEPTS = [
     how: "They use similar architectures to LLMs but rely on smaller capacity, efficient training, distillation or task specialization.",
     example: "A compact model runs locally on an industrial workstation to classify maintenance requests.",
     tags: ["efficient", "edge", "compact model"], related: ["llm", "distillation", "quantization"],
-    source: { label: "Phi-3 Technical Report: A Highly Capable Language Model Locally on Your Phone — Abdin et al. (2024)", url: "https://arxiv.org/abs/2404.14219" }
+    source: { label: "Phi-3 Technical Report: A Highly Capable Language Model Locally on Your Phone — Abdin et al. (2024)", url: "https://arxiv.org/abs/2404.14219" },
+    mathIntensity: "medium",
+    mathFoundations: [
+      { slug: "floating-point", importance: "primary", note: "Fitting a capable model into a small footprint is largely a question of how many bits each weight gets." },
+      { slug: "cross-entropy", importance: "supporting", note: "The training objective is unchanged from its larger counterparts." },
+      { slug: "kl-divergence", importance: "supporting", note: "Small models are often distilled from large ones by matching the teacher's distribution." }
+    ]
   },
   {
     slug: "vlm", acronym: "VLM", name: "Vision-Language Model", category: "architectures",
@@ -259,7 +328,13 @@ window.AI_CONCEPTS = [
     how: "Visual encoders and language components are aligned in a shared representation or connected through cross-attention.",
     example: "A VLM examines an equipment photo and answers which component appears damaged.",
     tags: ["vision", "language", "multimodal"], related: ["cv", "llm", "multimodal"],
-    source: { label: "Learning Transferable Visual Models From Natural Language Supervision — Radford et al. (2021)", url: "https://arxiv.org/abs/2103.00020" }
+    source: { label: "Learning Transferable Visual Models From Natural Language Supervision — Radford et al. (2021)", url: "https://arxiv.org/abs/2103.00020" },
+    mathIntensity: "medium",
+    mathFoundations: [
+      { slug: "vector-spaces", importance: "primary", note: "Images and text are only comparable because both are projected into one shared space." },
+      { slug: "cosine-similarity", importance: "primary", note: "Alignment between a picture and a caption is measured as an angle in that space." },
+      { slug: "latent-space", importance: "supporting", note: "Each modality is first compressed into a learned representation before being aligned." }
+    ]
   },
   {
     slug: "moe", acronym: "MoE", name: "Mixture of Experts", category: "architectures",
@@ -354,6 +429,23 @@ window.AI_CONCEPTS = [
   },
 
   {
+    slug: "world-model", acronym: "World Model", name: "World Model", category: "architectures",
+    summary: "A learned internal model of how an environment evolves, used to predict what happens next.",
+    why: "An agent that can simulate consequences internally can plan, evaluate options and learn from imagined rollouts instead of paying the cost of every experiment in the real world.",
+    how: "The system encodes observations into a compact state, learns a transition function that predicts the next state from the current one and an action, and uses that function to roll the future forward.",
+    example: "A robot learns how objects on a conveyor move, then rehearses a grasp internally before attempting it, discarding approaches that its model predicts will fail.",
+    tags: ["planning", "simulation", "state transition", "model-based"], related: ["jepa", "rl", "agent"],
+    source: { label: "World Models — Ha & Schmidhuber (2018)", url: "https://arxiv.org/abs/1803.10122" },
+    mathIntensity: "high",
+    mathFoundations: [
+      { slug: "state-space-models", importance: "primary", note: "A world model is a state-space model in substance: carry a compact state forward, one transition at a time." },
+      { slug: "dynamical-systems", importance: "primary", note: "What is being learned is a transition rule — the defining object of a dynamical system." },
+      { slug: "markov-process", importance: "primary", note: "Prediction assumes the current state is sufficient; where it is not, the model is working with a partial observation." },
+      { slug: "latent-space", importance: "supporting", note: "The state is a learned latent representation, not raw observation, which is what keeps rollouts cheap." },
+      { slug: "loss-functions", importance: "supporting", note: "Training minimises the error between the predicted next state and the observed one." }
+    ]
+  },
+  {
     slug: "pretraining", acronym: "Pre-training", name: "Pre-training", category: "training",
     summary: "The initial large-scale training phase used to learn broad reusable patterns before task-specific adaptation.",
     why: "Pre-training produces general-purpose representations and capabilities that reduce the data needed for downstream tasks.",
@@ -366,7 +458,8 @@ window.AI_CONCEPTS = [
       { slug: "cross-entropy", importance: "primary", note: "The pretraining loss is cross-entropy on the next token, averaged over trillions of them." },
       { slug: "gradient-descent", importance: "primary", note: "Weights are learned by gradient descent over very large batches." },
       { slug: "maximum-likelihood", importance: "supporting", note: "That objective is maximum likelihood estimation over the corpus." },
-      { slug: "floating-point", importance: "supporting", note: "Mixed precision is what makes training at this scale affordable at all." }
+      { slug: "floating-point", importance: "supporting", note: "Mixed precision is what makes training at this scale affordable at all." },
+      { slug: "adam", importance: "supporting", note: "Every large training run reports an Adam learning rate; the optimizer is part of the recipe." }
     ]
   },
   {
@@ -381,7 +474,8 @@ window.AI_CONCEPTS = [
     mathFoundations: [
       { slug: "loss-functions", importance: "primary", note: "Adaptation is defined by the loss chosen for the target task." },
       { slug: "gradient-descent", importance: "primary", note: "The mechanism is the same optimization loop as pretraining, usually at a much lower learning rate." },
-      { slug: "cross-entropy", importance: "supporting", note: "Supervised fine-tuning reuses the pretraining objective on curated data." }
+      { slug: "cross-entropy", importance: "supporting", note: "Supervised fine-tuning reuses the pretraining objective on curated data." },
+      { slug: "regularization", importance: "supporting", note: "Adapting on a small dataset is where over-fitting bites hardest, so the penalty term matters more than in pretraining." }
     ]
   },
   {
@@ -411,7 +505,8 @@ window.AI_CONCEPTS = [
     mathFoundations: [
       { slug: "low-rank-factorization", importance: "primary", note: "Most PEFT methods confine the update to a small factorized form instead of touching every weight." },
       { slug: "matrix-rank", importance: "primary", note: "The shared premise is that a full-rank update is unnecessary for adaptation." },
-      { slug: "gradient-descent", importance: "supporting", note: "Only the small set of added parameters receives gradients, which is where the memory saving comes from." }
+      { slug: "gradient-descent", importance: "supporting", note: "Only the small set of added parameters receives gradients, which is where the memory saving comes from." },
+      { slug: "singular-value-decomposition", importance: "supporting", note: "Singular value decay measures how much redundancy a weight matrix holds, and so how little needs to be trained." }
     ]
   },
   {
@@ -436,7 +531,8 @@ window.AI_CONCEPTS = [
       { slug: "matrix-multiplication", importance: "primary", note: "Applying the adapter is the product B A, added to the frozen weight." },
       { slug: "matrices", importance: "supporting", note: "The frozen base weights and the trained adapter are both ordinary matrices." },
       { slug: "vector-spaces", importance: "supporting", note: "Choosing rank r confines the update to an r-dimensional subspace of all possible changes." },
-      { slug: "gradient-descent", importance: "supporting", note: "Only B and A receive gradients; the optimizer is otherwise unchanged." }
+      { slug: "gradient-descent", importance: "supporting", note: "Only B and A receive gradients; the optimizer is otherwise unchanged." },
+      { slug: "singular-value-decomposition", importance: "supporting", note: "The best rank-r approximation of any matrix is its truncated SVD, which is what makes a small r defensible rather than arbitrary." }
     ]
   },
   {
@@ -454,6 +550,23 @@ window.AI_CONCEPTS = [
       { slug: "rounding-error", importance: "primary", note: "Each quantized weight snaps to the nearest representable value; that error budget decides whether quality survives." },
       { slug: "matrix-rank", importance: "supporting", note: "The low-rank assumption behind LoRA still applies to the adapter." },
       { slug: "numerical-stability", importance: "supporting", note: "Adapters are trained at higher precision on top of the quantized base so gradients stay well-behaved." }
+    ]
+  },
+  {
+    slug: "contrastive-learning", acronym: "Contrastive", name: "Contrastive Learning", category: "training",
+    summary: "Training a model to place matching pairs close together in representation space and everything else far apart.",
+    why: "It produces useful representations without labels, and it is how text and images are brought into a single shared space — the basis of modern retrieval and multimodal models.",
+    how: "Each example is paired with a genuine match and a batch of non-matches; the loss rewards a high similarity score for the true pair relative to all the others.",
+    example: "A model trained on image–caption pairs learns to place a photo of a turbine and the words \"wind turbine\" at nearly the same point, so either can retrieve the other.",
+    tags: ["representation learning", "embeddings", "CLIP", "similarity"], related: ["self-supervised-learning", "embeddings", "vlm"],
+    source: { label: "A Simple Framework for Contrastive Learning of Visual Representations — Chen et al. (2020)", url: "https://arxiv.org/abs/2002.05709" },
+    mathIntensity: "high",
+    mathFoundations: [
+      { slug: "cosine-similarity", importance: "primary", note: "The score being pushed up for the true pair and down for the rest is a cosine similarity." },
+      { slug: "dot-product", importance: "primary", note: "That similarity is a normalised dot product; the raw agreement is computed first." },
+      { slug: "loss-functions", importance: "primary", note: "The contrastive loss has no fixed target — it only requires the match to outrank the alternatives." },
+      { slug: "softmax", importance: "supporting", note: "Scores across the batch are turned into a distribution, with a temperature setting how sharply." },
+      { slug: "vector-spaces", importance: "supporting", note: "The result is a shared space where proximity means relatedness, across modalities if trained that way." }
     ]
   },
   {
@@ -583,7 +696,8 @@ window.AI_CONCEPTS = [
       { slug: "dot-product", importance: "primary", note: "The raw agreement between two embeddings is a dot product." },
       { slug: "cosine-similarity", importance: "primary", note: "Normalising that agreement by length is what lets a short query match a long passage." },
       { slug: "latent-space", importance: "supporting", note: "The embedding space is a learned latent space: its axes are invented by training, not designed." },
-      { slug: "vector-norms", importance: "supporting", note: "Length carries magnitude rather than meaning, which is why embeddings are usually normalised before comparison." }
+      { slug: "vector-norms", importance: "supporting", note: "Length carries magnitude rather than meaning, which is why embeddings are usually normalised before comparison." },
+      { slug: "basis-projection", importance: "supporting", note: "An embedding is a set of coordinates against learned directions; comparing them is projection arithmetic." }
     ]
   },
   {
@@ -828,7 +942,10 @@ window.AI_CONCEPTS = [
     mathFoundations: [
       { slug: "vector-norms", importance: "primary", note: "Magnitude pruning removes the weights with the smallest norm, on the assumption that they contribute least." },
       { slug: "matrix-rank", importance: "supporting", note: "Structured pruning removes whole rows or channels, lowering the effective rank of a layer." },
-      { slug: "numerical-stability", importance: "supporting", note: "Aggressive pruning can amplify error along the paths that remain." }
+      { slug: "numerical-stability", importance: "supporting", note: "Aggressive pruning can amplify error along the paths that remain." },
+      { slug: "regularization", importance: "primary", note: "Magnitude pruning is regularization carried to its conclusion: penalise small weights, then delete them." },
+      { slug: "eigenvalues", importance: "supporting", note: "Structured pruning uses spectral criteria to decide which channels carry little of the transformation." },
+      { slug: "singular-value-decomposition", importance: "supporting", note: "Truncating the SVD of a trained layer is the principled version of removing what a matrix barely uses." }
     ]
   },
   {
@@ -872,7 +989,13 @@ window.AI_CONCEPTS = [
     how: "Modality-specific encoders and decoders are aligned or connected through shared representations and cross-attention.",
     example: "A system combines a technician's spoken question, a machine image and live telemetry to propose a diagnosis.",
     tags: ["modalities", "fusion", "cross-modal"], related: ["vlm", "asr", "tts"],
-    source: { label: "Flamingo: a Visual Language Model for Few-Shot Learning — Alayrac et al. (2022)", url: "https://arxiv.org/abs/2204.14198" }
+    source: { label: "Flamingo: a Visual Language Model for Few-Shot Learning — Alayrac et al. (2022)", url: "https://arxiv.org/abs/2204.14198" },
+    mathIntensity: "medium",
+    mathFoundations: [
+      { slug: "vector-spaces", importance: "primary", note: "Handling several modalities at once means giving them a common space to live in." },
+      { slug: "latent-space", importance: "primary", note: "Each input type is encoded into a representation that discards its surface form." },
+      { slug: "cosine-similarity", importance: "supporting", note: "Cross-modal retrieval — find the image for this sentence — is a nearest-direction query." }
+    ]
   },
   {
     slug: "ocr", acronym: "OCR", name: "Optical Character Recognition", category: "multimodal",
@@ -881,7 +1004,13 @@ window.AI_CONCEPTS = [
     how: "The system locates text regions, recognizes character sequences and may reconstruct layout and reading order.",
     example: "OCR extracts part numbers and warning labels from an equipment photograph.",
     tags: ["document AI", "image to text", "recognition"], related: ["cv", "image-modality", "nlp"],
-    source: { label: "Tesseract OCR — official documentation", url: "https://tesseract-ocr.github.io/" }
+    source: { label: "Tesseract OCR — official documentation", url: "https://tesseract-ocr.github.io/" },
+    mathIntensity: "medium",
+    mathFoundations: [
+      { slug: "probability-distributions", importance: "primary", note: "Character recognition outputs a distribution over possible characters at each position." },
+      { slug: "cross-entropy", importance: "supporting", note: "Training scores the model against the transcribed ground truth." },
+      { slug: "matrix-multiplication", importance: "supporting", note: "The visual encoder underneath is the same stack of linear operations as any vision model." }
+    ]
   },
   {
     slug: "asr", acronym: "ASR", name: "Automatic Speech Recognition", category: "multimodal",
@@ -890,7 +1019,13 @@ window.AI_CONCEPTS = [
     how: "Audio features are mapped to tokens or characters using acoustic and language modeling, often in an end-to-end neural system.",
     example: "A field technician dictates an inspection report that is transcribed automatically.",
     tags: ["speech to text", "audio", "transcription"], related: ["audio-modality", "tts", "nlp"],
-    source: { label: "Robust Speech Recognition via Large-Scale Weak Supervision — Radford et al. (2022)", url: "https://arxiv.org/abs/2212.04356" }
+    source: { label: "Robust Speech Recognition via Large-Scale Weak Supervision — Radford et al. (2022)", url: "https://arxiv.org/abs/2212.04356" },
+    mathIntensity: "medium",
+    mathFoundations: [
+      { slug: "probability-distributions", importance: "primary", note: "Speech recognition produces a distribution over token sequences, not a single certain transcript." },
+      { slug: "conditional-probability", importance: "supporting", note: "Each output token is conditioned on the audio and on what has been transcribed so far." },
+      { slug: "sampling", importance: "supporting", note: "Decoding strategy — greedy or beam — decides which path through that distribution is returned." }
+    ]
   },
   {
     slug: "tts", acronym: "TTS", name: "Text-to-Speech", category: "multimodal",
@@ -899,7 +1034,13 @@ window.AI_CONCEPTS = [
     how: "A model predicts acoustic representations from text and a vocoder converts them into an audio waveform.",
     example: "An assistant reads a maintenance instruction aloud while the technician works.",
     tags: ["speech synthesis", "voice", "audio"], related: ["asr", "audio-modality", "multimodal"],
-    source: { label: "WaveNet: A Generative Model for Raw Audio — van den Oord et al. (2016)", url: "https://arxiv.org/abs/1609.03499" }
+    source: { label: "WaveNet: A Generative Model for Raw Audio — van den Oord et al. (2016)", url: "https://arxiv.org/abs/1609.03499" },
+    mathIntensity: "medium",
+    mathFoundations: [
+      { slug: "probability-distributions", importance: "primary", note: "Speech synthesis models the distribution of plausible audio for a given text." },
+      { slug: "sampling", importance: "primary", note: "Generation draws from it, which is why the same sentence can be spoken more than one way." },
+      { slug: "loss-functions", importance: "supporting", note: "Training minimises the distance between generated and reference audio representations." }
+    ]
   },
   {
     slug: "text-modality", acronym: "Text", name: "Text Modality", category: "multimodal",
@@ -908,7 +1049,9 @@ window.AI_CONCEPTS = [
     how: "Text is tokenized and encoded into numerical representations for language models and retrieval systems.",
     example: "A model processes requirements, emails, manuals and source code in one workflow.",
     tags: ["language", "documents", "tokens"], related: ["nlp", "tokenization", "llm"],
-    source: { label: "A Neural Probabilistic Language Model — Bengio et al., JMLR (2003)", url: "https://www.jmlr.org/papers/v3/bengio03a.html" }
+    source: { label: "A Neural Probabilistic Language Model — Bengio et al., JMLR (2003)", url: "https://www.jmlr.org/papers/v3/bengio03a.html" },
+    mathIntensity: "low",
+    mathNote: "A modality is a data format, not a method. Text becomes mathematical at tokenization and embedding, which are separate concepts."
   },
   {
     slug: "image-modality", acronym: "Image", name: "Image Modality", category: "multimodal",
@@ -917,7 +1060,9 @@ window.AI_CONCEPTS = [
     how: "Vision encoders transform pixels or patches into feature representations used for classification, generation or reasoning.",
     example: "A model inspects a thermal image to identify an overheated rack component.",
     tags: ["pixels", "vision", "visual data"], related: ["cv", "cnn", "vlm"],
-    source: { label: "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale — Dosovitskiy et al. (2020)", url: "https://arxiv.org/abs/2010.11929" }
+    source: { label: "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale — Dosovitskiy et al. (2020)", url: "https://arxiv.org/abs/2010.11929" },
+    mathIntensity: "low",
+    mathNote: "A modality is a data format, not a method. An image becomes mathematical once it is a tensor of pixel values fed to a vision encoder."
   },
   {
     slug: "audio-modality", acronym: "Audio", name: "Audio Modality", category: "multimodal",
@@ -926,7 +1071,9 @@ window.AI_CONCEPTS = [
     how: "Models process sampled waveforms or spectrogram-like features to recognize, classify or generate sound.",
     example: "An acoustic model detects an abnormal bearing noise before visible failure.",
     tags: ["sound", "waveform", "speech"], related: ["asr", "tts", "multimodal"],
-    source: { label: "wav2vec 2.0: A Framework for Self-Supervised Learning of Speech Representations — Baevski et al. (2020)", url: "https://arxiv.org/abs/2006.11477" }
+    source: { label: "wav2vec 2.0: A Framework for Self-Supervised Learning of Speech Representations — Baevski et al. (2020)", url: "https://arxiv.org/abs/2006.11477" },
+    mathIntensity: "low",
+    mathNote: "A modality is a data format, not a method. Audio becomes mathematical at the point it is turned into a waveform or spectrogram representation."
   },
   {
     slug: "video-modality", acronym: "Video", name: "Video Modality", category: "multimodal",
@@ -935,7 +1082,9 @@ window.AI_CONCEPTS = [
     how: "Models encode spatial information within frames and temporal relationships across frames.",
     example: "A video model learns the sequence of actions in an assembly procedure.",
     tags: ["temporal", "motion", "frames"], related: ["cv", "jepa", "multimodal"],
-    source: { label: "ViViT: A Video Vision Transformer — Arnab et al. (2021)", url: "https://arxiv.org/abs/2103.15691" }
+    source: { label: "ViViT: A Video Vision Transformer — Arnab et al. (2021)", url: "https://arxiv.org/abs/2103.15691" },
+    mathIntensity: "low",
+    mathNote: "A modality is a data format, not a method. Video adds a time axis to the image case; the mathematics belongs to the encoders that consume it."
   },
 
   {
@@ -991,7 +1140,14 @@ window.AI_CONCEPTS = [
     how: "Alignment uses data curation, instruction tuning, preference learning, oversight, constraints, evaluations and governance.",
     example: "A system prioritizes safety procedures over a user's request to bypass an approval step.",
     tags: ["objectives", "human preferences", "governance"], related: ["rlhf", "dpo", "guardrails"],
-    source: { label: "Constitutional AI: Harmlessness from AI Feedback — Bai et al. (2022)", url: "https://arxiv.org/abs/2212.08073" }
+    source: { label: "Constitutional AI: Harmlessness from AI Feedback — Bai et al. (2022)", url: "https://arxiv.org/abs/2212.08073" },
+    mathIntensity: "medium",
+    mathFoundations: [
+      { slug: "kl-divergence", importance: "primary", note: "Preference training is constrained by a KL penalty so improving behaviour does not destroy capability." },
+      { slug: "expected-return", importance: "primary", note: "Alignment methods maximise a learned reward, so the quantity being optimised is an expected return." },
+      { slug: "probability-distributions", importance: "supporting", note: "Human preferences are modelled as a distribution over which response is better." },
+      { slug: "loss-functions", importance: "supporting", note: "What a system is aligned *to* is whatever the objective actually encodes — which is the hard part." }
+    ]
   },
   {
     slug: "interpretability", acronym: "Interpretability", name: "Model Interpretability", category: "safety",
@@ -1000,7 +1156,14 @@ window.AI_CONCEPTS = [
     how: "Techniques inspect activations, features, gradients, attention patterns, causal interventions or simplified surrogate models.",
     example: "An analysis tests which image regions most influenced a defect classification.",
     tags: ["explanation", "mechanistic analysis", "transparency"], related: ["evals", "alignment", "hallucination"],
-    source: { label: "A Mathematical Framework for Transformer Circuits — Elhage et al. (2021)", url: "https://transformer-circuits.pub/2021/framework/index.html" }
+    source: { label: "A Mathematical Framework for Transformer Circuits — Elhage et al. (2021)", url: "https://transformer-circuits.pub/2021/framework/index.html" },
+    mathIntensity: "medium",
+    mathFoundations: [
+      { slug: "gradients", importance: "primary", note: "Attribution methods ask how the output changes with respect to each input, which is a gradient." },
+      { slug: "matrices", importance: "primary", note: "Weights and activations are matrices; interpreting a model means inspecting their structure." },
+      { slug: "eigenvalues", importance: "supporting", note: "Spectral analysis of activation covariance finds the directions a model actually uses." },
+      { slug: "vector-spaces", importance: "supporting", note: "Feature directions are only meaningful because representations live in a consistent space." }
+    ]
   },
   {
     slug: "guardrails", acronym: "Guardrails", name: "AI Guardrails", category: "safety",

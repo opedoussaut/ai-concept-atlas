@@ -6,13 +6,13 @@ A visual, searchable and shareable public website for navigating essential AI co
 
 ## What it includes
 
-- 73 concepts across 8 knowledge domains, each with a primary reference
-- **Mathematics Behind AI** — 31 mathematical concepts across 7 branches,
+- 75 concepts across 8 knowledge domains, each with a primary reference
+- **Mathematics Behind AI** — 37 mathematical concepts across 7 branches,
   connected to the AI techniques that use them
 - Full acronym expansions and concise explanations
 - Four explanation layers per concept: definition, why it matters, how it works, concrete example
 - Two atlas views: concepts grouped into domain bands, or a two-layer relationship
-  graph — 104 nodes, 350 typed edges, filterable by layer or focused on one concept
+  graph — 112 nodes, 455 typed edges, filterable by layer or focused on one concept
 - Ranked search across both layers, by acronym, symbol, full name, keyword, domain or partial text
 - Shareable deep links: `#concept/<slug>` for the quick dialog, `#learn/<slug>` for the full page
 - Responsive layout, keyboard navigation and visible focus states
@@ -34,7 +34,7 @@ this actually built on", and it is navigable in both directions.
 
 | Level | Where | Contains |
 |---|---|---|
-| Overview | `#mathematics` | All 31 concepts by branch, with difficulty and usage filters |
+| Overview | `#mathematics` | All 37 concepts by branch, with difficulty and usage filters |
 | Page | `#math/matrix-rank` | Intuition, equation, symbol legend, worked example, and every AI concept that uses it |
 
 Each AI concept carries a **mathematical intensity** — high, medium or low — and
@@ -73,7 +73,7 @@ LoRA
  └── OPTIMIZED_BY → Gradient Descent
 ```
 
-Edge verbs are only drawn in the focus view. Labelling all 350 at once would make
+Edge verbs are only drawn in the focus view. Labelling all 455 at once would make
 the graph unreadable, so weight and colour carry the structure instead.
 
 ## Run locally
@@ -91,22 +91,28 @@ Clipboard API requires a secure context (`https://` or `localhost`).
 
 ## The hero map is generated
 
-`assets/ai-concept-map.svg` is not hand-drawn — it is built from `data.js`:
+`assets/ai-concept-map.svg` is not hand-drawn — it is built from `data.js` and
+`math-data.js`:
 
 ```bash
 node tools/build-map.mjs
 ```
 
-26 KB of vector, sharp at any zoom, in the site's own palette, and impossible to
-leave out of date: the validator fails if the map is missing any concept or
-domain. The `.png` beside it is a raster of the same map, kept only because
-social crawlers do not render SVG.
+Eight domain panels around a centre that states the argument: a compact AI hub
+encircled by the seven branches of mathematics the domains rest on, each sized
+by how heavily the AI layer leans on it. Concepts are weighted by how many other
+concepts connect to them, so the hubs read louder than the leaves.
+
+34 KB of vector, sharp at any zoom, in the site's own palette, and impossible to
+leave out of date: the validator fails if the map is missing any concept, domain
+or mathematics branch. The `.png` beside it is a raster of the same map, kept
+only because social crawlers do not render SVG.
 
 ## Validate
 
 ```bash
 node tools/validate.mjs           # offline checks — this is what CI runs
-node tools/validate.mjs --links   # also checks all 104 reference URLs respond
+node tools/validate.mjs --links   # also checks all 112 reference URLs respond
 ```
 
 Zero dependencies. Checks file layout, JavaScript syntax, the concept data model,

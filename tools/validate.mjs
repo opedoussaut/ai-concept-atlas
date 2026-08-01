@@ -390,6 +390,22 @@ for (const category of categories) {
   }
 }
 if (!missingDomains) ok(`all ${categories.length} domain panels present`);
+
+// The centre of the map carries the mathematics ring; if a branch is added to
+// math-data.js and the map is not regenerated, the picture quietly under-reports.
+let missingBranches = 0;
+for (const category of mathCategories) {
+  if (!mapSvg.includes(`>${svgEscape(category.short)}</text>`)) {
+    missingBranches += 1;
+    fail(`mathematics branch "${category.short}" is missing from the map — run: node tools/build-map.mjs`);
+  }
+}
+if (!missingBranches) ok(`all ${mathCategories.length} mathematics branches present in the map centre`);
+if (!mapSvg.includes(`${mathConcepts.length} MATHEMATICAL FOUNDATIONS`)) {
+  fail("the map's mathematics count is stale — run: node tools/build-map.mjs");
+} else {
+  ok("map footer matches the mathematics count");
+}
 if (!mapSvg.includes(`${concepts.length} CONCEPTS`)) {
   fail(`the map's footer count is stale — run: node tools/build-map.mjs`);
 } else {
@@ -440,7 +456,7 @@ else ok("no placeholder GitHub URL");
 // can pair a fresh index.html with a stale app.js and see a half-rendered page.
 // A shared version token prevents that — but only if every file carries the
 // same one, so a partial bump must fail rather than ship a subtler mismatch.
-const VERSIONED = ["styles.css", "data.js", "math-data.js", "app.js"];
+const VERSIONED = ["styles.css", "data.js", "math-data.js", "app.js", "assets/ai-concept-map.svg"];
 const versions = new Map();
 for (const file of VERSIONED) {
   const match = html.match(new RegExp(`(?:href|src)="${file.replace(".", "\\.")}\\?v=([^"]+)"`));
