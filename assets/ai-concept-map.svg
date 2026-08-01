@@ -1,377 +1,258 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1700 1150" width="1700" height="1150" role="img" aria-label="Concept map of 75 artificial intelligence terms grouped into 8 domains, arranged around a central hub encircled by the 7 branches of mathematics they rest on: linear algebra, probability, information, optimization, numerics, graphs, dynamics.">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 820" width="1200" height="820" role="img" aria-label="Map of the AI Concept Atlas: 8 domains — foundations, model architectures, training &amp; adaptation, retrieval &amp; knowledge, agents &amp; orchestration, inference &amp; optimization, multimodal ai, evaluation, safety &amp; reliability — each showing its best-known concepts, arranged around a central hub of 75 concepts encircled by the 7 branches of mathematics they rest on: linear algebra, probability, information, optimization, numerics, graphs, dynamics.">
 <style>text{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-.spark{stroke-dasharray:3 128;animation:flow 9s linear infinite}
-@keyframes flow{from{stroke-dashoffset:131}to{stroke-dashoffset:0}}
+.spark{animation:flow 9s linear infinite}
+@keyframes flow{from{stroke-dashoffset:121}to{stroke-dashoffset:0}}
 .pulse{animation:breathe 7s ease-in-out infinite alternate}
 @keyframes breathe{from{stroke-opacity:.10}to{stroke-opacity:.42}}
 .branch{animation:glimmer 8s ease-in-out infinite alternate}
-@keyframes glimmer{from{opacity:.72}to{opacity:1}}
+@keyframes glimmer{from{opacity:.75}to{opacity:1}}
 .orbit{animation:orbitfade 11s ease-in-out infinite alternate}
 @keyframes orbitfade{from{stroke-opacity:.12}to{stroke-opacity:.34}}
 @media (prefers-reduced-motion:reduce){.spark,.pulse,.branch,.orbit{animation:none}.spark{opacity:0}}</style>
 <defs>
-  <radialGradient id="bg" cx="50%" cy="42%" r="78%">
+  <radialGradient id="bg" cx="50%" cy="46%" r="76%">
     <stop offset="0%" stop-color="#0b1d33"/>
     <stop offset="55%" stop-color="#071224"/>
     <stop offset="100%" stop-color="#03070e"/>
   </radialGradient>
   <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
-    <stop offset="0%" stop-color="#5de7ff" stop-opacity="0.42"/>
-    <stop offset="55%" stop-color="#2f8ad0" stop-opacity="0.14"/>
+    <stop offset="0%" stop-color="#5de7ff" stop-opacity="0.40"/>
+    <stop offset="55%" stop-color="#2f8ad0" stop-opacity="0.13"/>
     <stop offset="100%" stop-color="#5de7ff" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="mathGlow" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#ffc978" stop-opacity="0.18"/>
+    <stop offset="70%" stop-color="#ffc978" stop-opacity="0.05"/>
+    <stop offset="100%" stop-color="#ffc978" stop-opacity="0"/>
   </radialGradient>
   <linearGradient id="coreEdge" x1="0" y1="0" x2="1" y2="1">
     <stop offset="0%" stop-color="#7ef0ff"/>
     <stop offset="100%" stop-color="#8f7bff"/>
   </linearGradient>
-  <pattern id="grid" width="58" height="58" patternUnits="userSpaceOnUse">
-    <path d="M58 0H0v58" fill="none" stroke="#71b1e9" stroke-opacity="0.075" stroke-width="1"/>
+  <pattern id="grid" width="52" height="52" patternUnits="userSpaceOnUse">
+    <path d="M52 0H0v52" fill="none" stroke="#71b1e9" stroke-opacity="0.07" stroke-width="1"/>
   </pattern>
   <filter id="soft" x="-60%" y="-60%" width="220%" height="220%">
-    <feGaussianBlur stdDeviation="16"/>
+    <feGaussianBlur stdDeviation="12"/>
   </filter>
   <filter id="tight" x="-40%" y="-40%" width="180%" height="180%">
-    <feGaussianBlur stdDeviation="4"/>
+    <feGaussianBlur stdDeviation="3"/>
   </filter>
-  <radialGradient id="mathGlow" cx="50%" cy="50%" r="50%">
-    <stop offset="0%" stop-color="#ffc978" stop-opacity="0.20"/>
-    <stop offset="70%" stop-color="#ffc978" stop-opacity="0.05"/>
-    <stop offset="100%" stop-color="#ffc978" stop-opacity="0"/>
-  </radialGradient>
 </defs>
-<rect width="1700" height="1150" fill="url(#bg)"/>
-<rect width="1700" height="1150" fill="url(#grid)"/>
-<path d="M657.1 416.6 Q 564.6 216.0 472.0 216.0" fill="none" stroke="#5de7ff" stroke-opacity="0.34" stroke-width="1.4"/>
-<path class="spark" style="animation-delay:0.0s" d="M657.1 416.6 Q 564.6 216.0 472.0 216.0" fill="none" stroke="#5de7ff" stroke-opacity="0.85" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="3 128"/>
-<circle cx="472.0" cy="216.0" r="3.4" fill="#5de7ff" fill-opacity="0.85"/>
-<circle cx="657.1" cy="416.6" r="2.6" fill="#5de7ff"/>
-<path d="M850.0 325.0 Q 850.0 306.5 850.0 288.0" fill="none" stroke="#b58cff" stroke-opacity="0.34" stroke-width="1.4"/>
-<path class="spark" style="animation-delay:-1.4s" d="M850.0 325.0 Q 850.0 306.5 850.0 288.0" fill="none" stroke="#b58cff" stroke-opacity="0.85" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="3 128"/>
-<circle cx="850.0" cy="288.0" r="3.4" fill="#b58cff" fill-opacity="0.85"/>
-<circle cx="850.0" cy="325.0" r="2.6" fill="#b58cff"/>
-<path d="M1045.8 419.3 Q 1136.9 227.5 1228.0 227.5" fill="none" stroke="#6ea8ff" stroke-opacity="0.34" stroke-width="1.4"/>
-<path class="spark" style="animation-delay:-2.8s" d="M1045.8 419.3 Q 1136.9 227.5 1228.0 227.5" fill="none" stroke="#6ea8ff" stroke-opacity="0.85" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="3 128"/>
-<circle cx="1228.0" cy="227.5" r="3.4" fill="#6ea8ff" fill-opacity="0.85"/>
-<circle cx="1045.8" cy="419.3" r="2.6" fill="#6ea8ff"/>
-<path d="M587.2 539.2 Q 529.6 515.5 472.0 515.5" fill="none" stroke="#62e4d2" stroke-opacity="0.34" stroke-width="1.4"/>
-<path class="spark" style="animation-delay:-4.2s" d="M587.2 539.2 Q 529.6 515.5 472.0 515.5" fill="none" stroke="#62e4d2" stroke-opacity="0.85" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="3 128"/>
-<circle cx="472.0" cy="515.5" r="3.4" fill="#62e4d2" fill-opacity="0.85"/>
-<circle cx="587.2" cy="539.2" r="2.6" fill="#62e4d2"/>
-<path d="M1115.6 562.2 Q 1171.8 554.0 1228.0 554.0" fill="none" stroke="#cf8cff" stroke-opacity="0.34" stroke-width="1.4"/>
-<path class="spark" style="animation-delay:-5.6s" d="M1115.6 562.2 Q 1171.8 554.0 1228.0 554.0" fill="none" stroke="#cf8cff" stroke-opacity="0.85" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="3 128"/>
-<circle cx="1228.0" cy="554.0" r="3.4" fill="#cf8cff" fill-opacity="0.85"/>
-<circle cx="1115.6" cy="562.2" r="2.6" fill="#cf8cff"/>
-<path d="M622.2 693.8 Q 547.1 803.0 472.0 803.0" fill="none" stroke="#75b8ff" stroke-opacity="0.34" stroke-width="1.4"/>
-<path class="spark" style="animation-delay:-7.0s" d="M622.2 693.8 Q 547.1 803.0 472.0 803.0" fill="none" stroke="#75b8ff" stroke-opacity="0.85" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="3 128"/>
-<circle cx="472.0" cy="803.0" r="3.4" fill="#75b8ff" fill-opacity="0.85"/>
-<circle cx="622.2" cy="693.8" r="2.6" fill="#75b8ff"/>
-<path d="M850.0 825.0 Q 850.0 865.5 850.0 906.0" fill="none" stroke="#5de7e1" stroke-opacity="0.34" stroke-width="1.4"/>
-<path class="spark" style="animation-delay:-8.4s" d="M850.0 825.0 Q 850.0 865.5 850.0 906.0" fill="none" stroke="#5de7e1" stroke-opacity="0.85" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="3 128"/>
-<circle cx="850.0" cy="906.0" r="3.4" fill="#5de7e1" fill-opacity="0.85"/>
-<circle cx="850.0" cy="825.0" r="2.6" fill="#5de7e1"/>
-<path d="M1065.6 709.7 Q 1146.8 848.0 1228.0 848.0" fill="none" stroke="#6ce6af" stroke-opacity="0.34" stroke-width="1.4"/>
-<path class="spark" style="animation-delay:-9.8s" d="M1065.6 709.7 Q 1146.8 848.0 1228.0 848.0" fill="none" stroke="#6ce6af" stroke-opacity="0.85" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="3 128"/>
-<circle cx="1228.0" cy="848.0" r="3.4" fill="#6ce6af" fill-opacity="0.85"/>
-<circle cx="1065.6" cy="709.7" r="2.6" fill="#6ce6af"/>
-<g>
-<rect x="40" y="62" width="432" height="308" rx="20" fill="#08172a" fill-opacity="0.82" stroke="#5de7ff" stroke-opacity="0.38" stroke-width="1.3"/>
-<rect x="62" y="61" width="388" height="2.4" rx="1.2" fill="#5de7ff" fill-opacity="0.85"/>
-<rect x="62" y="61" width="388" height="2.4" rx="1.2" fill="#5de7ff" filter="url(#tight)" opacity="0.6"/>
-<circle cx="73" cy="93" r="13" fill="#5de7ff" fill-opacity="0.14" stroke="#5de7ff" stroke-opacity="0.55"/>
-<text x="73" y="97.5" text-anchor="middle" font-size="12.5" font-weight="700" fill="#5de7ff">1</text>
-<text x="96" y="98" font-size="15" font-weight="700" letter-spacing="0.9" fill="#f4f8ff">FOUNDATIONS</text>
-<text x="452" y="98" text-anchor="end" font-size="11.5" fill="#7f92aa">10</text>
-<line x1="60" y1="110" x2="452" y2="110" stroke="#9dd2ff" stroke-opacity="0.14"/>
-<circle cx="63" cy="127" r="2.1" fill="#5de7ff" fill-opacity="0.5"/>
-<text x="74" y="131" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">AI</tspan><tspan> — Artificial Intelligence</tspan></text>
-<circle cx="63" cy="150" r="2.1" fill="#5de7ff" fill-opacity="0.5"/>
-<text x="74" y="154" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">ML</tspan><tspan> — Machine Learning</tspan></text>
-<circle cx="63" cy="173" r="2.1" fill="#5de7ff" fill-opacity="0.5"/>
-<text x="74" y="177" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">DL</tspan><tspan> — Deep Learning</tspan></text>
-<circle cx="63" cy="196" r="6" fill="#5de7ff" fill-opacity="0.28" filter="url(#tight)"/>
-<circle cx="63" cy="196" r="3.6" fill="#5de7ff" fill-opacity="1"/>
-<text x="74" y="200" font-size="12.50" fill="#9fb2c8"><tspan font-weight="800" fill="#ffffff">NLP</tspan><tspan> — Natural Language Processing</tspan></text>
-<circle cx="63" cy="219" r="2.7" fill="#5de7ff" fill-opacity="0.85"/>
-<text x="74" y="223" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">CV</tspan><tspan> — Computer Vision</tspan></text>
-<circle cx="63" cy="242" r="2.7" fill="#5de7ff" fill-opacity="0.85"/>
-<text x="74" y="246" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">RL</tspan><tspan> — Reinforcement Learning</tspan></text>
-<circle cx="63" cy="265" r="2.7" fill="#5de7ff" fill-opacity="0.85"/>
-<text x="74" y="269" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">GenAI</tspan><tspan> — Generative AI</tspan></text>
-<circle cx="63" cy="288" r="2.1" fill="#5de7ff" fill-opacity="0.5"/>
-<text x="74" y="292" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">SL</tspan><tspan> — Supervised Learning</tspan></text>
-<circle cx="63" cy="311" r="2.7" fill="#5de7ff" fill-opacity="0.85"/>
-<text x="74" y="315" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">SSL</tspan><tspan> — Self-Supervised Learning</tspan></text>
-<circle cx="63" cy="334" r="2.1" fill="#5de7ff" fill-opacity="0.5"/>
-<text x="74" y="338" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">Next-Token</tspan></text>
-</g>
-<g>
-<rect x="556" y="26" width="588" height="262" rx="20" fill="#08172a" fill-opacity="0.82" stroke="#b58cff" stroke-opacity="0.38" stroke-width="1.3"/>
-<rect x="578" y="25" width="544" height="2.4" rx="1.2" fill="#b58cff" fill-opacity="0.85"/>
-<rect x="578" y="25" width="544" height="2.4" rx="1.2" fill="#b58cff" filter="url(#tight)" opacity="0.6"/>
-<circle cx="589" cy="57" r="13" fill="#b58cff" fill-opacity="0.14" stroke="#b58cff" stroke-opacity="0.55"/>
-<text x="589" y="61.5" text-anchor="middle" font-size="12.5" font-weight="700" fill="#b58cff">2</text>
-<text x="612" y="62" font-size="15" font-weight="700" letter-spacing="0.9" fill="#f4f8ff">MODEL ARCHITECTURES</text>
-<text x="1124" y="62" text-anchor="end" font-size="11.5" fill="#7f92aa">15</text>
-<line x1="576" y1="74" x2="1124" y2="74" stroke="#9dd2ff" stroke-opacity="0.14"/>
-<circle cx="579" cy="91" r="2.1" fill="#b58cff" fill-opacity="0.5"/>
-<text x="590" y="95" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">NN</tspan><tspan> — Neural Network</tspan></text>
-<circle cx="579" cy="114" r="2.1" fill="#b58cff" fill-opacity="0.5"/>
-<text x="590" y="118" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">CNN</tspan><tspan> — Convolutional Neural Network</tspan></text>
-<circle cx="579" cy="137" r="2.1" fill="#b58cff" fill-opacity="0.5"/>
-<text x="590" y="141" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">RNN</tspan><tspan> — Recurrent Neural Network</tspan></text>
-<circle cx="579" cy="160" r="2.1" fill="#b58cff" fill-opacity="0.5"/>
-<text x="590" y="164" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">LSTM</tspan><tspan> — Long Short-Term Memory</tspan></text>
-<circle cx="579" cy="183" r="6" fill="#b58cff" fill-opacity="0.28" filter="url(#tight)"/>
-<circle cx="579" cy="183" r="3.6" fill="#b58cff" fill-opacity="1"/>
-<text x="590" y="187" font-size="12.50" fill="#9fb2c8"><tspan font-weight="800" fill="#ffffff">Transformer</tspan></text>
-<circle cx="579" cy="206" r="2.1" fill="#b58cff" fill-opacity="0.5"/>
-<text x="590" y="210" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">Attention</tspan></text>
-<circle cx="579" cy="229" r="6" fill="#b58cff" fill-opacity="0.28" filter="url(#tight)"/>
-<circle cx="579" cy="229" r="3.6" fill="#b58cff" fill-opacity="1"/>
-<text x="590" y="233" font-size="12.50" fill="#9fb2c8"><tspan font-weight="800" fill="#ffffff">LLM</tspan><tspan> — Large Language Model</tspan></text>
-<circle cx="579" cy="252" r="2.1" fill="#b58cff" fill-opacity="0.5"/>
-<text x="590" y="256" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">SLM</tspan><tspan> — Small Language Model</tspan></text>
-<circle cx="862" cy="91" r="2.7" fill="#b58cff" fill-opacity="0.85"/>
-<text x="873" y="95" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">VLM</tspan><tspan> — Vision-Language Model</tspan></text>
-<circle cx="862" cy="114" r="2.1" fill="#b58cff" fill-opacity="0.5"/>
-<text x="873" y="118" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">MoE</tspan><tspan> — Mixture of Experts</tspan></text>
-<circle cx="862" cy="137" r="2.1" fill="#b58cff" fill-opacity="0.5"/>
-<text x="873" y="141" font-size="12.00" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">GAN</tspan><tspan> — Generative Adversarial Network</tspan></text>
-<circle cx="862" cy="160" r="2.1" fill="#b58cff" fill-opacity="0.5"/>
-<text x="873" y="164" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">VAE</tspan><tspan> — Variational Autoencoder</tspan></text>
-<circle cx="862" cy="183" r="2.7" fill="#b58cff" fill-opacity="0.85"/>
-<text x="873" y="187" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Diffusion</tspan></text>
-<circle cx="862" cy="206" r="2.7" fill="#b58cff" fill-opacity="0.85"/>
-<text x="873" y="210" font-size="9.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">JEPA</tspan><tspan> — Joint Embedding Predictive Architecture</tspan></text>
-<circle cx="862" cy="229" r="2.1" fill="#b58cff" fill-opacity="0.5"/>
-<text x="873" y="233" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">World Model</tspan></text>
-</g>
-<g>
-<rect x="1228" y="62" width="432" height="331" rx="20" fill="#08172a" fill-opacity="0.82" stroke="#6ea8ff" stroke-opacity="0.38" stroke-width="1.3"/>
-<rect x="1250" y="61" width="388" height="2.4" rx="1.2" fill="#6ea8ff" fill-opacity="0.85"/>
-<rect x="1250" y="61" width="388" height="2.4" rx="1.2" fill="#6ea8ff" filter="url(#tight)" opacity="0.6"/>
-<circle cx="1261" cy="93" r="13" fill="#6ea8ff" fill-opacity="0.14" stroke="#6ea8ff" stroke-opacity="0.55"/>
-<text x="1261" y="97.5" text-anchor="middle" font-size="12.5" font-weight="700" fill="#6ea8ff">3</text>
-<text x="1284" y="98" font-size="15" font-weight="700" letter-spacing="0.9" fill="#f4f8ff">TRAINING &amp; ADAPTATION</text>
-<text x="1640" y="98" text-anchor="end" font-size="11.5" fill="#7f92aa">11</text>
-<line x1="1248" y1="110" x2="1640" y2="110" stroke="#9dd2ff" stroke-opacity="0.14"/>
-<circle cx="1251" cy="127" r="2.1" fill="#6ea8ff" fill-opacity="0.5"/>
-<text x="1262" y="131" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">Pre-training</tspan></text>
-<circle cx="1251" cy="150" r="2.7" fill="#6ea8ff" fill-opacity="0.85"/>
-<text x="1262" y="154" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Fine-tuning</tspan></text>
-<circle cx="1251" cy="173" r="6" fill="#6ea8ff" fill-opacity="0.28" filter="url(#tight)"/>
-<circle cx="1251" cy="173" r="3.6" fill="#6ea8ff" fill-opacity="1"/>
-<text x="1262" y="177" font-size="12.50" fill="#9fb2c8"><tspan font-weight="800" fill="#ffffff">SFT</tspan><tspan> — Supervised Fine-Tuning</tspan></text>
-<circle cx="1251" cy="196" r="2.1" fill="#6ea8ff" fill-opacity="0.5"/>
-<text x="1262" y="200" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">PEFT</tspan><tspan> — Parameter-Efficient Fine-Tuning</tspan></text>
-<circle cx="1251" cy="219" r="2.1" fill="#6ea8ff" fill-opacity="0.5"/>
-<text x="1262" y="223" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">LoRA</tspan><tspan> — Low-Rank Adaptation</tspan></text>
-<circle cx="1251" cy="242" r="2.1" fill="#6ea8ff" fill-opacity="0.5"/>
-<text x="1262" y="246" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">QLoRA</tspan><tspan> — Quantized Low-Rank Adaptation</tspan></text>
-<circle cx="1251" cy="265" r="2.1" fill="#6ea8ff" fill-opacity="0.5"/>
-<text x="1262" y="269" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">Contrastive</tspan></text>
-<circle cx="1251" cy="288" r="2.7" fill="#6ea8ff" fill-opacity="0.85"/>
-<text x="1262" y="292" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">RLHF</tspan><tspan> — Reinforcement Learning from Human Feedback</tspan></text>
-<circle cx="1251" cy="311" r="2.7" fill="#6ea8ff" fill-opacity="0.85"/>
-<text x="1262" y="315" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">DPO</tspan><tspan> — Direct Preference Optimization</tspan></text>
-<circle cx="1251" cy="334" r="2.1" fill="#6ea8ff" fill-opacity="0.5"/>
-<text x="1262" y="338" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">PPO</tspan><tspan> — Proximal Policy Optimization</tspan></text>
-<circle cx="1251" cy="357" r="2.1" fill="#6ea8ff" fill-opacity="0.5"/>
-<text x="1262" y="361" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">Distillation</tspan></text>
-</g>
-<g>
-<rect x="40" y="396" width="432" height="239" rx="20" fill="#08172a" fill-opacity="0.82" stroke="#62e4d2" stroke-opacity="0.38" stroke-width="1.3"/>
-<rect x="62" y="395" width="388" height="2.4" rx="1.2" fill="#62e4d2" fill-opacity="0.85"/>
-<rect x="62" y="395" width="388" height="2.4" rx="1.2" fill="#62e4d2" filter="url(#tight)" opacity="0.6"/>
-<circle cx="73" cy="427" r="13" fill="#62e4d2" fill-opacity="0.14" stroke="#62e4d2" stroke-opacity="0.55"/>
-<text x="73" y="431.5" text-anchor="middle" font-size="12.5" font-weight="700" fill="#62e4d2">4</text>
-<text x="96" y="432" font-size="15" font-weight="700" letter-spacing="0.9" fill="#f4f8ff">RETRIEVAL &amp; KNOWLEDGE</text>
-<text x="452" y="432" text-anchor="end" font-size="11.5" fill="#7f92aa">7</text>
-<line x1="60" y1="444" x2="452" y2="444" stroke="#9dd2ff" stroke-opacity="0.14"/>
-<circle cx="63" cy="461" r="6" fill="#62e4d2" fill-opacity="0.28" filter="url(#tight)"/>
-<circle cx="63" cy="461" r="3.6" fill="#62e4d2" fill-opacity="1"/>
-<text x="74" y="465" font-size="12.50" fill="#9fb2c8"><tspan font-weight="800" fill="#ffffff">RAG</tspan><tspan> — Retrieval-Augmented Generation</tspan></text>
-<circle cx="63" cy="484" r="2.1" fill="#62e4d2" fill-opacity="0.5"/>
-<text x="74" y="488" font-size="12.00" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">GraphRAG</tspan><tspan> — Graph-based Retrieval-Augmented Generation</tspan></text>
-<circle cx="63" cy="507" r="6" fill="#62e4d2" fill-opacity="0.28" filter="url(#tight)"/>
-<circle cx="63" cy="507" r="3.6" fill="#62e4d2" fill-opacity="1"/>
-<text x="74" y="511" font-size="12.50" fill="#9fb2c8"><tspan font-weight="800" fill="#ffffff">Embeddings</tspan></text>
-<circle cx="63" cy="530" r="2.7" fill="#62e4d2" fill-opacity="0.85"/>
-<text x="74" y="534" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Vector DB</tspan><tspan> — Vector Database</tspan></text>
-<circle cx="63" cy="553" r="2.1" fill="#62e4d2" fill-opacity="0.5"/>
-<text x="74" y="557" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">KG</tspan><tspan> — Knowledge Graph</tspan></text>
-<circle cx="63" cy="576" r="2.7" fill="#62e4d2" fill-opacity="0.85"/>
-<text x="74" y="580" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Semantic Search</tspan></text>
-<circle cx="63" cy="599" r="2.7" fill="#62e4d2" fill-opacity="0.85"/>
-<text x="74" y="603" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Grounding</tspan></text>
-</g>
-<g>
-<rect x="1228" y="400" width="432" height="308" rx="20" fill="#08172a" fill-opacity="0.82" stroke="#cf8cff" stroke-opacity="0.38" stroke-width="1.3"/>
-<rect x="1250" y="399" width="388" height="2.4" rx="1.2" fill="#cf8cff" fill-opacity="0.85"/>
-<rect x="1250" y="399" width="388" height="2.4" rx="1.2" fill="#cf8cff" filter="url(#tight)" opacity="0.6"/>
-<circle cx="1261" cy="431" r="13" fill="#cf8cff" fill-opacity="0.14" stroke="#cf8cff" stroke-opacity="0.55"/>
-<text x="1261" y="435.5" text-anchor="middle" font-size="12.5" font-weight="700" fill="#cf8cff">5</text>
-<text x="1284" y="436" font-size="15" font-weight="700" letter-spacing="0.9" fill="#f4f8ff">AGENTS &amp; ORCHESTRATION</text>
-<text x="1640" y="436" text-anchor="end" font-size="11.5" fill="#7f92aa">10</text>
-<line x1="1248" y1="448" x2="1640" y2="448" stroke="#9dd2ff" stroke-opacity="0.14"/>
-<circle cx="1251" cy="465" r="2.1" fill="#cf8cff" fill-opacity="0.5"/>
-<text x="1262" y="469" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">Prompt Engineering</tspan></text>
-<circle cx="1251" cy="488" r="2.1" fill="#cf8cff" fill-opacity="0.5"/>
-<text x="1262" y="492" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">CoT</tspan><tspan> — Chain of Thought</tspan></text>
-<circle cx="1251" cy="511" r="2.1" fill="#cf8cff" fill-opacity="0.5"/>
-<text x="1262" y="515" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">Function Calling</tspan></text>
-<circle cx="1251" cy="534" r="2.7" fill="#cf8cff" fill-opacity="0.85"/>
-<text x="1262" y="538" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Tool Use</tspan></text>
-<circle cx="1251" cy="557" r="6" fill="#cf8cff" fill-opacity="0.28" filter="url(#tight)"/>
-<circle cx="1251" cy="557" r="3.6" fill="#cf8cff" fill-opacity="1"/>
-<text x="1262" y="561" font-size="12.50" fill="#9fb2c8"><tspan font-weight="800" fill="#ffffff">Agent</tspan></text>
-<circle cx="1251" cy="580" r="2.1" fill="#cf8cff" fill-opacity="0.5"/>
-<text x="1262" y="584" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">MAS</tspan><tspan> — Multi-Agent System</tspan></text>
-<circle cx="1251" cy="603" r="2.7" fill="#cf8cff" fill-opacity="0.85"/>
-<text x="1262" y="607" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">MCP</tspan><tspan> — Model Context Protocol</tspan></text>
-<circle cx="1251" cy="626" r="2.7" fill="#cf8cff" fill-opacity="0.85"/>
-<text x="1262" y="630" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">API</tspan><tspan> — Application Programming Interface</tspan></text>
-<circle cx="1251" cy="649" r="6" fill="#cf8cff" fill-opacity="0.28" filter="url(#tight)"/>
-<circle cx="1251" cy="649" r="3.6" fill="#cf8cff" fill-opacity="1"/>
-<text x="1262" y="653" font-size="12.50" fill="#9fb2c8"><tspan font-weight="800" fill="#ffffff">Context Window</tspan></text>
-<circle cx="1251" cy="672" r="2.7" fill="#cf8cff" fill-opacity="0.85"/>
-<text x="1262" y="676" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Memory</tspan></text>
-</g>
-<g>
-<rect x="40" y="672" width="432" height="262" rx="20" fill="#08172a" fill-opacity="0.82" stroke="#75b8ff" stroke-opacity="0.38" stroke-width="1.3"/>
-<rect x="62" y="671" width="388" height="2.4" rx="1.2" fill="#75b8ff" fill-opacity="0.85"/>
-<rect x="62" y="671" width="388" height="2.4" rx="1.2" fill="#75b8ff" filter="url(#tight)" opacity="0.6"/>
-<circle cx="73" cy="703" r="13" fill="#75b8ff" fill-opacity="0.14" stroke="#75b8ff" stroke-opacity="0.55"/>
-<text x="73" y="707.5" text-anchor="middle" font-size="12.5" font-weight="700" fill="#75b8ff">6</text>
-<text x="96" y="708" font-size="15" font-weight="700" letter-spacing="0.9" fill="#f4f8ff">INFERENCE &amp; OPTIMIZATION</text>
-<text x="452" y="708" text-anchor="end" font-size="11.5" fill="#7f92aa">8</text>
-<line x1="60" y1="720" x2="452" y2="720" stroke="#9dd2ff" stroke-opacity="0.14"/>
-<circle cx="63" cy="737" r="6" fill="#75b8ff" fill-opacity="0.28" filter="url(#tight)"/>
-<circle cx="63" cy="737" r="3.6" fill="#75b8ff" fill-opacity="1"/>
-<text x="74" y="741" font-size="12.50" fill="#9fb2c8"><tspan font-weight="800" fill="#ffffff">Tokenization</tspan></text>
-<circle cx="63" cy="760" r="2.1" fill="#75b8ff" fill-opacity="0.5"/>
-<text x="74" y="764" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">BPE</tspan><tspan> — Byte Pair Encoding</tspan></text>
-<circle cx="63" cy="783" r="2.7" fill="#75b8ff" fill-opacity="0.85"/>
-<text x="74" y="787" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">KV Cache</tspan><tspan> — Key-Value Cache</tspan></text>
-<circle cx="63" cy="806" r="2.7" fill="#75b8ff" fill-opacity="0.85"/>
-<text x="74" y="810" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Quantization</tspan></text>
-<circle cx="63" cy="829" r="2.1" fill="#75b8ff" fill-opacity="0.5"/>
-<text x="74" y="833" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">Pruning</tspan></text>
-<circle cx="63" cy="852" r="2.1" fill="#75b8ff" fill-opacity="0.5"/>
-<text x="74" y="856" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">Batching</tspan></text>
-<circle cx="63" cy="875" r="2.7" fill="#75b8ff" fill-opacity="0.85"/>
-<text x="74" y="879" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Latency</tspan></text>
-<circle cx="63" cy="898" r="2.7" fill="#75b8ff" fill-opacity="0.85"/>
-<text x="74" y="902" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Throughput</tspan></text>
-</g>
-<g>
-<rect x="556" y="906" width="588" height="170" rx="20" fill="#08172a" fill-opacity="0.82" stroke="#5de7e1" stroke-opacity="0.38" stroke-width="1.3"/>
-<rect x="578" y="905" width="544" height="2.4" rx="1.2" fill="#5de7e1" fill-opacity="0.85"/>
-<rect x="578" y="905" width="544" height="2.4" rx="1.2" fill="#5de7e1" filter="url(#tight)" opacity="0.6"/>
-<circle cx="589" cy="937" r="13" fill="#5de7e1" fill-opacity="0.14" stroke="#5de7e1" stroke-opacity="0.55"/>
-<text x="589" y="941.5" text-anchor="middle" font-size="12.5" font-weight="700" fill="#5de7e1">7</text>
-<text x="612" y="942" font-size="15" font-weight="700" letter-spacing="0.9" fill="#f4f8ff">MULTIMODAL AI</text>
-<text x="1124" y="942" text-anchor="end" font-size="11.5" fill="#7f92aa">8</text>
-<line x1="576" y1="954" x2="1124" y2="954" stroke="#9dd2ff" stroke-opacity="0.14"/>
-<circle cx="579" cy="971" r="6" fill="#5de7e1" fill-opacity="0.28" filter="url(#tight)"/>
-<circle cx="579" cy="971" r="3.6" fill="#5de7e1" fill-opacity="1"/>
-<text x="590" y="975" font-size="9.25" fill="#9fb2c8"><tspan font-weight="800" fill="#ffffff">Multimodal AI</tspan><tspan> — Multimodal Artificial Intelligence</tspan></text>
-<circle cx="579" cy="994" r="2.1" fill="#5de7e1" fill-opacity="0.5"/>
-<text x="590" y="998" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">OCR</tspan><tspan> — Optical Character Recognition</tspan></text>
-<circle cx="579" cy="1017" r="2.7" fill="#5de7e1" fill-opacity="0.85"/>
-<text x="590" y="1021" font-size="12.25" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">ASR</tspan><tspan> — Automatic Speech Recognition</tspan></text>
-<circle cx="579" cy="1040" r="2.1" fill="#5de7e1" fill-opacity="0.5"/>
-<text x="590" y="1044" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">TTS</tspan><tspan> — Text-to-Speech</tspan></text>
-<circle cx="862" cy="971" r="2.1" fill="#5de7e1" fill-opacity="0.5"/>
-<text x="873" y="975" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">Text</tspan></text>
-<circle cx="862" cy="994" r="2.7" fill="#5de7e1" fill-opacity="0.85"/>
-<text x="873" y="998" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Image</tspan></text>
-<circle cx="862" cy="1017" r="2.1" fill="#5de7e1" fill-opacity="0.5"/>
-<text x="873" y="1021" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">Audio</tspan></text>
-<circle cx="862" cy="1040" r="2.1" fill="#5de7e1" fill-opacity="0.5"/>
-<text x="873" y="1044" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">Video</tspan></text>
-</g>
-<g>
-<rect x="1228" y="740" width="432" height="216" rx="20" fill="#08172a" fill-opacity="0.82" stroke="#6ce6af" stroke-opacity="0.38" stroke-width="1.3"/>
-<rect x="1250" y="739" width="388" height="2.4" rx="1.2" fill="#6ce6af" fill-opacity="0.85"/>
-<rect x="1250" y="739" width="388" height="2.4" rx="1.2" fill="#6ce6af" filter="url(#tight)" opacity="0.6"/>
-<circle cx="1261" cy="771" r="13" fill="#6ce6af" fill-opacity="0.14" stroke="#6ce6af" stroke-opacity="0.55"/>
-<text x="1261" y="775.5" text-anchor="middle" font-size="12.5" font-weight="700" fill="#6ce6af">8</text>
-<text x="1284" y="776" font-size="15" font-weight="700" letter-spacing="0.9" fill="#f4f8ff">EVALUATION, SAFETY &amp; RELIABILITY</text>
-<text x="1640" y="776" text-anchor="end" font-size="11.5" fill="#7f92aa">6</text>
-<line x1="1248" y1="788" x2="1640" y2="788" stroke="#9dd2ff" stroke-opacity="0.14"/>
-<circle cx="1251" cy="805" r="2.7" fill="#6ce6af" fill-opacity="0.85"/>
-<text x="1262" y="809" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Evals</tspan><tspan> — AI Evaluations</tspan></text>
-<circle cx="1251" cy="828" r="2.7" fill="#6ce6af" fill-opacity="0.85"/>
-<text x="1262" y="832" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Benchmark</tspan></text>
-<circle cx="1251" cy="851" r="2.7" fill="#6ce6af" fill-opacity="0.85"/>
-<text x="1262" y="855" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Hallucination</tspan></text>
-<circle cx="1251" cy="874" r="2.7" fill="#6ce6af" fill-opacity="0.85"/>
-<text x="1262" y="878" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Alignment</tspan></text>
-<circle cx="1251" cy="897" r="2.1" fill="#6ce6af" fill-opacity="0.5"/>
-<text x="1262" y="901" font-size="12.50" fill="#7f93aa"><tspan font-weight="700" fill="#b6c6d9">Interpretability</tspan></text>
-<circle cx="1251" cy="920" r="2.7" fill="#6ce6af" fill-opacity="0.85"/>
-<text x="1262" y="924" font-size="12.50" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Guardrails</tspan></text>
-</g>
-<ellipse cx="850" cy="575" rx="354" ry="306" fill="url(#coreGlow)"/>
-<ellipse cx="850" cy="575" rx="271.4" ry="234.6" fill="url(#mathGlow)"/>
-<ellipse class="orbit" cx="850" cy="575" rx="236" ry="204" fill="none" stroke="#ffc978" stroke-opacity="0.22" stroke-width="1" stroke-dasharray="2 8"/>
-<line x1="871.4" y1="493.8" x2="902.5" y2="376.1" stroke="#ffc978" stroke-opacity="0.44" stroke-width="2.4"/>
-<line x1="927.5" y1="542.7" x2="1062.6" y2="486.5" stroke="#ffc978" stroke-opacity="0.36" stroke-width="2.0"/>
-<line x1="927.5" y1="607.3" x2="1062.6" y2="663.5" stroke="#ffc978" stroke-opacity="0.22" stroke-width="1.3"/>
-<line x1="871.4" y1="656.2" x2="902.5" y2="773.9" stroke="#ffc978" stroke-opacity="0.34" stroke-width="1.9"/>
-<line x1="793.0" y1="636.7" x2="702.9" y2="734.5" stroke="#ffc978" stroke-opacity="0.18" stroke-width="1.1"/>
-<line x1="766.0" y1="575.0" x2="614.0" y2="575.0" stroke="#ffc978" stroke-opacity="0.17" stroke-width="1.0"/>
-<line x1="793.0" y1="513.3" x2="702.9" y2="415.5" stroke="#ffc978" stroke-opacity="0.19" stroke-width="1.2"/>
+<rect width="1200" height="820" fill="url(#bg)"/>
+<rect width="1200" height="820" fill="url(#grid)"/>
+<path d="M454.9 274.6 Q 389.4 106.0 324.0 106.0" fill="none" stroke="#5de7ff" stroke-opacity="0.34" stroke-width="1.3"/>
+<path class="spark" style="animation-delay:0.0s" d="M454.9 274.6 Q 389.4 106.0 324.0 106.0" fill="none" stroke="#5de7ff" stroke-opacity="0.9" stroke-width="1.7" stroke-linecap="round" stroke-dasharray="3 118"/>
+<circle cx="324.0" cy="106.0" r="3.2" fill="#5de7ff" fill-opacity="0.85"/>
+<circle cx="454.9" cy="274.6" r="2.4" fill="#5de7ff"/>
+<path d="M403.1 336.3 Q 363.5 290.0 324.0 290.0" fill="none" stroke="#62e4d2" stroke-opacity="0.34" stroke-width="1.3"/>
+<path class="spark" style="animation-delay:-1.3s" d="M403.1 336.3 Q 363.5 290.0 324.0 290.0" fill="none" stroke="#62e4d2" stroke-opacity="0.9" stroke-width="1.7" stroke-linecap="round" stroke-dasharray="3 118"/>
+<circle cx="324.0" cy="290.0" r="3.2" fill="#62e4d2" fill-opacity="0.85"/>
+<circle cx="403.1" cy="336.3" r="2.4" fill="#62e4d2"/>
+<path d="M395.2 444.5 Q 359.6 474.0 324.0 474.0" fill="none" stroke="#75b8ff" stroke-opacity="0.34" stroke-width="1.3"/>
+<path class="spark" style="animation-delay:-2.6s" d="M395.2 444.5 Q 359.6 474.0 324.0 474.0" fill="none" stroke="#75b8ff" stroke-opacity="0.9" stroke-width="1.7" stroke-linecap="round" stroke-dasharray="3 118"/>
+<circle cx="324.0" cy="474.0" r="3.2" fill="#75b8ff" fill-opacity="0.85"/>
+<circle cx="395.2" cy="444.5" r="2.4" fill="#75b8ff"/>
+<path d="M445.1 517.5 Q 384.6 658.0 324.0 658.0" fill="none" stroke="#6ce6af" stroke-opacity="0.34" stroke-width="1.3"/>
+<path class="spark" style="animation-delay:-3.9s" d="M445.1 517.5 Q 384.6 658.0 324.0 658.0" fill="none" stroke="#6ce6af" stroke-opacity="0.9" stroke-width="1.7" stroke-linecap="round" stroke-dasharray="3 118"/>
+<circle cx="324.0" cy="658.0" r="3.2" fill="#6ce6af" fill-opacity="0.85"/>
+<circle cx="445.1" cy="517.5" r="2.4" fill="#6ce6af"/>
+<path d="M745.1 274.6 Q 810.6 106.0 876.0 106.0" fill="none" stroke="#b58cff" stroke-opacity="0.34" stroke-width="1.3"/>
+<path class="spark" style="animation-delay:-5.2s" d="M745.1 274.6 Q 810.6 106.0 876.0 106.0" fill="none" stroke="#b58cff" stroke-opacity="0.9" stroke-width="1.7" stroke-linecap="round" stroke-dasharray="3 118"/>
+<circle cx="876.0" cy="106.0" r="3.2" fill="#b58cff" fill-opacity="0.85"/>
+<circle cx="745.1" cy="274.6" r="2.4" fill="#b58cff"/>
+<path d="M796.9 336.3 Q 836.5 290.0 876.0 290.0" fill="none" stroke="#6ea8ff" stroke-opacity="0.34" stroke-width="1.3"/>
+<path class="spark" style="animation-delay:-6.5s" d="M796.9 336.3 Q 836.5 290.0 876.0 290.0" fill="none" stroke="#6ea8ff" stroke-opacity="0.9" stroke-width="1.7" stroke-linecap="round" stroke-dasharray="3 118"/>
+<circle cx="876.0" cy="290.0" r="3.2" fill="#6ea8ff" fill-opacity="0.85"/>
+<circle cx="796.9" cy="336.3" r="2.4" fill="#6ea8ff"/>
+<path d="M804.8 444.5 Q 840.4 474.0 876.0 474.0" fill="none" stroke="#cf8cff" stroke-opacity="0.34" stroke-width="1.3"/>
+<path class="spark" style="animation-delay:-7.8s" d="M804.8 444.5 Q 840.4 474.0 876.0 474.0" fill="none" stroke="#cf8cff" stroke-opacity="0.9" stroke-width="1.7" stroke-linecap="round" stroke-dasharray="3 118"/>
+<circle cx="876.0" cy="474.0" r="3.2" fill="#cf8cff" fill-opacity="0.85"/>
+<circle cx="804.8" cy="444.5" r="2.4" fill="#cf8cff"/>
+<path d="M754.9 517.5 Q 815.4 658.0 876.0 658.0" fill="none" stroke="#5de7e1" stroke-opacity="0.34" stroke-width="1.3"/>
+<path class="spark" style="animation-delay:-9.1s" d="M754.9 517.5 Q 815.4 658.0 876.0 658.0" fill="none" stroke="#5de7e1" stroke-opacity="0.9" stroke-width="1.7" stroke-linecap="round" stroke-dasharray="3 118"/>
+<circle cx="876.0" cy="658.0" r="3.2" fill="#5de7e1" fill-opacity="0.85"/>
+<circle cx="754.9" cy="517.5" r="2.4" fill="#5de7e1"/>
+<rect x="24" y="30" width="300" height="152" rx="17" fill="#08172a" fill-opacity="0.86" stroke="#5de7ff" stroke-opacity="0.36" stroke-width="1.2"/>
+<rect x="44" y="29" width="260" height="2.2" rx="1.1" fill="#5de7ff" fill-opacity="0.9"/>
+<rect x="44" y="29" width="260" height="2.2" rx="1.1" fill="#5de7ff" filter="url(#tight)" opacity="0.6"/>
+<circle cx="54" cy="61" r="12" fill="#5de7ff" fill-opacity="0.15" stroke="#5de7ff" stroke-opacity="0.55"/>
+<text x="54" y="65.5" text-anchor="middle" font-size="12" font-weight="700" fill="#5de7ff">1</text>
+<text x="74" y="66.0" font-size="13.00" font-weight="700" letter-spacing="0.7" fill="#f4f8ff">FOUNDATIONS</text>
+<line x1="42" y1="88" x2="306" y2="88" stroke="#9dd2ff" stroke-opacity="0.15"/>
+<circle cx="46" cy="106" r="2.8" fill="#5de7ff" fill-opacity="0.95"/>
+<text x="56" y="110" font-size="12.00" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">NLP</tspan><tspan> — Natural Language Processing</tspan></text>
+<circle cx="46" cy="127" r="2.8" fill="#5de7ff" fill-opacity="0.95"/>
+<text x="56" y="131" font-size="12.00" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">CV</tspan><tspan> — Computer Vision</tspan></text>
+<circle cx="46" cy="148" r="2.8" fill="#5de7ff" fill-opacity="0.95"/>
+<text x="56" y="152" font-size="12.00" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">GenAI</tspan><tspan> — Generative AI</tspan></text>
+<text x="56" y="173" font-size="10.5" fill="#64778e">+ 7 more in the atlas</text>
+<text x="306" y="173" text-anchor="end" font-size="10.5" font-weight="700" fill="#5de7ff" fill-opacity="0.85">10</text>
+<rect x="24" y="214" width="300" height="152" rx="17" fill="#08172a" fill-opacity="0.86" stroke="#62e4d2" stroke-opacity="0.36" stroke-width="1.2"/>
+<rect x="44" y="213" width="260" height="2.2" rx="1.1" fill="#62e4d2" fill-opacity="0.9"/>
+<rect x="44" y="213" width="260" height="2.2" rx="1.1" fill="#62e4d2" filter="url(#tight)" opacity="0.6"/>
+<circle cx="54" cy="245" r="12" fill="#62e4d2" fill-opacity="0.15" stroke="#62e4d2" stroke-opacity="0.55"/>
+<text x="54" y="249.5" text-anchor="middle" font-size="12" font-weight="700" fill="#62e4d2">2</text>
+<text x="74" y="250.0" font-size="13.00" font-weight="700" letter-spacing="0.7" fill="#f4f8ff">RETRIEVAL &amp; KNOWLEDGE</text>
+<line x1="42" y1="272" x2="306" y2="272" stroke="#9dd2ff" stroke-opacity="0.15"/>
+<circle cx="46" cy="290" r="2.8" fill="#62e4d2" fill-opacity="0.95"/>
+<text x="56" y="294" font-size="12.00" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">RAG</tspan><tspan> — Retrieval-Augmented Generation</tspan></text>
+<circle cx="46" cy="311" r="2.8" fill="#62e4d2" fill-opacity="0.95"/>
+<text x="56" y="315" font-size="12.00" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Embeddings</tspan></text>
+<circle cx="46" cy="332" r="2.8" fill="#62e4d2" fill-opacity="0.95"/>
+<text x="56" y="336" font-size="12.00" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Vector DB</tspan><tspan> — Vector Database</tspan></text>
+<text x="56" y="357" font-size="10.5" fill="#64778e">+ 4 more in the atlas</text>
+<text x="306" y="357" text-anchor="end" font-size="10.5" font-weight="700" fill="#62e4d2" fill-opacity="0.85">7</text>
+<rect x="24" y="398" width="300" height="152" rx="17" fill="#08172a" fill-opacity="0.86" stroke="#75b8ff" stroke-opacity="0.36" stroke-width="1.2"/>
+<rect x="44" y="397" width="260" height="2.2" rx="1.1" fill="#75b8ff" fill-opacity="0.9"/>
+<rect x="44" y="397" width="260" height="2.2" rx="1.1" fill="#75b8ff" filter="url(#tight)" opacity="0.6"/>
+<circle cx="54" cy="429" r="12" fill="#75b8ff" fill-opacity="0.15" stroke="#75b8ff" stroke-opacity="0.55"/>
+<text x="54" y="433.5" text-anchor="middle" font-size="12" font-weight="700" fill="#75b8ff">3</text>
+<text x="74" y="434.0" font-size="13.00" font-weight="700" letter-spacing="0.7" fill="#f4f8ff">INFERENCE &amp; OPTIMIZATION</text>
+<line x1="42" y1="456" x2="306" y2="456" stroke="#9dd2ff" stroke-opacity="0.15"/>
+<circle cx="46" cy="474" r="2.8" fill="#75b8ff" fill-opacity="0.95"/>
+<text x="56" y="478" font-size="12.00" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Tokenization</tspan></text>
+<circle cx="46" cy="495" r="2.8" fill="#75b8ff" fill-opacity="0.95"/>
+<text x="56" y="499" font-size="12.00" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">KV Cache</tspan><tspan> — Key-Value Cache</tspan></text>
+<circle cx="46" cy="516" r="2.8" fill="#75b8ff" fill-opacity="0.95"/>
+<text x="56" y="520" font-size="12.00" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Quantization</tspan></text>
+<text x="56" y="541" font-size="10.5" fill="#64778e">+ 5 more in the atlas</text>
+<text x="306" y="541" text-anchor="end" font-size="10.5" font-weight="700" fill="#75b8ff" fill-opacity="0.85">8</text>
+<rect x="24" y="582" width="300" height="152" rx="17" fill="#08172a" fill-opacity="0.86" stroke="#6ce6af" stroke-opacity="0.36" stroke-width="1.2"/>
+<rect x="44" y="581" width="260" height="2.2" rx="1.1" fill="#6ce6af" fill-opacity="0.9"/>
+<rect x="44" y="581" width="260" height="2.2" rx="1.1" fill="#6ce6af" filter="url(#tight)" opacity="0.6"/>
+<circle cx="54" cy="613" r="12" fill="#6ce6af" fill-opacity="0.15" stroke="#6ce6af" stroke-opacity="0.55"/>
+<text x="54" y="617.5" text-anchor="middle" font-size="12" font-weight="700" fill="#6ce6af">4</text>
+<text x="74" y="611.0" font-size="12.00" font-weight="700" letter-spacing="0.7" fill="#f4f8ff">EVALUATION, SAFETY</text>
+<text x="74" y="626.0" font-size="12.00" font-weight="700" letter-spacing="0.7" fill="#f4f8ff">&amp; RELIABILITY</text>
+<line x1="42" y1="640" x2="306" y2="640" stroke="#9dd2ff" stroke-opacity="0.15"/>
+<circle cx="46" cy="658" r="2.8" fill="#6ce6af" fill-opacity="0.95"/>
+<text x="56" y="662" font-size="12.00" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Evals</tspan><tspan> — AI Evaluations</tspan></text>
+<circle cx="46" cy="679" r="2.8" fill="#6ce6af" fill-opacity="0.95"/>
+<text x="56" y="683" font-size="12.00" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Alignment</tspan></text>
+<circle cx="46" cy="700" r="2.8" fill="#6ce6af" fill-opacity="0.95"/>
+<text x="56" y="704" font-size="12.00" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Benchmark</tspan></text>
+<text x="56" y="725" font-size="10.5" fill="#64778e">+ 3 more in the atlas</text>
+<text x="306" y="725" text-anchor="end" font-size="10.5" font-weight="700" fill="#6ce6af" fill-opacity="0.85">6</text>
+<rect x="876" y="30" width="300" height="152" rx="17" fill="#08172a" fill-opacity="0.86" stroke="#b58cff" stroke-opacity="0.36" stroke-width="1.2"/>
+<rect x="896" y="29" width="260" height="2.2" rx="1.1" fill="#b58cff" fill-opacity="0.9"/>
+<rect x="896" y="29" width="260" height="2.2" rx="1.1" fill="#b58cff" filter="url(#tight)" opacity="0.6"/>
+<circle cx="906" cy="61" r="12" fill="#b58cff" fill-opacity="0.15" stroke="#b58cff" stroke-opacity="0.55"/>
+<text x="906" y="65.5" text-anchor="middle" font-size="12" font-weight="700" fill="#b58cff">5</text>
+<text x="926" y="66.0" font-size="13.00" font-weight="700" letter-spacing="0.7" fill="#f4f8ff">MODEL ARCHITECTURES</text>
+<line x1="894" y1="88" x2="1158" y2="88" stroke="#9dd2ff" stroke-opacity="0.15"/>
+<circle cx="898" cy="106" r="2.8" fill="#b58cff" fill-opacity="0.95"/>
+<text x="908" y="110" font-size="12.00" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">LLM</tspan><tspan> — Large Language Model</tspan></text>
+<circle cx="898" cy="127" r="2.8" fill="#b58cff" fill-opacity="0.95"/>
+<text x="908" y="131" font-size="12.00" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Transformer</tspan></text>
+<circle cx="898" cy="148" r="2.8" fill="#b58cff" fill-opacity="0.95"/>
+<text x="908" y="152" font-size="12.00" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">VLM</tspan><tspan> — Vision-Language Model</tspan></text>
+<text x="908" y="173" font-size="10.5" fill="#64778e">+ 12 more in the atlas</text>
+<text x="1158" y="173" text-anchor="end" font-size="10.5" font-weight="700" fill="#b58cff" fill-opacity="0.85">15</text>
+<rect x="876" y="214" width="300" height="152" rx="17" fill="#08172a" fill-opacity="0.86" stroke="#6ea8ff" stroke-opacity="0.36" stroke-width="1.2"/>
+<rect x="896" y="213" width="260" height="2.2" rx="1.1" fill="#6ea8ff" fill-opacity="0.9"/>
+<rect x="896" y="213" width="260" height="2.2" rx="1.1" fill="#6ea8ff" filter="url(#tight)" opacity="0.6"/>
+<circle cx="906" cy="245" r="12" fill="#6ea8ff" fill-opacity="0.15" stroke="#6ea8ff" stroke-opacity="0.55"/>
+<text x="906" y="249.5" text-anchor="middle" font-size="12" font-weight="700" fill="#6ea8ff">6</text>
+<text x="926" y="250.0" font-size="13.00" font-weight="700" letter-spacing="0.7" fill="#f4f8ff">TRAINING &amp; ADAPTATION</text>
+<line x1="894" y1="272" x2="1158" y2="272" stroke="#9dd2ff" stroke-opacity="0.15"/>
+<circle cx="898" cy="290" r="2.8" fill="#6ea8ff" fill-opacity="0.95"/>
+<text x="908" y="294" font-size="12.00" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">SFT</tspan><tspan> — Supervised Fine-Tuning</tspan></text>
+<circle cx="898" cy="311" r="2.8" fill="#6ea8ff" fill-opacity="0.95"/>
+<text x="908" y="315" font-size="12.00" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">RLHF</tspan></text>
+<circle cx="898" cy="332" r="2.8" fill="#6ea8ff" fill-opacity="0.95"/>
+<text x="908" y="336" font-size="12.00" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Fine-tuning</tspan></text>
+<text x="908" y="357" font-size="10.5" fill="#64778e">+ 8 more in the atlas</text>
+<text x="1158" y="357" text-anchor="end" font-size="10.5" font-weight="700" fill="#6ea8ff" fill-opacity="0.85">11</text>
+<rect x="876" y="398" width="300" height="152" rx="17" fill="#08172a" fill-opacity="0.86" stroke="#cf8cff" stroke-opacity="0.36" stroke-width="1.2"/>
+<rect x="896" y="397" width="260" height="2.2" rx="1.1" fill="#cf8cff" fill-opacity="0.9"/>
+<rect x="896" y="397" width="260" height="2.2" rx="1.1" fill="#cf8cff" filter="url(#tight)" opacity="0.6"/>
+<circle cx="906" cy="429" r="12" fill="#cf8cff" fill-opacity="0.15" stroke="#cf8cff" stroke-opacity="0.55"/>
+<text x="906" y="433.5" text-anchor="middle" font-size="12" font-weight="700" fill="#cf8cff">7</text>
+<text x="926" y="434.0" font-size="13.00" font-weight="700" letter-spacing="0.7" fill="#f4f8ff">AGENTS &amp; ORCHESTRATION</text>
+<line x1="894" y1="456" x2="1158" y2="456" stroke="#9dd2ff" stroke-opacity="0.15"/>
+<circle cx="898" cy="474" r="2.8" fill="#cf8cff" fill-opacity="0.95"/>
+<text x="908" y="478" font-size="12.00" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Agent</tspan></text>
+<circle cx="898" cy="495" r="2.8" fill="#cf8cff" fill-opacity="0.95"/>
+<text x="908" y="499" font-size="12.00" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Context Window</tspan></text>
+<circle cx="898" cy="516" r="2.8" fill="#cf8cff" fill-opacity="0.95"/>
+<text x="908" y="520" font-size="12.00" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Tool Use</tspan></text>
+<text x="908" y="541" font-size="10.5" fill="#64778e">+ 7 more in the atlas</text>
+<text x="1158" y="541" text-anchor="end" font-size="10.5" font-weight="700" fill="#cf8cff" fill-opacity="0.85">10</text>
+<rect x="876" y="582" width="300" height="152" rx="17" fill="#08172a" fill-opacity="0.86" stroke="#5de7e1" stroke-opacity="0.36" stroke-width="1.2"/>
+<rect x="896" y="581" width="260" height="2.2" rx="1.1" fill="#5de7e1" fill-opacity="0.9"/>
+<rect x="896" y="581" width="260" height="2.2" rx="1.1" fill="#5de7e1" filter="url(#tight)" opacity="0.6"/>
+<circle cx="906" cy="613" r="12" fill="#5de7e1" fill-opacity="0.15" stroke="#5de7e1" stroke-opacity="0.55"/>
+<text x="906" y="617.5" text-anchor="middle" font-size="12" font-weight="700" fill="#5de7e1">8</text>
+<text x="926" y="618.0" font-size="13.00" font-weight="700" letter-spacing="0.7" fill="#f4f8ff">MULTIMODAL AI</text>
+<line x1="894" y1="640" x2="1158" y2="640" stroke="#9dd2ff" stroke-opacity="0.15"/>
+<circle cx="898" cy="658" r="2.8" fill="#5de7e1" fill-opacity="0.95"/>
+<text x="908" y="662" font-size="12.00" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Multimodal AI</tspan></text>
+<circle cx="898" cy="679" r="2.8" fill="#5de7e1" fill-opacity="0.95"/>
+<text x="908" y="683" font-size="12.00" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">ASR</tspan><tspan> — Automatic Speech Recognition</tspan></text>
+<circle cx="898" cy="700" r="2.8" fill="#5de7e1" fill-opacity="0.95"/>
+<text x="908" y="704" font-size="12.00" fill="#9fb2c8"><tspan font-weight="700" fill="#eaf2ff">Image</tspan></text>
+<text x="908" y="725" font-size="10.5" fill="#64778e">+ 5 more in the atlas</text>
+<text x="1158" y="725" text-anchor="end" font-size="10.5" font-weight="700" fill="#5de7e1" fill-opacity="0.85">8</text>
+<ellipse cx="600" cy="400" rx="279" ry="225" fill="url(#coreGlow)"/>
+<ellipse cx="600" cy="400" rx="214" ry="173" fill="url(#mathGlow)"/>
+<ellipse class="orbit" cx="600" cy="400" rx="186" ry="150" fill="none" stroke="#ffc978" stroke-opacity="0.22" stroke-width="1" stroke-dasharray="2 7"/>
+<line x1="620.4" y1="327.8" x2="641.4" y2="253.8" stroke="#ffc978" stroke-opacity="0.44" stroke-width="2.3"/>
+<line x1="669.9" y1="372.8" x2="767.6" y2="334.9" stroke="#ffc978" stroke-opacity="0.36" stroke-width="1.9"/>
+<line x1="669.9" y1="427.2" x2="767.6" y2="465.1" stroke="#ffc978" stroke-opacity="0.22" stroke-width="1.3"/>
+<line x1="620.4" y1="472.2" x2="641.4" y2="546.2" stroke="#ffc978" stroke-opacity="0.34" stroke-width="1.9"/>
+<line x1="547.3" y1="453.3" x2="484.0" y2="517.3" stroke="#ffc978" stroke-opacity="0.18" stroke-width="1.1"/>
+<line x1="525.0" y1="400.0" x2="414.0" y2="400.0" stroke="#ffc978" stroke-opacity="0.17" stroke-width="1.0"/>
+<line x1="547.3" y1="346.7" x2="484.0" y2="282.7" stroke="#ffc978" stroke-opacity="0.19" stroke-width="1.2"/>
 <g class="branch" style="animation-delay:0.0s">
-<path d="M902.5 357.1 L 921.5 376.1 L 902.5 395.1 L 883.5 376.1 Z" fill="#ffc978" fill-opacity="0.16"/>
-<path d="M902.5 362.1 L 916.5 376.1 L 902.5 390.1 L 888.5 376.1 Z" fill="#ffc978" stroke="#061426" stroke-width="1.4"/>
+<path d="M641.4 237.8 L 657.4 253.8 L 641.4 269.8 L 625.4 253.8 Z" fill="#ffc978" fill-opacity="0.16"/>
+<path d="M641.4 241.8 L 653.4 253.8 L 641.4 265.8 L 629.4 253.8 Z" fill="#ffc978" stroke="#061426" stroke-width="1.3"/>
 </g>
-<text x="902.5" y="332.1" text-anchor="middle" font-size="12.5" font-weight="700" fill="#f0dcb8">Linear algebra</text>
-<text x="902.5" y="347.1" text-anchor="middle" font-size="10.5" fill="#a08a63">72 links</text>
+<text x="641.4" y="215.8" text-anchor="middle" font-size="12" font-weight="700" fill="#f4e3c4">Linear algebra</text>
+<text x="641.4" y="229.8" text-anchor="middle" font-size="10.5" fill="#b0966d">72 links</text>
 <g class="branch" style="animation-delay:-1.1s">
-<path d="M1062.6 469.4 L 1079.7 486.5 L 1062.6 503.5 L 1045.6 486.5 Z" fill="#ff9e7d" fill-opacity="0.16"/>
-<path d="M1062.6 474.4 L 1074.7 486.5 L 1062.6 498.5 L 1050.6 486.5 Z" fill="#ff9e7d" stroke="#061426" stroke-width="1.4"/>
+<path d="M767.6 320.6 L 781.9 334.9 L 767.6 349.3 L 753.2 334.9 Z" fill="#ff9e7d" fill-opacity="0.16"/>
+<path d="M767.6 324.6 L 777.9 334.9 L 767.6 345.3 L 757.2 334.9 Z" fill="#ff9e7d" stroke="#061426" stroke-width="1.3"/>
 </g>
-<text x="1062.6" y="444.4" text-anchor="middle" font-size="12.5" font-weight="700" fill="#f0dcb8">Probability</text>
-<text x="1062.6" y="459.4" text-anchor="middle" font-size="10.5" fill="#a08a63">52 links</text>
+<text x="767.6" y="298.6" text-anchor="middle" font-size="12" font-weight="700" fill="#f4e3c4">Probability</text>
+<text x="767.6" y="312.6" text-anchor="middle" font-size="10.5" fill="#b0966d">52 links</text>
 <g class="branch" style="animation-delay:-2.2s">
-<path d="M1062.6 649.8 L 1076.4 663.5 L 1062.6 677.3 L 1048.9 663.5 Z" fill="#ffe08c" fill-opacity="0.16"/>
-<path d="M1062.6 654.8 L 1071.4 663.5 L 1062.6 672.3 L 1053.9 663.5 Z" fill="#ffe08c" stroke="#061426" stroke-width="1.4"/>
+<path d="M767.6 453.6 L 779.1 465.1 L 767.6 476.6 L 756.1 465.1 Z" fill="#ffe08c" fill-opacity="0.16"/>
+<path d="M767.6 457.6 L 775.1 465.1 L 767.6 472.6 L 760.1 465.1 Z" fill="#ffe08c" stroke="#061426" stroke-width="1.3"/>
 </g>
-<text x="1062.6" y="692.3" text-anchor="middle" font-size="12.5" font-weight="700" fill="#f0dcb8">Information</text>
-<text x="1062.6" y="707.3" text-anchor="middle" font-size="10.5" fill="#a08a63">18 links</text>
+<text x="767.6" y="490.6" text-anchor="middle" font-size="12" font-weight="700" fill="#f4e3c4">Information</text>
+<text x="767.6" y="504.6" text-anchor="middle" font-size="10.5" fill="#b0966d">18 links</text>
 <g class="branch" style="animation-delay:-3.3s">
-<path d="M902.5 757.1 L 919.3 773.9 L 902.5 790.6 L 885.8 773.9 Z" fill="#f2a65a" fill-opacity="0.16"/>
-<path d="M902.5 762.1 L 914.3 773.9 L 902.5 785.6 L 890.8 773.9 Z" fill="#f2a65a" stroke="#061426" stroke-width="1.4"/>
+<path d="M641.4 532.2 L 655.5 546.2 L 641.4 560.3 L 627.3 546.2 Z" fill="#f2a65a" fill-opacity="0.16"/>
+<path d="M641.4 536.2 L 651.5 546.2 L 641.4 556.3 L 631.3 546.2 Z" fill="#f2a65a" stroke="#061426" stroke-width="1.3"/>
 </g>
-<text x="902.5" y="805.6" text-anchor="middle" font-size="12.5" font-weight="700" fill="#f0dcb8">Optimization</text>
-<text x="902.5" y="820.6" text-anchor="middle" font-size="10.5" fill="#a08a63">49 links</text>
+<text x="641.4" y="574.3" text-anchor="middle" font-size="12" font-weight="700" fill="#f4e3c4">Optimization</text>
+<text x="641.4" y="588.3" text-anchor="middle" font-size="10.5" fill="#b0966d">49 links</text>
 <g class="branch" style="animation-delay:-4.4s">
-<path d="M702.9 721.6 L 715.7 734.5 L 702.9 747.4 L 690.0 734.5 Z" fill="#d9b382" fill-opacity="0.16"/>
-<path d="M702.9 726.6 L 710.7 734.5 L 702.9 742.4 L 695.0 734.5 Z" fill="#d9b382" stroke="#061426" stroke-width="1.4"/>
+<path d="M484.0 506.5 L 494.8 517.3 L 484.0 528.0 L 473.3 517.3 Z" fill="#d9b382" fill-opacity="0.16"/>
+<path d="M484.0 510.5 L 490.8 517.3 L 484.0 524.0 L 477.3 517.3 Z" fill="#d9b382" stroke="#061426" stroke-width="1.3"/>
 </g>
-<text x="702.9" y="762.4" text-anchor="middle" font-size="12.5" font-weight="700" fill="#f0dcb8">Numerics</text>
-<text x="702.9" y="777.4" text-anchor="middle" font-size="10.5" fill="#a08a63">9 links</text>
+<text x="484.0" y="542.0" text-anchor="middle" font-size="12" font-weight="700" fill="#f4e3c4">Numerics</text>
+<text x="484.0" y="556.0" text-anchor="middle" font-size="10.5" fill="#b0966d">9 links</text>
 <g class="branch" style="animation-delay:-5.5s">
-<path d="M614.0 562.3 L 626.7 575.0 L 614.0 587.7 L 601.3 575.0 Z" fill="#e8cf9a" fill-opacity="0.16"/>
-<path d="M614.0 567.3 L 621.7 575.0 L 614.0 582.7 L 606.3 575.0 Z" fill="#e8cf9a" stroke="#061426" stroke-width="1.4"/>
+<path d="M414.0 389.4 L 424.6 400.0 L 414.0 410.6 L 403.4 400.0 Z" fill="#e8cf9a" fill-opacity="0.16"/>
+<path d="M414.0 393.4 L 420.6 400.0 L 414.0 406.6 L 407.4 400.0 Z" fill="#e8cf9a" stroke="#061426" stroke-width="1.3"/>
 </g>
-<text x="614.0" y="602.7" text-anchor="middle" font-size="12.5" font-weight="700" fill="#f0dcb8">Graphs</text>
-<text x="614.0" y="617.7" text-anchor="middle" font-size="10.5" fill="#a08a63">7 links</text>
+<text x="414.0" y="424.6" text-anchor="middle" font-size="12" font-weight="700" fill="#f4e3c4">Graphs</text>
+<text x="414.0" y="438.6" text-anchor="middle" font-size="10.5" fill="#b0966d">7 links</text>
 <g class="branch" style="animation-delay:-6.6s">
-<path d="M702.9 402.2 L 716.1 415.5 L 702.9 428.8 L 689.6 415.5 Z" fill="#f5bb6d" fill-opacity="0.16"/>
-<path d="M702.9 407.2 L 711.1 415.5 L 702.9 423.8 L 694.6 415.5 Z" fill="#f5bb6d" stroke="#061426" stroke-width="1.4"/>
+<path d="M484.0 271.6 L 495.1 282.7 L 484.0 293.8 L 472.9 282.7 Z" fill="#f5bb6d" fill-opacity="0.16"/>
+<path d="M484.0 275.6 L 491.1 282.7 L 484.0 289.8 L 476.9 282.7 Z" fill="#f5bb6d" stroke="#061426" stroke-width="1.3"/>
 </g>
-<text x="702.9" y="377.2" text-anchor="middle" font-size="12.5" font-weight="700" fill="#f0dcb8">Dynamics</text>
-<text x="702.9" y="392.2" text-anchor="middle" font-size="10.5" fill="#a08a63">13 links</text>
-<circle class="pulse" cx="850" cy="575" r="102" fill="none" stroke="#5de7ff" stroke-opacity="0.14" stroke-width="1"/>
-<circle class="pulse" cx="850" cy="575" r="89" fill="none" stroke="#5de7ff" stroke-opacity="0.3" stroke-width="1"/>
-<circle cx="850" cy="575" r="76" fill="#061426"/>
-<circle cx="850" cy="575" r="76" fill="none" stroke="url(#coreEdge)" stroke-width="2.2"/>
-<circle cx="850" cy="575" r="76" fill="none" stroke="#5de7ff" stroke-width="6" opacity="0.32" filter="url(#soft)"/>
-<text x="850" y="565" text-anchor="middle" font-size="42" font-weight="800" letter-spacing="-1.6" fill="#ffffff">AI</text>
-<text x="850" y="590" text-anchor="middle" font-size="10.5" font-weight="700" letter-spacing="1.3" fill="#7f9ab5">75 CONCEPTS</text>
-<text x="850" y="608" text-anchor="middle" font-size="9" font-weight="700" letter-spacing="0.7" fill="#ffc978" opacity="0.92">ON 37 FOUNDATIONS</text>
-<text x="850" y="1128" text-anchor="middle" font-size="12.5" letter-spacing="2.4" fill="#5c7a99" opacity="0.9">AI CONCEPT ATLAS &#183; 75 CONCEPTS &#183; 8 DOMAINS &#183; 37 MATHEMATICAL FOUNDATIONS</text>
+<text x="484.0" y="249.6" text-anchor="middle" font-size="12" font-weight="700" fill="#f4e3c4">Dynamics</text>
+<text x="484.0" y="263.6" text-anchor="middle" font-size="10.5" fill="#b0966d">13 links</text>
+<circle class="pulse" cx="600" cy="400" r="90" fill="none" stroke="#5de7ff" stroke-opacity="0.14" stroke-width="1"/>
+<circle class="pulse" cx="600" cy="400" r="79" fill="none" stroke="#5de7ff" stroke-opacity="0.3" stroke-width="1"/>
+<circle cx="600" cy="400" r="68" fill="#061426"/>
+<circle cx="600" cy="400" r="68" fill="none" stroke="url(#coreEdge)" stroke-width="2"/>
+<circle cx="600" cy="400" r="68" fill="none" stroke="#5de7ff" stroke-width="5" opacity="0.3" filter="url(#soft)"/>
+<text x="600" y="394" text-anchor="middle" font-size="34" font-weight="800" letter-spacing="-1.2" fill="#ffffff">AI</text>
+<text x="600" y="414" text-anchor="middle" font-size="10" font-weight="700" letter-spacing="1" fill="#8ba6c2">75 CONCEPTS</text>
+<text x="600" y="430" text-anchor="middle" font-size="9.5" font-weight="700" letter-spacing="0.6" fill="#ffc978" opacity="0.95">ON 37 FOUNDATIONS</text>
+<text x="600" y="800" text-anchor="middle" font-size="11.5" letter-spacing="2" fill="#5c7a99" opacity="0.9">AI CONCEPT ATLAS &#183; 75 CONCEPTS &#183; 8 DOMAINS &#183; 37 MATHEMATICAL FOUNDATIONS</text>
 </svg>

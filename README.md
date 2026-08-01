@@ -98,15 +98,15 @@ Clipboard API requires a secure context (`https://` or `localhost`).
 node tools/build-map.mjs
 ```
 
-Eight domain panels around a centre that states the argument: a compact AI hub
+Eight domain cards around a centre that states the argument: a compact AI hub
 encircled by the seven branches of mathematics the domains rest on, each sized
-by how heavily the AI layer leans on it. Concepts are weighted by how many other
-concepts connect to them, so the hubs read louder than the leaves.
+by how heavily the AI layer leans on it. Each card names its three best-connected
+concepts and points to the rest — the canvas is sized to its display width, so every label stays legible.
 
-34 KB of vector, sharp at any zoom, in the site's own palette, and impossible to
-leave out of date: the validator fails if the map is missing any concept, domain
-or mathematics branch. The `.png` beside it is a raster of the same map, kept
-only because social crawlers do not render SVG.
+24 KB of vector, sharp at any zoom, in the site's own palette, and impossible to
+leave out of date: the validator fails if a domain or mathematics branch goes
+missing, or if either footer count stops matching the data. The `.png` beside it
+is a raster of the same map, kept only because social crawlers do not render SVG.
 
 ## Validate
 

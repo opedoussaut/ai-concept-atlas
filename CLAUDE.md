@@ -41,31 +41,49 @@ tools/build-map.mjs         Regenerates assets/ai-concept-map.svg from data.js
 ```
 
 **The hero map is generated, not drawn.** `tools/build-map.mjs` reads `data.js`
-*and* `math-data.js` and emits `assets/ai-concept-map.svg` — eight domain panels
+*and* `math-data.js` and emits `assets/ai-concept-map.svg` — eight domain cards
 around a centre that carries the atlas's actual argument: a compact AI hub
 encircled by the seven branches of mathematics the domains rest on. It is vector
-(34 KB, sharp at any zoom) and can never drift out of sync with the data. After
+(24 KB, sharp at any zoom) and can never drift out of sync with the data. After
 adding or renaming a concept:
 
 ```bash
 node tools/build-map.mjs
 ```
 
-Three things in it are computed rather than styled by hand, and should stay that
-way:
+**The canvas is 1200×820 because that is roughly how large it is displayed.**
+`.hero-visual` caps the hero at 1120px. An earlier version used a 1700px canvas,
+so its 12.5px labels rendered at **8.2px** on screen — and ~7px on a laptop. It
+was illegible, and worse, it looked like something you were meant to read. Keep
+the canvas near its display size: 1 unit here should stay ≈ 1 CSS pixel.
 
-- **Concept weight.** Degree — how many other concepts declare a relationship —
-  sorts every concept into hub / mid / leaf, which drives bullet size, glow and
-  text brightness. Uniform weight gives the eye nowhere to land.
+**The map shows a sample, not an inventory.** Seventy-five labels cannot fit
+legibly at this size, so each domain card names only its three best-connected
+concepts and then says "+ N more in the atlas". The full list lives in the atlas
+grid below, which is searchable, filterable and clickable — everything a picture
+cannot be. **Prominence is earned by selection, never by dimming**: an earlier
+attempt created hierarchy by fading the least-connected half to 5.7:1 contrast,
+which at 8px turned the map into mush. Show fewer things brightly.
+
+Three things are computed rather than styled by hand, and should stay that way:
+
+- **Landmark choice.** Degree — how many other concepts declare a relationship —
+  picks the three concepts shown per domain. Nobody hand-maintains that list.
 - **Branch size.** Each mathematics diamond is sized by how many
   `mathFoundations` links point into that branch, so the picture shows what the
   AI layer actually leans on.
 - **Ring rotation.** The seven branches are offset by half a step so no node
-  sits at 12 or 6 o'clock, where the two wide panels' connectors run.
+  sits at 12 or 6 o'clock, directly above or below the hub.
 
-The validator fails the build if the map is missing any concept, domain or
-mathematics branch, or if either footer count is stale — a forgotten
-regeneration cannot ship.
+Domain names too long for a card wrap at their "&" rather than shrinking below
+12px; the core radius is set so the gold "ON n FOUNDATIONS" line stays inside the
+disc. Both are load-bearing — check them if you change any type size.
+
+The validator no longer requires every concept to appear (the map is a sample by
+design). Instead it checks that the `aria-label` names every domain, that every
+domain contributes at least one visible concept, that all seven mathematics
+branches are present, and that **both footer counts match the data** — which is
+what catches a forgotten regeneration.
 
 `assets/ai-concept-map.png` is a 1200×812 raster of the same map, kept only
 because social crawlers will not render SVG. Regenerate it from the SVG at 2×

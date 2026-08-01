@@ -372,24 +372,42 @@ section("Concept map (assets/ai-concept-map.svg)");
 const mapSvg = read("assets/ai-concept-map.svg");
 const svgEscape = (value) => String(value).replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-const missingFromMap = concepts.filter((concept) =>
-  !mapSvg.includes(`>${svgEscape(concept.acronym)}</tspan>`));
-if (missingFromMap.length) {
-  missingFromMap.slice(0, 8).forEach((concept) =>
-    fail(`"${concept.acronym}" is missing from the map — run: node tools/build-map.mjs`));
-  if (missingFromMap.length > 8) fail(`…and ${missingFromMap.length - 8} more missing from the map`);
-} else {
-  ok(`all ${concepts.length} concepts appear in the map`);
-}
+// The map deliberately shows a sample, not an inventory: it renders at 1120px,
+// where 75 labels would land at 8px and be unreadable. So it is NOT checked for
+// every concept. Staleness is caught by the footer counts below — add a concept
+// without regenerating and the footer disagrees with the data.
+//
+// The alt text is the contract instead: it names every domain and every branch,
+// it is what a screen reader announces, and it has to be right regardless.
+const altMatch = mapSvg.match(/aria-label="([^"]+)"/);
+// The attribute is XML-escaped in the file, so "&" arrives as "&amp;".
+const alt = altMatch
+  ? altMatch[1].replace(/&amp;/g, "&").replace(/&#(\d+);/g, (_, n) => String.fromCharCode(n)).toLowerCase()
+  : "";
+if (!alt) fail("the map has no aria-label — it is unusable to a screen reader");
 
 let missingDomains = 0;
 for (const category of categories) {
-  if (!mapSvg.includes(svgEscape(category.name.toUpperCase()))) {
+  if (!alt.includes(category.name.toLowerCase())) {
     missingDomains += 1;
-    fail(`domain "${category.name}" is missing from the map — run: node tools/build-map.mjs`);
+    fail(`domain "${category.name}" is missing from the map's description — run: node tools/build-map.mjs`);
   }
 }
-if (!missingDomains) ok(`all ${categories.length} domain panels present`);
+if (alt && !missingDomains) ok(`the map describes all ${categories.length} domains`);
+
+// Landmarks are chosen by degree, so they change as relationships are added.
+// Checking that each domain contributes at least one keeps the picture honest
+// without pinning it to a particular set.
+let emptyDomains = 0;
+for (const category of categories) {
+  const items = concepts.filter((c) => c.category === category.id);
+  const shown = items.filter((c) => mapSvg.includes(`>${svgEscape(c.acronym)}</tspan>`));
+  if (items.length && !shown.length) {
+    emptyDomains += 1;
+    fail(`domain "${category.name}" contributes no concept to the map — run: node tools/build-map.mjs`);
+  }
+}
+if (!emptyDomains) ok(`every domain is represented by at least one named concept`);
 
 // The centre of the map carries the mathematics ring; if a branch is added to
 // math-data.js and the map is not regenerated, the picture quietly under-reports.
