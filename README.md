@@ -76,6 +76,24 @@ LoRA
 Edge verbs are only drawn in the focus view. Labelling all 455 at once would make
 the graph unreadable, so weight and colour carry the structure instead.
 
+## Desktop shortcut
+
+```powershell
+powershell -ExecutionPolicy Bypass -File "tools\create-shortcut.ps1"
+```
+
+Puts an **AI Concept Atlas** icon on the Desktop that opens the published site
+in its own window — no address bar, no tabs. Right-click it and *Pin to taskbar*
+to keep it there; Windows will not let a script do that last step for you.
+
+It opens the **published** atlas by default, not your working copy. This atlas
+exists to be shared, and a link copied from a local file reads
+`file:///E:/users/…`, which is useless to anyone else. Add `-Local` if you want
+the working copy instead — on a plane, or to check a change before pushing.
+
+The shortcut targets Chrome or Edge in `--app=` mode rather than a URL or the
+`.html` file, because Windows only pins shortcuts whose target is an executable.
+
 ## Run locally
 
 Open `index.html` directly, or start a local server:
@@ -86,8 +104,10 @@ python -m http.server 8000
 
 Then open `http://localhost:8000`.
 
-A local server is preferable for testing the **Copy concept link** button: the
-Clipboard API requires a secure context (`https://` or `localhost`).
+**Copy concept link works either way.** The Clipboard API needs a secure context
+(`https://` or `localhost`), so off `file://` the button falls back to a hidden
+textarea and `execCommand("copy")` — deprecated, but this is precisely the case
+it still exists for.
 
 ## The hero map is generated
 

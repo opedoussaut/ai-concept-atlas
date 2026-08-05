@@ -37,6 +37,8 @@ math-data.js                Mathematics layer (window.MATH_CONCEPTS, window.MATH
 assets/                     favicon.svg, ai-concept-map.svg (hero), .png (social preview)
 tools/validate.mjs          Zero-dependency validation script (also runs in CI)
 tools/build-map.mjs         Regenerates assets/ai-concept-map.svg from data.js
+tools/create-shortcut.ps1   Makes the Desktop launcher (run once, Windows)
+assets/ai-atlas.ico         Multi-resolution icon for that shortcut
 .github/workflows/pages.yml GitHub Pages build + deploy
 ```
 
@@ -355,6 +357,24 @@ Four public routes, all stable contracts:
 These URLs are a public contract. Preserve both forms.
 
 ---
+
+**The desktop launcher opens the published site, not the working copy.**
+`tools/create-shortcut.ps1` defaults to the canonical URL, because a link copied
+from a `file://` page reads `file:///E:/users/…` and cannot be shared — which
+defeats the point of an atlas built around shareable deep links. `-Local` exists
+for offline use. The validator checks the launcher's URL against the canonical
+in `index.html`, and **fails the build on any non-ASCII byte in the script**:
+`powershell.exe` is still Windows PowerShell 5.1, which reads a `.ps1` as
+Windows-1252, so a UTF-8 em dash arrives as three garbage bytes and the parser
+dies pointing several characters away from the real problem. The sister GEN7
+atlas shipped exactly that bug.
+
+Because a local copy is a supported way to read this atlas, two things that
+quietly assumed a server were fixed: `copyLink()` falls back to a hidden
+textarea and `execCommand("copy")` when `navigator.clipboard` is unavailable,
+and `absolute()` splits `location.href` at the hash rather than building from
+`location.origin` — which on a `file://` page is the literal string `"null"`,
+so every copied link came out as `null/E:/…/index.html#concept/qlora`.
 
 **Cache busting.** `styles.css`, `data.js`, `math-data.js` and `app.js` are all
 referenced with a shared `?v=<date>` token. GitHub Pages serves everything with

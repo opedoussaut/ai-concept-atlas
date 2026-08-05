@@ -1356,17 +1356,50 @@
     showToast.timeout = window.setTimeout(() => toast.classList.remove("show"), 2200);
   }
 
+  /**
+   * Copy a link, including when the atlas is opened straight off disk.
+   *
+   * navigator.clipboard needs a secure context. That is satisfied on the
+   * published site, but not by a local copy opened as file:// — and a desktop
+   * shortcut can point at either. So fall back to a hidden textarea and
+   * execCommand("copy"), which is deprecated but is the only thing that works
+   * there, and is exactly the case it still exists for.
+   */
   async function copyLink(url, label) {
-    try {
-      await navigator.clipboard.writeText(url);
-      showToast(`${label} copied`);
-    } catch {
-      // The Clipboard API needs a secure context; show the link instead.
-      showToast(`Copy this link: ${url}`);
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast(`${label} copied`);
+        return;
+      } catch { /* fall through to the file:// path */ }
     }
+
+    const field = document.createElement("textarea");
+    field.value = url;
+    field.setAttribute("readonly", "");
+    field.style.cssText = "position:fixed;top:-1000px;opacity:0";
+    document.body.appendChild(field);
+    try {
+      field.select();
+      field.setSelectionRange(0, field.value.length);
+      if (document.execCommand("copy")) {
+        showToast(`${label} copied`);
+        return;
+      }
+    } catch { /* fall through */ }
+    finally {
+      field.remove();
+    }
+
+    showToast(`Copy this link: ${url}`);
   }
 
-  const absolute = (hash) => `${location.origin}${location.pathname}${hash}`;
+  /* Everything before the hash, whatever the scheme. Not origin + pathname:
+     for a file:// document location.origin is the literal string "null", so
+     that produced "null/E:/…/index.html#concept/qlora" — a link that looks
+     right and goes nowhere. The published site is unaffected, but a local copy
+     is a real way to read this atlas and its links should work too. */
+  const absolute = (hash) => location.href.split("#")[0] + hash;
 
   /* ================================================================= */
   /* Events                                                             */

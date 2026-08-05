@@ -49,7 +49,9 @@ const REQUIRED_FILES = [
   "assets/favicon.svg",
   "assets/ai-concept-map.svg",
   "assets/ai-concept-map.png",
-  "tools/build-map.mjs"
+  "assets/ai-atlas.ico",
+  "tools/build-map.mjs",
+  "tools/create-shortcut.ps1"
 ];
 
 for (const file of REQUIRED_FILES) {
@@ -659,6 +661,47 @@ if (CHECK_LINKS) {
 
 /* ------------------------------------------------------------------ */
 /* Summary                                                              */
+/* ------------------------------------------------------------------ */
+/* Desktop launcher                                                     */
+/* ------------------------------------------------------------------ */
+section("Desktop launcher");
+
+/**
+ * tools/create-shortcut.ps1 must stay pure ASCII.
+ *
+ * Windows PowerShell 5.1 - which is what `powershell.exe` still is, and what
+ * anyone will actually type - reads a .ps1 as Windows-1252 unless the file
+ * carries a UTF-8 BOM. A UTF-8 em dash therefore arrives as three garbage
+ * bytes mid-token, and the parser dies pointing at something several
+ * characters away from the real problem. The sister GEN7 atlas shipped exactly
+ * that bug.
+ *
+ * Pure ASCII is byte-identical under both encodings, which sidesteps the
+ * question. This check exists because the failure is invisible on anything
+ * that is not a Windows shell - including wherever this validator runs.
+ */
+const launcherBytes = readFileSync(join(ROOT, "tools/create-shortcut.ps1"));
+const launcherNonAscii = [...launcherBytes].filter((b) => b > 127);
+if (launcherNonAscii.length) {
+  const at = [...launcherBytes].findIndex((b) => b > 127);
+  const near = launcherBytes.subarray(Math.max(0, at - 40), at + 20).toString("utf8").replace(/\s+/g, " ");
+  fail(`tools/create-shortcut.ps1 has ${launcherNonAscii.length} non-ASCII byte(s) - Windows PowerShell 5.1 reads it as Windows-1252 and will not parse it. Near: "...${near}..."`);
+} else {
+  ok(`tools/create-shortcut.ps1 is pure ASCII (${launcherBytes.length} bytes), so powershell.exe parses it`);
+}
+
+// The shortcut points at the published site by default, so that URL has to be
+// the one the site actually claims as canonical.
+const launcherText = launcherBytes.toString("utf8");
+const canonical = (read("index.html").match(/<link rel="canonical" href="([^"]+)"/) ?? [])[1];
+if (canonical) {
+  if (launcherText.includes(canonical.replace(/\/$/, ""))) {
+    ok("the launcher points at the canonical published URL");
+  } else {
+    fail(`the launcher's live URL does not match the canonical URL in index.html (${canonical})`);
+  }
+}
+
 /* ------------------------------------------------------------------ */
 console.log(`\n${"-".repeat(58)}`);
 if (failures) {
