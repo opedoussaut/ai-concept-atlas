@@ -178,7 +178,7 @@ window.AI_CONCEPTS = [
     why: "Neural networks can approximate highly complex relationships and learn representations directly from data.",
     how: "Each layer transforms its inputs using learned weights and nonlinear functions; backpropagation computes how to adjust the weights.",
     example: "A small network maps equipment measurements to a predicted remaining useful life.",
-    tags: ["neurons", "layers", "backpropagation"], related: ["dl", "cnn", "transformer"],
+    tags: ["neurons", "layers", "backpropagation"], related: ["dl", "cnn", "activation-function", "residual-connection", "transformer"],
     source: { label: "Learning representations by back-propagating errors — Rumelhart, Hinton & Williams, Nature (1986)", url: "https://doi.org/10.1038/323533a0" },
     mathIntensity: "high",
     mathFoundations: [
@@ -211,7 +211,7 @@ window.AI_CONCEPTS = [
     why: "RNNs introduced a practical way to model ordered data such as text, audio and time series.",
     how: "At each step, the network combines the current input with a representation of previous steps.",
     example: "An RNN processes a sequence of sensor readings to forecast the next value.",
-    tags: ["sequence", "recurrent", "time series"], related: ["lstm", "transformer", "asr"],
+    tags: ["sequence", "recurrent", "time series"], related: ["lstm", "ssm", "transformer", "asr"],
     source: { label: "Finding Structure in Time — Elman, Cognitive Science (1990)", url: "https://doi.org/10.1207/s15516709cog1402_1" },
     mathIntensity: "medium",
     mathFoundations: [
@@ -228,7 +228,7 @@ window.AI_CONCEPTS = [
     why: "LSTMs mitigate the difficulty standard RNNs have in learning long-range dependencies.",
     how: "Input, output and forget gates regulate a persistent cell state as the sequence is processed.",
     example: "An LSTM uses a long sequence of operating conditions to predict energy consumption.",
-    tags: ["gates", "memory", "sequence"], related: ["rnn", "memory", "transformer"],
+    tags: ["gates", "memory", "sequence"], related: ["rnn", "ssm", "memory", "transformer"],
     source: { label: "Long Short-Term Memory — Hochreiter & Schmidhuber, Neural Computation (1997)", url: "https://doi.org/10.1162/neco.1997.9.8.1735" },
     mathIntensity: "medium",
     mathFoundations: [
@@ -244,7 +244,7 @@ window.AI_CONCEPTS = [
     why: "Transformers made large-scale parallel training practical and underpin most current language and multimodal foundation models.",
     how: "Self-attention lets each token weigh the relevance of other tokens, while feed-forward layers transform the resulting representations.",
     example: "A transformer connects a pronoun to the relevant noun even when they are far apart in a document.",
-    tags: ["attention", "sequence", "foundation model"], related: ["attention", "llm", "context-window", "kv-cache"],
+    tags: ["attention", "sequence", "foundation model"], related: ["attention", "residual-connection", "layer-normalization", "positional-encoding", "activation-function", "llm", "context-window", "kv-cache"],
     source: { label: "Attention Is All You Need — Vaswani et al. (2017)", url: "https://arxiv.org/abs/1706.03762" },
     math: {
       intro: "Scaled dot-product attention is the core operation. Queries are matched against keys to produce weights over values.",
@@ -269,7 +269,7 @@ window.AI_CONCEPTS = [
     why: "Attention replaced fixed windows and recurrence as the way models handle context, letting distant elements influence each other directly and in parallel.",
     how: "Each position emits a query, a key and a value; every query is scored against every key, the scores become weights through a softmax, and the values are blended using those weights.",
     example: "Reading \"the valve failed because it was corroded\", attention links \"it\" back to \"the valve\" rather than to \"because\".",
-    tags: ["self-attention", "query key value", "context", "weighting"], related: ["transformer", "context-window", "kv-cache"],
+    tags: ["self-attention", "query key value", "context", "weighting"], related: ["transformer", "positional-encoding", "linear-attention", "flash-attention", "gqa", "context-window", "kv-cache"],
     source: { label: "Neural Machine Translation by Jointly Learning to Align and Translate — Bahdanau, Cho & Bengio (2014)", url: "https://arxiv.org/abs/1409.0473" },
     math: {
       intro: "Attention is a weighted average of values, where the weights come from how well each query matches each key.",
@@ -287,6 +287,154 @@ window.AI_CONCEPTS = [
       { slug: "vector-spaces", importance: "supporting", note: "Queries, keys and values are projections into separate learned subspaces of the same representation." },
       { slug: "probability-distributions", importance: "supporting", note: "The attention weights for one position form a distribution over the whole sequence." },
       { slug: "basis-projection", importance: "supporting", note: "Queries, keys and values are three learned projections of one representation into separate bases." }
+    ]
+  },
+  {
+    slug: "activation-function", acronym: "Activation", name: "Activation Function", category: "architectures",
+    summary: "A small nonlinear function applied to every value in a layer, without which a deep network would collapse into a single linear one.",
+    why: "Stacking linear layers produces another linear layer, so depth would buy nothing. The nonlinearity between them is the entire reason a deep network can represent more than a matrix multiplication.",
+    how: "It is applied element-wise after a linear projection. ReLU simply zeroes negative values; GELU and SiLU are smooth versions that keep a small gradient there. Gated variants such as SwiGLU split the projection in two and use one half to scale the other, letting the layer suppress its own output.",
+    example: "Modern transformer feed-forward blocks use SwiGLU rather than ReLU, because the gate lets a layer decide how much of each feature to pass on rather than only whether to pass it.",
+    tags: ["nonlinearity", "ReLU", "GELU", "SwiGLU", "gating"], related: ["nn", "transformer", "dl"],
+    source: { label: "GLU Variants Improve Transformer — Shazeer (2020)", url: "https://arxiv.org/abs/2002.05202" },
+    math: {
+      intro: "An activation is chosen as much for the shape of its derivative as for the shape of itself, because that derivative is what multiplies into every gradient behind it.",
+      formulas: [
+        { label: "Three common activations", expression: "ReLU(x) = max(0, x)\n\nSiLU(x)  = x · σ(x),      σ(x) = 1 / (1 + e^{−x})\n\nGELU(x) = x · Φ(x),      Φ = standard normal CDF", note: "All three leave large positive values roughly untouched and shrink negative ones. ReLU discards them outright, which gives a derivative of exactly zero — a unit pushed there stops learning. SiLU and GELU keep a small negative tail, so the gradient never vanishes completely." },
+        { label: "Gated linear unit (SwiGLU)", expression: "SwiGLU(x) = ( SiLU(x W₁) ⊙ (x W₂) ) W₃", note: "⊙ is element-wise multiplication. Two projections are computed instead of one: W₂ carries the content and W₁ produces a gate that scales it. The hidden width is usually cut to about two-thirds so the parameter count matches an ungated block." }
+      ]
+    },
+    mathIntensity: "medium",
+    mathFoundations: [
+      { slug: "gradients", importance: "primary", note: "An activation is selected for its derivative — ReLU's flat zero on negatives is exactly why units can die and why smooth alternatives replaced it." },
+      { slug: "backpropagation", importance: "primary", note: "The chain rule multiplies one activation derivative per layer, so a saturating choice makes gradients vanish through depth." },
+      { slug: "numerical-stability", importance: "supporting", note: "Exponentials inside sigmoid and GELU need care in low precision, which is why fused kernels compute them in a wider format." },
+      { slug: "matrix-multiplication", importance: "supporting", note: "The activation sits between two matrix multiplications; a gated variant needs a third projection, which is why hidden widths are trimmed to compensate." }
+    ]
+  },
+  {
+    slug: "layer-normalization", acronym: "LayerNorm", name: "Layer Normalization", category: "architectures",
+    summary: "Rescaling each token's vector by its own statistics so activations stay in a workable range however deep the stack gets.",
+    why: "Without it, the scale of activations drifts from layer to layer, gradients explode or vanish, and training becomes acutely sensitive to initialization and learning rate. It is one of the least glamorous and most load-bearing parts of a transformer.",
+    how: "For each token independently, subtract the mean across features and divide by the standard deviation, then apply a learned scale and shift. RMSNorm drops the mean subtraction and divides by the root mean square instead — cheaper, and in practice just as effective, which is why most current language models use it. Placing the norm before each sublayer rather than after is what makes very deep stacks trainable without a learning-rate warm-up.",
+    example: "A hundred-layer transformer trains stably with pre-norm RMSNorm, where the original post-norm design of the same depth would diverge in the first few thousand steps.",
+    tags: ["LayerNorm", "RMSNorm", "pre-norm", "training stability"], related: ["transformer", "residual-connection", "nn"],
+    source: { label: "Layer Normalization — Ba, Kiros & Hinton (2016)", url: "https://arxiv.org/abs/1607.06450" },
+    math: {
+      intro: "Both variants divide a vector by a measure of its own size. They differ only in whether the mean is removed first.",
+      formulas: [
+        { label: "Layer normalization", expression: "μ = (1/d) Σᵢ xᵢ\nσ² = (1/d) Σᵢ (xᵢ − μ)²\n\nLN(x) = γ ⊙ (x − μ) / √(σ² + ε)  +  β", note: "Statistics are taken across the d features of one token, not across the batch — which is why it behaves identically at batch size one and at batch size a thousand. γ and β are learned, so the layer can undo the normalization if that turns out to be useful." },
+        { label: "RMS normalization", expression: "RMS(x) = √( (1/d) Σᵢ xᵢ² )\n\nRMSNorm(x) = γ ⊙ x / (RMS(x) + ε)", note: "No mean subtraction and no shift term. This is ‖x‖₂ divided by √d, so the operation is simply a rescaling to fixed length. ε keeps the denominator away from zero when a vector is near-empty." }
+      ]
+    },
+    mathIntensity: "high",
+    mathFoundations: [
+      { slug: "vector-norms", importance: "primary", note: "RMSNorm divides by the L2 norm scaled by √d, so normalization is literally a projection onto a fixed-radius sphere." },
+      { slug: "numerical-stability", importance: "primary", note: "The ε in the denominator exists solely to stop division by a near-zero norm; it is the difference between a stable model and a run full of NaNs." },
+      { slug: "gradients", importance: "primary", note: "Normalizing reshapes the loss surface so gradient magnitude stops depending on the scale of the incoming activations." },
+      { slug: "probability-distributions", importance: "supporting", note: "Mean and variance across features are the only statistics used — a deliberately crude summary that turns out to be enough." }
+    ]
+  },
+  {
+    slug: "residual-connection", acronym: "Residual", name: "Residual Connection", category: "architectures",
+    summary: "Adding a layer's input to its output, so each layer learns a correction rather than a whole new representation.",
+    why: "It is what makes very deep networks trainable at all. Gradients reach early layers through the addition rather than being attenuated by every layer in between, and a layer that has nothing useful to contribute can output near zero instead of having to reproduce its input.",
+    how: "The block computes x + f(x) instead of f(x). That addition creates a direct path for both the signal going forward and the gradient coming back. The running sum down the stack is called the residual stream: every layer reads the accumulated state, computes something, and adds its result back in.",
+    example: "In a transformer block, attention and the feed-forward network each add to the stream rather than replacing it — which is why individual layers can often be removed from a trained model and it still produces sensible output.",
+    tags: ["skip connection", "residual stream", "depth", "identity path"], related: ["transformer", "layer-normalization", "nn", "interpretability"],
+    source: { label: "Deep Residual Learning for Image Recognition — He et al. (2015)", url: "https://arxiv.org/abs/1512.03385" },
+    math: {
+      intro: "The whole argument is one derivative. Differentiating the skip path produces an additive one that nothing can shrink.",
+      formulas: [
+        { label: "Residual block and its gradient", expression: "y = x + f(x)\n\n∂y/∂x = I + ∂f/∂x", note: "The identity term is the point. Through L stacked layers a plain network multiplies L Jacobians together, and anything consistently below one collapses; a residual network multiplies terms of the form (I + ∂f/∂x), so a gradient path of strength one always survives to the bottom." }
+      ]
+    },
+    mathIntensity: "medium",
+    mathFoundations: [
+      { slug: "backpropagation", importance: "primary", note: "The derivative of x + f(x) contains an identity term, so the chain rule always has an undiminished path back to earlier layers." },
+      { slug: "gradients", importance: "primary", note: "Vanishing gradients through depth are the precise problem residual connections were introduced to solve." },
+      { slug: "vector-spaces", importance: "supporting", note: "The residual stream is one shared space that every layer reads from and writes into, which is what makes interpretability work on it possible." }
+    ]
+  },
+  {
+    slug: "positional-encoding", acronym: "PE", name: "Positional Encoding", category: "architectures",
+    summary: "The signal that tells a transformer where each token sits, since attention on its own treats a sequence as an unordered set.",
+    why: "Attention is permutation-equivariant: shuffle the inputs and the outputs shuffle identically. Without position information \"the valve failed\" and \"failed the valve\" are the same input, so order has to be injected deliberately.",
+    how: "The original transformer added fixed sinusoidal vectors to the embeddings, and later models learned absolute position embeddings instead. Current practice is rotary position embedding, which rotates each query and key by an angle proportional to its position. Because a dot product between two rotated vectors depends only on the difference of their angles, the resulting attention score depends on relative distance rather than absolute index.",
+    example: "A model trained at 8k tokens can be extended to 128k by interpolating the rotation frequencies rather than retraining — an option that only exists because the encoding is relative.",
+    tags: ["RoPE", "sinusoidal", "relative position", "context extension"], related: ["attention", "transformer", "context-window"],
+    source: { label: "RoFormer: Enhanced Transformer with Rotary Position Embedding — Su et al. (2021)", url: "https://arxiv.org/abs/2104.09864" },
+    math: {
+      intro: "Rotary encoding works because rotation preserves inner products. Rotate both sides by their own position and only the gap between them survives.",
+      formulas: [
+        { label: "Rotation by position", expression: "R_m = ⎡ cos mθ   −sin mθ ⎤\n      ⎣ sin mθ    cos mθ ⎦\n\nq̃_m = R_m q_m,   k̃_n = R_n k_n", note: "The embedding is split into d/2 pairs of coordinates and each pair is rotated in its own plane, with θ decreasing across pairs so different pairs turn at different rates — fast ones resolve nearby tokens, slow ones carry long-range position." },
+        { label: "Why the score becomes relative", expression: "q̃_m · k̃_n = (R_m q)ᵀ (R_n k) = qᵀ R_mᵀ R_n k = qᵀ R_{n−m} k", note: "R is orthogonal, so R_mᵀ R_n = R_{n−m}. The absolute positions cancel and only n − m remains: two tokens ten apart score the same whether they sit at positions 5 and 15 or 5005 and 5015." }
+      ]
+    },
+    mathIntensity: "high",
+    mathFoundations: [
+      { slug: "dot-product", importance: "primary", note: "The entire relative-position property follows from rotation leaving dot products unchanged." },
+      { slug: "basis-projection", importance: "primary", note: "The embedding is split into two-dimensional subspaces and each is rotated within its own plane at its own frequency." },
+      { slug: "matrix-multiplication", importance: "supporting", note: "The rotation is a block-diagonal orthogonal matrix, applied in practice as a cheap pairwise shuffle rather than a full multiplication." },
+      { slug: "vector-spaces", importance: "supporting", note: "Position becomes a geometric property of where a vector points, not an extra feature appended to it." }
+    ]
+  },
+  {
+    slug: "linear-attention", acronym: "Linear Attention", name: "Linear Attention Mechanism", category: "architectures",
+    summary: "A family of attention variants that drop the softmax so cost grows linearly with sequence length instead of quadratically, at the price of exact recall.",
+    why: "Standard attention compares every token with every other, so both compute and the KV cache grow with the length of the conversation. Linear attention keeps a fixed-size state instead, which is what makes very long contexts affordable to serve.",
+    how: "Softmax applies its nonlinearity after the query-key product, coupling every query to every key. Linear attention applies a feature map to queries and keys separately, which makes the product re-associable: instead of computing (QKᵀ)V you compute Q(KᵀV), folding all keys and values into one fixed state matrix. Each new token writes into that state with an outer product. Later variants add a way to remove information as well as add it — the delta rule replaces what a key already held, and gating decays the state so old associations fade.",
+    example: "Generating the hundred-thousandth token costs the same as the hundredth, because the model reads one fixed-size state rather than a cache that has grown to a hundred thousand entries.",
+    tags: ["kernel attention", "fixed state", "long context", "delta rule", "gating"], related: ["attention", "kv-cache", "ssm", "memory-bandwidth-bound"],
+    source: { label: "Transformers are RNNs: Fast Autoregressive Transformers with Linear Attention — Katharopoulos et al. (2020)", url: "https://arxiv.org/abs/2006.16236" },
+    math: {
+      intro: "One associativity move is the whole idea. Matrix multiplication lets the brackets shift, and the quadratic term disappears with them.",
+      formulas: [
+        { label: "Moving the brackets", expression: "softmax attention:  ( Q Kᵀ ) V     →  n × n intermediate,  O(n² d)\n\nlinear attention:   φ(Q) ( φ(K)ᵀ V )  →  d × d intermediate,  O(n d²)", note: "φ is a feature map applied separately to queries and keys — ELU + 1 in the original, so scores stay non-negative. Once the softmax no longer sits between them, the product can be re-associated. The n × n score matrix is never formed, and the intermediate depends on the model width, not the sequence length." },
+        { label: "The recurrent form", expression: "Sₜ = Sₜ₋₁ + φ(kₜ) vₜᵀ\nzₜ = zₜ₋₁ + φ(kₜ)\n\noutputₜ = φ(qₜ)ᵀ Sₜ / ( φ(qₜ)ᵀ zₜ )", note: "Read left to right, this is a recurrent network with a matrix-valued state: each token adds one outer product and nothing is ever removed. That fixed d × d budget is the trade — once more associations are written than the state can separate, they begin to interfere, which is what the delta rule and gating variants were introduced to manage." }
+      ]
+    },
+    mathIntensity: "high",
+    mathFoundations: [
+      { slug: "outer-product", importance: "primary", note: "Each token writes its key-value pair into the state as a single outer product — the state is a running sum of them." },
+      { slug: "matrix-multiplication", importance: "primary", note: "The whole saving comes from matrix multiplication being associative, so the brackets can move off the n × n term." },
+      { slug: "matrix-rank", importance: "primary", note: "A d × d state can hold only d independent directions; past that, associations interfere. This is the precise cost of dropping the softmax." },
+      { slug: "state-space-models", importance: "supporting", note: "Written as a recurrence, a linear-attention layer is a state-space model with a matrix-valued state." },
+      { slug: "dot-product", importance: "supporting", note: "Reading the state back is still a dot product between a query and what was stored at each key direction." }
+    ]
+  },
+  {
+    slug: "ssm", acronym: "SSM", name: "State Space Model", category: "architectures",
+    summary: "A sequence architecture that carries a fixed-size state forward with a linear recurrence, giving constant cost and constant memory per token.",
+    why: "It revives what recurrence was good at — bounded memory, no growing cache — while remaining trainable in parallel, which was the reason recurrent networks lost to transformers in the first place.",
+    how: "A state vector is updated at each step by a linear rule and then read out. Because the update is linear, the whole sequence can be computed during training as a parallel scan rather than step by step. Selective variants such as Mamba make the update depend on the current input, so the model can choose what to keep and what to discard rather than decaying everything uniformly.",
+    example: "Long-context models increasingly interleave state-space layers with a few full-attention layers — constant-cost memory for most of the stack, exact recall where the task genuinely needs it.",
+    tags: ["Mamba", "selective state", "linear recurrence", "parallel scan", "hybrid"], related: ["rnn", "linear-attention", "transformer", "attention"],
+    source: { label: "Mamba: Linear-Time Sequence Modeling with Selective State Spaces — Gu & Dao (2023)", url: "https://arxiv.org/abs/2312.00752" },
+    mathIntensity: "high",
+    mathFoundations: [
+      { slug: "state-space-models", importance: "primary", note: "The architecture takes its name from the equation: a state updated as x′ = Ax + Bu and read out as y = Cx." },
+      { slug: "dynamical-systems", importance: "primary", note: "The model is a learned system evolving in time; its behaviour over long sequences is a question about that system's stability." },
+      { slug: "eigenvalues", importance: "primary", note: "The eigenvalues of the transition matrix set how quickly stored information decays — which is why they are parameterized to stay inside the unit disc." },
+      { slug: "outer-product", importance: "supporting", note: "An input-dependent update writes into the state the same way linear attention does, as an outer product of an input-derived pair." },
+      { slug: "matrix-multiplication", importance: "supporting", note: "Making the recurrence parallel means re-expressing it as a scan of matrix products rather than a sequential loop." }
+    ]
+  },
+  {
+    slug: "mla", acronym: "MLA", name: "Multi-Head Latent Attention", category: "architectures",
+    summary: "An attention variant that caches one small compressed vector per token instead of full keys and values, reconstructing them implicitly at attention time.",
+    why: "It attacks the same bottleneck as grouped-query attention — the KV cache, not the weights, is usually what limits how many conversations a server can hold at once — but by compressing rather than by sharing, which retains more of full multi-head attention's quality.",
+    how: "Each token's keys and values are projected down to a low-dimensional latent vector, and only that vector is stored. The up-projection matrices are then folded into the query and output projections, so the full keys and values are never explicitly reconstructed and the saving is real rather than deferred.",
+    example: "A model caches a few hundred numbers per token per layer instead of several thousand, so a long conversation stays resident in memory that would otherwise have to be evicted and recomputed.",
+    tags: ["latent compression", "KV cache", "low rank", "serving"], related: ["attention", "kv-cache", "gqa", "moe"],
+    source: { label: "DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model — DeepSeek-AI (2024)", url: "https://arxiv.org/abs/2405.04434" },
+    mathIntensity: "high",
+    mathFoundations: [
+      { slug: "low-rank-factorization", importance: "primary", note: "The key and value projections are factored through a narrow latent dimension — the same trick as LoRA, applied to the cache instead of the weights." },
+      { slug: "matrix-rank", importance: "primary", note: "The latent width is the rank retained, and it is the single dial trading cache size against how much of the original attention survives." },
+      { slug: "matrix-multiplication", importance: "primary", note: "Folding the up-projection into the query and output projections is just re-associating a product — which is what makes the compression free at inference." },
+      { slug: "singular-value-decomposition", importance: "supporting", note: "It is the natural way to reason about which directions a low-rank projection should keep." },
+      { slug: "basis-projection", importance: "supporting", note: "The latent vector is the token's keys and values expressed in a smaller learned basis." }
     ]
   },
   {
@@ -342,7 +490,7 @@ window.AI_CONCEPTS = [
     why: "MoE can increase total model capacity without activating every parameter for every token.",
     how: "A learned router selects a small number of experts whose outputs are combined for the current input.",
     example: "Different experts become more useful for code, mathematics or natural-language patterns.",
-    tags: ["routing", "experts", "sparse activation"], related: ["transformer", "llm", "throughput"],
+    tags: ["routing", "experts", "sparse activation"], related: ["transformer", "mla", "llm", "throughput"],
     source: { label: "Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer — Shazeer et al. (2017)", url: "https://arxiv.org/abs/1701.06538" },
     mathIntensity: "high",
     mathFoundations: [
@@ -529,6 +677,7 @@ window.AI_CONCEPTS = [
       { slug: "matrix-rank", importance: "primary", note: "LoRA rests on the claim that the weight update needed to adapt a model has low intrinsic rank." },
       { slug: "low-rank-factorization", importance: "primary", note: "That update is stored as two thin matrices whose product has the original shape — under 1% of the parameters at rank 16." },
       { slug: "matrix-multiplication", importance: "primary", note: "Applying the adapter is the product B A, added to the frozen weight." },
+      { slug: "outer-product", importance: "supporting", note: "At rank r the update B A is a sum of r outer products — r independent directions added to the frozen weight." },
       { slug: "matrices", importance: "supporting", note: "The frozen base weights and the trained adapter are both ordinary matrices." },
       { slug: "vector-spaces", importance: "supporting", note: "Choosing rank r confines the update to an r-dimensional subspace of all possible changes." },
       { slug: "gradient-descent", importance: "supporting", note: "Only B and A receive gradients; the optimizer is otherwise unchanged." },
@@ -856,7 +1005,7 @@ window.AI_CONCEPTS = [
     why: "The context window determines how much conversation, evidence, code or retrieved content can be considered at once.",
     how: "Input tokens and generated tokens consume a finite sequence budget defined by the model and serving system.",
     example: "A long technical dossier may need chunking or retrieval because it exceeds the model's context window.",
-    tags: ["tokens", "attention", "sequence length"], related: ["tokenization", "kv-cache", "rag"],
+    tags: ["tokens", "attention", "sequence length"], related: ["tokenization", "kv-cache", "positional-encoding", "linear-attention", "rag"],
     source: { label: "Lost in the Middle: How Language Models Use Long Contexts — Liu et al. (2023)", url: "https://arxiv.org/abs/2307.03172" },
     mathIntensity: "low",
     mathNote: "The context window is an architectural and memory limit. Its cost is governed by attention's quadratic scaling in sequence length, but the window itself is a constraint rather than a computation."
@@ -901,10 +1050,90 @@ window.AI_CONCEPTS = [
     why: "KV caching avoids recomputing the entire preceding sequence for every newly generated token.",
     how: "Each transformer layer retains the key and value tensors for prior tokens and appends new entries as generation proceeds.",
     example: "A chat response generates faster after the prompt has been processed because prior attention states are cached.",
-    tags: ["attention", "inference memory", "generation"], related: ["transformer", "latency", "context-window"],
+    tags: ["attention", "inference memory", "generation"], related: ["transformer", "prefill-and-decode", "memory-bandwidth-bound", "gqa", "mla", "latency", "context-window"],
     source: { label: "Efficiently Scaling Transformer Inference — Pope et al. (2022)", url: "https://arxiv.org/abs/2211.05102" },
     mathIntensity: "low",
     mathNote: "The KV cache is a systems optimization: keys and values already computed are stored rather than recomputed. It changes cost, not results."
+  },
+  {
+    slug: "prefill-and-decode", acronym: "Prefill/Decode", name: "Prefill and Decode Phases", category: "inference",
+    summary: "The two phases of generation — reading the prompt all at once, then producing tokens one at a time — which behave so differently they are effectively two separate workloads.",
+    why: "Almost every inference metric and optimization only makes sense once the two are separated. Time to first token is a prefill problem and tokens per second is a decode problem, and they are improved by opposite means.",
+    how: "Prefill processes the whole prompt in a single parallel pass and saturates the arithmetic units, so it is compute-bound. Decode then emits one token per step; each step does very little arithmetic but must read the entire set of weights and the whole KV cache from memory, so it is bound by memory bandwidth. Batching therefore helps decode enormously and prefill barely at all, because batching amortizes one weight read across many requests.",
+    example: "A long document with a one-line answer is dominated by prefill; a short prompt with a long answer is dominated by decode — and only the second gets faster when you raise the batch size.",
+    tags: ["time to first token", "generation", "serving", "chunked prefill"], related: ["kv-cache", "memory-bandwidth-bound", "latency", "throughput", "batching"],
+    source: { label: "Taming Throughput-Latency Tradeoff in LLM Inference with Sarathi-Serve — Agrawal et al., OSDI (2024)", url: "https://arxiv.org/abs/2403.02310" },
+    mathIntensity: "low",
+    mathNote: "The split is a systems distinction rather than a mathematical one — the same attention arithmetic runs in both phases. What changes is the shape of the work, and therefore which hardware limit binds first."
+  },
+  {
+    slug: "memory-bandwidth-bound", acronym: "Bandwidth-Bound", name: "Memory-Bandwidth Bound", category: "inference",
+    summary: "The condition where a computation waits on moving data rather than on arithmetic — the state most language-model inference is actually in.",
+    why: "It explains most of modern inference engineering at once. Quantization, KV-cache compression, attention kernels, grouped-query attention and speculative decoding are all attempts to move fewer bytes, not to perform less arithmetic.",
+    how: "Compare arithmetic intensity — operations performed per byte read — against the accelerator's own ratio of peak arithmetic to peak memory bandwidth. Below that break-even point the memory system is the limit and the arithmetic units sit idle waiting. Generating one token for one request reads every weight in the model to perform a handful of operations per byte, which is far below any modern accelerator's threshold.",
+    example: "Halving weight precision from sixteen to eight bits roughly doubles decode speed although the arithmetic is unchanged — there are simply half as many bytes to fetch.",
+    tags: ["roofline", "arithmetic intensity", "HBM", "compute bound"], related: ["prefill-and-decode", "quantization", "kv-cache", "throughput", "batching"],
+    source: { label: "Roofline: An Insightful Visual Performance Model for Multicore Architectures — Williams, Waterman & Patterson, Communications of the ACM (2009)", url: "https://doi.org/10.1145/1498765.1498785" },
+    mathIntensity: "low",
+    mathNote: "This is a hardware performance model rather than a piece of mathematics: a ratio of operations to bytes moved, compared against a ratio the machine fixes. It governs how long a computation takes and never what it returns."
+  },
+  {
+    slug: "flash-attention", acronym: "FlashAttention", name: "IO-Aware Exact Attention", category: "inference",
+    summary: "An implementation of ordinary attention that never writes the full score matrix to memory, making it far faster while returning exactly the same result.",
+    why: "Attention is limited by memory traffic rather than arithmetic. The n × n score matrix is written out to high-bandwidth memory and read back, and that movement — not the multiplications — dominates the cost.",
+    how: "Queries, keys and values are split into blocks small enough to fit in the GPU's on-chip memory, and attention is computed a block at a time. A running maximum and a running sum let the softmax be rescaled as each new block arrives, so the correct normalization is reached without the whole row ever existing at once. The result is bit-comparable to standard attention: this is an exact method, not an approximation.",
+    example: "Training at a 16k context becomes practical on unchanged hardware, because peak memory now grows with sequence length rather than with its square.",
+    tags: ["kernel", "tiling", "SRAM", "online softmax", "exact"], related: ["attention", "memory-bandwidth-bound", "throughput", "kv-cache"],
+    source: { label: "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness — Dao et al. (2022)", url: "https://arxiv.org/abs/2205.14135" },
+    math: {
+      intro: "The method rests on one identity: a softmax computed over two blocks can be corrected into the softmax over their union, using only the running maximum and running sum.",
+      formulas: [
+        { label: "Rescaling a partial softmax", expression: "m_new = max(m_old, m_block)\n\nℓ_new = e^{m_old − m_new} ℓ_old  +  e^{m_block − m_new} ℓ_block\n\nO_new = e^{m_old − m_new} O_old  +  e^{m_block − m_new} O_block", note: "m is the running row maximum, ℓ the running sum of exponentials and O the running weighted output. Each new block rescales what came before by a single factor, so the final result equals the softmax over the whole row. Subtracting the maximum before exponentiating is also what keeps the exponentials from overflowing." }
+      ]
+    },
+    mathIntensity: "medium",
+    mathFoundations: [
+      { slug: "softmax", importance: "primary", note: "The online rescaling identity that lets a softmax be accumulated block by block is the mathematical core of the method." },
+      { slug: "numerical-stability", importance: "primary", note: "Tracking a running maximum and subtracting it before exponentiating is what keeps the intermediate values representable." },
+      { slug: "matrix-multiplication", importance: "supporting", note: "Blocks are sized to the shapes the tensor cores multiply efficiently, which is why the tile dimensions are what they are." }
+    ]
+  },
+  {
+    slug: "gqa", acronym: "GQA", name: "Grouped-Query Attention", category: "inference",
+    summary: "An attention variant in which several query heads share one set of keys and values, shrinking the KV cache with little loss of quality.",
+    why: "The KV cache, rather than the weights, is usually what caps how many conversations a server can hold concurrently. Sharing keys and values across heads divides that cache by the sharing factor.",
+    how: "Standard multi-head attention gives every head its own keys and values. Multi-query attention takes the opposite extreme with one shared set for all heads — fast, but measurably worse. Grouped-query sits between the two: heads are divided into groups, each group sharing a single key-value pair. An existing multi-head checkpoint can be converted by mean-pooling the heads within each group and fine-tuning briefly.",
+    example: "A model with thirty-two query heads and eight key-value groups carries a quarter of the KV cache, so roughly four times as many concurrent requests fit in the same memory.",
+    tags: ["MQA", "KV cache", "head sharing", "serving"], related: ["attention", "kv-cache", "mla", "throughput"],
+    source: { label: "GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints — Ainslie et al. (2023)", url: "https://arxiv.org/abs/2305.13245" },
+    mathIntensity: "medium",
+    mathFoundations: [
+      { slug: "matrix-multiplication", importance: "primary", note: "One key-value pair is multiplied against several query heads, which raises arithmetic intensity — more work performed per byte fetched." },
+      { slug: "vector-spaces", importance: "supporting", note: "Heads in a group are forced to read from one shared key-value subspace rather than each having its own." },
+      { slug: "dot-product", importance: "supporting", note: "The scoring is unchanged; only how many distinct key sets those dot products run against is reduced." }
+    ]
+  },
+  {
+    slug: "speculative-decoding", acronym: "Speculative", name: "Speculative Decoding", category: "inference",
+    summary: "Drafting several tokens with a small fast model and having the large model check them all in one pass, keeping those it agrees with.",
+    why: "Because decode is bound by memory bandwidth, verifying several tokens costs almost exactly what generating one costs. The speed-up comes from doing more arithmetic per byte read, not from doing less work.",
+    how: "A small draft model proposes a handful of tokens. The large model scores all of them in a single forward pass. An accept-reject rule then keeps the longest prefix consistent with the large model's own distribution and resamples at the first disagreement. The tokens that come out are distributed exactly as if the large model had generated them alone — this is a lossless speed-up, not an approximation.",
+    example: "A one-billion-parameter draft model paired with a seventy-billion-parameter target commonly gives two to three times the tokens per second, with output quality unchanged by construction.",
+    tags: ["draft model", "verification", "rejection sampling", "lossless"], related: ["memory-bandwidth-bound", "prefill-and-decode", "latency", "distillation"],
+    source: { label: "Fast Inference from Transformers via Speculative Decoding — Leviathan, Kalman & Matias, ICML (2023)", url: "https://arxiv.org/abs/2211.17192" },
+    math: {
+      intro: "The correctness argument is rejection sampling. The acceptance rule and the resampling rule together reproduce the target distribution exactly.",
+      formulas: [
+        { label: "Accept, or resample the residual", expression: "accept x ~ q(x)  with probability  min(1, p(x) / q(x))\n\non rejection, draw from  p′(x) = norm( max(0, p(x) − q(x)) )", note: "p is the large model's distribution and q the draft's. A token the draft over-proposes is accepted only in proportion to how much the target actually wanted it; the probability mass that survives rejection is exactly the shortfall p − q, so resampling from its normalized positive part restores p. The closer q is to p, the more tokens are accepted." }
+      ]
+    },
+    mathIntensity: "high",
+    mathFoundations: [
+      { slug: "sampling", importance: "primary", note: "The accept-reject step is textbook rejection sampling, which is why the method is exact rather than approximate." },
+      { slug: "probability-distributions", importance: "primary", note: "Acceptance compares the target and draft distributions token by token; the expected speed-up is a function of how far apart they are." },
+      { slug: "conditional-probability", importance: "supporting", note: "Every proposed token is conditioned on the ones before it, so a single rejection invalidates the whole remaining draft." },
+      { slug: "kl-divergence", importance: "supporting", note: "How closely the draft matches the target — and so how many tokens survive — is what distilling the draft from the target is optimizing." }
+    ]
   },
   {
     slug: "quantization", acronym: "Quantization", name: "Model Quantization", category: "inference",
@@ -912,7 +1141,7 @@ window.AI_CONCEPTS = [
     why: "Quantization reduces memory use, bandwidth and often inference cost, though accuracy can degrade if applied poorly.",
     how: "High-precision values are mapped to a smaller set of low-bit numerical levels, sometimes with scaling factors and calibration.",
     example: "A model stored in 4-bit form requires far less GPU memory than the same model in 16-bit form.",
-    tags: ["low precision", "compression", "memory"], related: ["qlora", "distillation", "latency"],
+    tags: ["low precision", "compression", "memory"], related: ["qlora", "distillation", "memory-bandwidth-bound", "latency"],
     source: { label: "Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference — Jacob et al. (2017)", url: "https://arxiv.org/abs/1712.05877" },
     math: {
       intro: "Affine (asymmetric) quantization maps a floating-point range onto a small integer range.",
@@ -954,7 +1183,7 @@ window.AI_CONCEPTS = [
     why: "Batching can significantly improve throughput, although larger batches may increase waiting time for individual requests.",
     how: "Requests are grouped so matrix operations run across several sequences in parallel; dynamic batching forms groups continuously.",
     example: "An inference server combines several incoming prompts into one GPU execution batch.",
-    tags: ["serving", "parallelism", "GPU utilization"], related: ["throughput", "latency", "kv-cache"],
+    tags: ["serving", "parallelism", "GPU utilization"], related: ["throughput", "latency", "prefill-and-decode", "kv-cache"],
     source: { label: "Orca: A Distributed Serving System for Transformer-Based Generative Models — Yu et al., OSDI (2022)", url: "https://www.usenix.org/conference/osdi22/presentation/yu" },
     mathIntensity: "low",
     mathNote: "Batching is a scheduling and throughput decision. It changes how work is grouped on the accelerator, not what is computed."
@@ -965,7 +1194,7 @@ window.AI_CONCEPTS = [
     why: "Latency determines responsiveness for interactive assistants, robots and real-time applications.",
     how: "It is influenced by model size, hardware, input length, batching, network overhead and generation length.",
     example: "Time to first token measures how quickly a user sees the beginning of a generated response.",
-    tags: ["response time", "TTFT", "performance"], related: ["throughput", "batching", "quantization"],
+    tags: ["response time", "TTFT", "performance"], related: ["throughput", "batching", "prefill-and-decode", "speculative-decoding", "quantization"],
     source: { label: "MLPerf Inference Benchmark — Reddi et al. (2019)", url: "https://arxiv.org/abs/1911.02549" },
     mathIntensity: "low",
     mathNote: "Latency is a systems measurement, shaped by model size, sequence length and hardware rather than by any mathematics of its own."
@@ -976,7 +1205,7 @@ window.AI_CONCEPTS = [
     why: "Throughput is central to serving cost, capacity planning and user concurrency.",
     how: "It improves through parallelism, batching, optimized kernels, efficient memory access and appropriate model architecture.",
     example: "A serving stack increases tokens per second while keeping response latency within a target range.",
-    tags: ["tokens per second", "capacity", "serving"], related: ["latency", "batching", "moe"],
+    tags: ["tokens per second", "capacity", "serving"], related: ["latency", "batching", "flash-attention", "moe"],
     source: { label: "Efficient Memory Management for Large Language Model Serving with PagedAttention — Kwon et al. (2023)", url: "https://arxiv.org/abs/2309.06180" },
     mathIntensity: "low",
     mathNote: "Throughput is a systems measurement of served volume, governed by batching, memory bandwidth and scheduling."
@@ -1155,7 +1384,7 @@ window.AI_CONCEPTS = [
     why: "Interpretability can help diagnose failures, reveal shortcuts and support scientific or governance analysis.",
     how: "Techniques inspect activations, features, gradients, attention patterns, causal interventions or simplified surrogate models.",
     example: "An analysis tests which image regions most influenced a defect classification.",
-    tags: ["explanation", "mechanistic analysis", "transparency"], related: ["evals", "alignment", "hallucination"],
+    tags: ["explanation", "mechanistic analysis", "transparency"], related: ["evals", "residual-connection", "alignment", "hallucination"],
     source: { label: "A Mathematical Framework for Transformer Circuits — Elhage et al. (2021)", url: "https://transformer-circuits.pub/2021/framework/index.html" },
     mathIntensity: "medium",
     mathFoundations: [

@@ -141,10 +141,32 @@ window.MATH_CONCEPTS = [
       "A single artificial neuron is a dot product of its inputs with its weights, plus a bias.",
       "Retrieval ranks candidates by dot product or its normalized form, cosine similarity."
     ],
-    related: ["cosine-similarity", "vector-norms", "matrix-multiplication"],
+    related: ["outer-product", "cosine-similarity", "vector-norms", "matrix-multiplication"],
     prerequisites: ["vectors"],
     tags: ["inner product", "scalar product", "similarity", "projection"],
     source: { label: "Mathematics for Machine Learning — Deisenroth, Faisal & Ong (Cambridge University Press, 2020)", url: "https://mml-book.github.io/" }
+  },
+  {
+    slug: "outer-product", symbol: "a bᵀ", name: "Outer Product", category: "linear-algebra", difficulty: "introductory", relation: "USES",
+    summary: "Multiplying a column vector by a row vector to produce a whole matrix, every entry being one pair of numbers multiplied together.",
+    intuition: "The dot product takes two vectors and returns one number. The outer product takes the same two vectors and returns an entire matrix — it goes the other way. Every entry of the result is one entry of the first vector times one entry of the second, so the matrix records every pairing at once. The result is always rank one: it is built from a single direction, and no amount of it can ever describe more than that one direction. This is how a model writes an association into memory — pair a key with a value, and the outer product is the page you store it on.",
+    equation: "a ∈ ℝᵐ,  b ∈ ℝⁿ  →  a bᵀ ∈ ℝ^{m×n}\n\n(a bᵀ)ᵢⱼ = aᵢ bⱼ\n\nrank(a bᵀ) = 1",
+    equationNote: "Note the shape: aᵀb is a single number, while a bᵀ is an m × n matrix. The transpose is doing all the work. Because every row of the result is a scaled copy of bᵀ, the matrix has only one independent direction — its rank is one. Adding many outer products together is how a general matrix gets built, and how a fixed-size memory accumulates many associations in the same space.",
+    legend: [
+      { symbol: "a bᵀ", meaning: "column vector times row vector — the outer product" },
+      { symbol: "aᵀb", meaning: "row times column — the dot product, a single number" },
+      { symbol: "rank = 1", meaning: "the result spans a single direction, whatever its size" }
+    ],
+    worked: "  a = [1, 2]      b = [3, 4, 5]\n\n  a bᵀ = ⎡ 1×3  1×4  1×5 ⎤ = ⎡ 3   4   5 ⎤\n         ⎣ 2×3  2×4  2×5 ⎦   ⎣ 6   8  10 ⎦\n\nThe second row is exactly twice the first, so the rank is 1.\n\nReading it back with the key recovers a scaled value:\n  a·a = 5,  so aᵀ(a bᵀ) = 5 · bᵀ = [15, 20, 25]\n\nNormalise a to unit length first and the value comes back exactly.",
+    whyInAI: [
+      "A key-value association is written into a fixed-size memory as one outer product, k vᵀ — this is the update rule behind linear attention and its successors.",
+      "Low-rank adaptation adds a sum of outer products to a frozen weight matrix, which is why LoRA needs so few parameters.",
+      "Gradients of a linear layer are outer products of the input with the error signal, which is why one example can update every weight at once."
+    ],
+    related: ["dot-product", "low-rank-factorization", "matrix-rank", "matrix-multiplication"],
+    prerequisites: ["vectors", "matrices"],
+    tags: ["tensor product", "rank one", "association", "memory write"],
+    source: { label: "Linear Algebra and Learning from Data — Strang (Wellesley-Cambridge Press, 2019)", url: "https://math.mit.edu/~gs/learningfromdata/" }
   },
   {
     slug: "vector-norms", symbol: "‖v‖", name: "Vector Norms", category: "linear-algebra", difficulty: "introductory", relation: "MEASURED_WITH",
@@ -230,7 +252,7 @@ window.MATH_CONCEPTS = [
       "If a matrix is low rank, storing two thin matrices instead of the full grid loses nothing and costs far less.",
       "Rank gives a principled way to talk about redundancy, which is the basis of most model compression."
     ],
-    related: ["low-rank-factorization", "matrices", "vector-spaces"],
+    related: ["outer-product", "low-rank-factorization", "matrices", "vector-spaces"],
     prerequisites: ["matrices", "vector-spaces"],
     tags: ["independence", "redundancy", "degrees of freedom", "compression"],
     source: { label: "The Fundamental Theorem of Linear Algebra — Gilbert Strang, The American Mathematical Monthly (1993)", url: "https://doi.org/10.1080/00029890.1993.11990500" }
@@ -252,7 +274,7 @@ window.MATH_CONCEPTS = [
       "Many adapters can be swapped over one shared base model, since each is just a small pair of matrices.",
       "The same idea, applied by truncating a singular value decomposition, is a standard way to compress trained layers."
     ],
-    related: ["matrix-rank", "matrix-multiplication", "matrices"],
+    related: ["outer-product", "matrix-rank", "matrix-multiplication", "matrices"],
     prerequisites: ["matrix-rank", "matrix-multiplication"],
     tags: ["factorization", "decomposition", "adapter", "compression", "SVD"],
     source: { label: "The Approximation of One Matrix by Another of Lower Rank — Eckart & Young, Psychometrika (1936)", url: "https://doi.org/10.1007/BF02288367" }

@@ -102,7 +102,7 @@ comes out as a solid blob. Use a real SVG renderer, or a browser.
 
 `data.js`, `math-data.js` and `app.js` are loaded as classic scripts at the end of
 `<body>`, in that order: the data files publish the four globals `app.js` consumes.
-There are currently **75 concepts across 8 domains** and **37 mathematics concepts
+There are currently **87 concepts across 8 domains** and **38 mathematics concepts
 across 7 branches**, each with a primary reference.
 
 **The mathematics layer is cross-cutting, not a ninth domain.** It is the answer to
@@ -126,8 +126,8 @@ adding fields to a concept, decide deliberately whether they join the index.
 
 - *Domains* (default) — concepts grouped into coloured bands, one per domain.
   Bands with no match are omitted entirely when searching or filtering.
-- *Graph* — an SVG relationship map spanning **both layers**. 112 nodes: AI
-  concepts as circles, mathematics as diamonds. 455 edges, each carrying a
+- *Graph* — an SVG relationship map spanning **both layers**. 125 nodes: AI
+  concepts as circles, mathematics as diamonds. 547 edges, each carrying a
   relation verb. Node radius scales with degree. The layout is a deterministic
   force simulation (`computeGraphLayout`): pairwise repulsion, springs weighted
   by edge strength, and a mild pull toward each group's anchor. Nodes are
@@ -147,7 +147,7 @@ namespaces can never collide. Edges are undirected, deduplicated, and typed:
 
 Prerequisites are collected before plain relations so the stronger verb wins a
 duplicated pair. Weight drives both spring strength and stroke opacity, which is
-how 455 edges stay legible without hiding any of them.
+how 547 edges stay legible without hiding any of them.
 
 **Three layer modes**, each with its **own cached layout**, simulated lazily on
 first view: `both` (AI domains on an outer ring, mathematics branches on an inner
@@ -158,10 +158,10 @@ searching only re-render.
 **Focus view.** Selecting a concept in the focus control replaces the force graph
 with a radial star: that concept at the centre, its *direct* mathematical
 dependencies around it, and — this is the only place they fit — the relation verb
-written on every edge. Core dependencies get a larger diamond. Only the 52
+written on every edge. Core dependencies get a larger diamond. Only the 62
 concepts that declare foundations appear in the selector.
 
-Do not label edges in the force view. 455 labels is unreadable, which is exactly
+Do not label edges in the force view. 547 labels is unreadable, which is exactly
 the failure mode the original brief warned about.
 
 **Three levels of depth** for one concept, all sharing the same data:
@@ -301,15 +301,19 @@ Every entry in `window.MATH_CONCEPTS`. Required except `legend`, `worked`,
 4. Slugs are public URLs. `#math/<slug>` and `#learn/<slug>` are separate namespaces,
    but the validator warns on a collision because it confuses readers.
 
-**On `source`.** All 71 concepts carry one. Prefer, in order: the paper that
+**On `source`.** All 87 concepts carry one. Prefer, in order: the paper that
 introduced the idea, a DOI over a publisher URL (DOIs are permanent), official
 documentation, then an authoritative survey. Every concept currently has a
 *distinct* reference; the validator warns if two share one.
 
 **On `math`.** Optional and deliberately dependency-free: expressions are plain
 text in a `<pre><code>` block, not LaTeX, so the site still makes zero external
-requests. Six concepts carry one today (`transformer`, `lora`, `diffusion`,
-`dpo`, `quantization`, `embeddings`). Concepts without it show a short note
+requests. Fifteen concepts carry one today — the transformer block and its parts
+(`transformer`, `attention`, `activation-function`, `layer-normalization`,
+`residual-connection`, `positional-encoding`), the efficient-attention line
+(`linear-attention`, `flash-attention`, `speculative-decoding`), and
+`next-token-prediction`, `diffusion`, `lora`, `dpo`, `embeddings`,
+`quantization`. Concepts without it show a short note
 pointing at the primary reference. Adding a maths library later is a real
 decision — see principle 6.
 
@@ -416,7 +420,7 @@ Run before every commit:
 ```bash
 node tools/build-map.mjs          # only if data.js changed
 node tools/validate.mjs           # offline checks; this is what CI runs
-node tools/validate.mjs --links   # additionally HEADs all 112 reference URLs
+node tools/validate.mjs --links   # additionally HEADs all 125 reference URLs
 ```
 
 It checks required files, JavaScript syntax (`data.js` and `math-data.js`
@@ -520,7 +524,7 @@ Every AI concept now carries a mathematics mapping and the validator runs clean
 with **zero warnings**. Keep it that way: a new concept must arrive with a
 `mathIntensity`, and either foundations or an honest `mathNote`.
 
-- Write `math` blocks for the remaining concepts (8 of 75 done). This is the
+- Write `math` blocks for the remaining concepts (15 of 87 done). This is the
   largest open content item. Less urgent than it was — `mathFoundations` already
   carries the conceptual link — so `math` is now only for a concept's *own*
   formulation, and only where one genuinely helps.
@@ -533,16 +537,34 @@ with **zero warnings**. Keep it that way: a new concept must arrive with a
 - Add optional French localization.
 - Consider persisting the chosen view, if it can be done without anything a
   reader would reasonably call tracking.
-- Reassess plain-text formulas now that 37 mathematics pages carry equations. If
+- Reassess plain-text formulas now that 38 mathematics pages carry equations. If
   they become unreadable, a **self-hosted** KaTeX build is the only option that
   keeps the no-third-party-requests promise — vendored into `assets/`, added to
   the workflow allow-list, never a CDN.
 
-Done and no longer open: primary references (all 112), the per-concept page,
+Done and no longer open: primary references (all 125), the per-concept page,
 image weight (the hero is a generated 35 KB SVG rather than the original 1.78 MB
-raster), the mathematics layer — 37 concepts, 220 typed links, both navigation
+raster), the mathematics layer — 38 concepts, 261 typed links, both navigation
 directions, its own overview and detail routes, the return breadcrumb, and
-validator coverage — the two-layer relationship graph (112 nodes, 455 typed
+validator coverage — the two-layer relationship graph (125 nodes, 547 typed
 edges, three cached layer layouts, a per-concept focus view), the hero map
 rebuilt around the mathematics ring with degree-weighted concepts, and cache
 busting across every local asset.
+
+Also closed: the transformer block's own parts. The atlas named `transformer` and
+`attention` but nothing a reader could drill into from them, so a `#learn/transformer`
+page dead-ended at its own summary. `activation-function`, `layer-normalization`,
+`residual-connection` and `positional-encoding` now sit between them, each with a
+`math` block. Alongside those, the efficient-attention line that answers attention's
+quadratic cost — `linear-attention`, `ssm`, `mla`, `gqa`, `flash-attention` — and the
+inference concepts that explain *why* it exists: `prefill-and-decode`,
+`memory-bandwidth-bound` and `speculative-decoding`. `outer-product` was added to the
+mathematics layer to support them; it is the operation a fixed-size state uses to
+write an association, and the reason a rank-r LoRA update needs so few parameters.
+
+Two naming traps for anyone extending this line. The AI concept is `ssm`, not
+`state-space-models` — that slug belongs to the mathematics layer, and the validator
+warns on a collision across the two namespaces. And prefer the durable category over
+the model of the moment: `ssm` covers Mamba, `linear-attention` covers DeltaNet and
+its gated successors. Named frontier models date within a year, and slugs here are
+permanent.
