@@ -1032,13 +1032,21 @@ footer {
 
 .quiz-view { width: min(100%, 860px); margin: 0 auto; padding: 12px 0 90px; }
 .quiz-header { text-align: center; margin-bottom: 34px; }
+/* The global h1 centres a narrow 15ch block with `margin: 0 auto`. That is the
+   right call for the hero, where the heading is a long sentence that wants a
+   measure — but it makes centring depend on two properties agreeing, and any
+   rule that touches the margin shorthand silently pins the block left while
+   the text stays centred inside it. That is what happened here and it reads as
+   a title mysteriously off to one side.
+
+   The dojo headings are two or three words, so they need no measure at all.
+   Dropping the max-width lets the block fill its container and leaves the
+   centring to `text-align` alone — one property instead of two, and nothing
+   left to disagree with. */
 .quiz-header h1 {
   font-size: clamp(2.1rem, 5vw, 3rem);
-  /* `auto` on the inline axis is load-bearing: the global h1 rule centres a
-     15ch-wide block that way, and a shorthand with 0 here silently pins it
-     left while the text inside stays centred. */
-  margin: 6px auto 14px;
-  max-width: 20ch;
+  max-width: none;
+  margin: 6px 0 14px;
 }
 .quiz-header .learn-summary { margin-inline: auto; max-width: 62ch; }
 .quiz-subhead { text-align: center; font-size: 1.05rem; margin: 0 0 18px; }
@@ -1281,7 +1289,10 @@ footer {
   from { opacity: 0; transform: translateY(-14px) scale(.94); }
   to   { opacity: 1; transform: none; }
 }
-.dojo-rei h1 { font-size: clamp(1.8rem, 4vw, 2.4rem); margin: 10px 0 16px; }
+/* Same trap as .quiz-header h1: overriding the margin shorthand kills the
+   `auto` the global rule centres with. The bow heading is one word, so it
+   drops the measure too and lets text-align do the work by itself. */
+.dojo-rei h1 { font-size: clamp(1.8rem, 4vw, 2.4rem); max-width: none; margin: 10px 0 16px; }
 .dojo-rei p { color: var(--muted); line-height: 1.65; margin: 0 0 12px; }
 .rei-count { color: var(--math) !important; font-weight: 700; margin-bottom: 26px !important; }
 
