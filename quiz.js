@@ -147,7 +147,7 @@ window.ATLAS_QUIZ = (() => {
         const c = sample(concepts);
         const wrong = distractors(concepts, 3, (x) => x.slug, new Set([c.slug]));
         if (wrong.length < 3) return null;
-        return { prompt: t("qAcronym", { token: c.acronym }),
+        return { subject: c.slug, prompt: t("qAcronym", { token: c.acronym }),
                  ...options(c.name, wrong.map((x) => x.name)) };
       }},
 
@@ -155,7 +155,7 @@ window.ATLAS_QUIZ = (() => {
         const c = sample(concepts);
         const wrong = distractors(concepts, 3, (x) => x.acronym, new Set([c.acronym]));
         if (wrong.length < 3) return null;
-        return { prompt: t("qName", { name: c.name }),
+        return { subject: c.slug, prompt: t("qName", { name: c.name }),
                  ...options(c.acronym, wrong.map((x) => x.acronym)) };
       }},
 
@@ -164,7 +164,7 @@ window.ATLAS_QUIZ = (() => {
         const c = sample(concepts);
         const wrong = distractors(concepts, 3, (x) => x.slug, new Set([c.slug]));
         if (wrong.length < 3) return null;
-        return { prompt: t("qSummary", { summary: c.summary }),
+        return { subject: c.slug, prompt: t("qSummary", { summary: c.summary }),
                  ...options(c.name, wrong.map((x) => x.name)) };
       }},
 
@@ -174,7 +174,7 @@ window.ATLAS_QUIZ = (() => {
         const home = categoryOf(c);
         const wrong = distractors(categories, 3, (x) => x.id, new Set([home.id]));
         if (wrong.length < 3) return null;
-        return { prompt: t("qDomain", { name: c.name }),
+        return { subject: c.slug, prompt: t("qDomain", { name: c.name }),
                  ...options(home.name, wrong.map((x) => x.name)) };
       }},
 
@@ -185,7 +185,7 @@ window.ATLAS_QUIZ = (() => {
         const outside = concepts.filter((c) => c.category !== home.id);
         if (inside.length < 3 || !outside.length) return null;
         const odd = sample(outside);
-        return { prompt: t("qOddOne", { domain: home.name }),
+        return { subject: `domain:${home.id}`, prompt: t("qOddOne", { domain: home.name }),
                  ...options(odd.name, shuffle(inside).slice(0, 3).map((c) => c.name)) };
       }},
 
@@ -194,7 +194,7 @@ window.ATLAS_QUIZ = (() => {
         const m = sample(mathConcepts);
         const wrong = distractors(mathConcepts, 3, (x) => x.slug, new Set([m.slug]));
         if (wrong.length < 3) return null;
-        return { prompt: t("qSymbol", { symbol: m.symbol }),
+        return { subject: `math:${m.slug}`, prompt: t("qSymbol", { symbol: m.symbol }),
                  ...options(m.name, wrong.map((x) => x.name)) };
       }},
 
@@ -202,7 +202,7 @@ window.ATLAS_QUIZ = (() => {
         const m = sample(mathConcepts);
         const wrong = distractors(mathConcepts, 3, (x) => x.symbol, new Set([m.symbol]));
         if (wrong.length < 3) return null;
-        return { prompt: t("qMathName", { name: m.name }),
+        return { subject: `math:${m.slug}`, prompt: t("qMathName", { name: m.name }),
                  ...options(m.symbol, wrong.map((x) => x.symbol)) };
       }},
 
@@ -212,7 +212,7 @@ window.ATLAS_QUIZ = (() => {
         const branch = mathCategoryOf(m);
         const wrong = distractors(mathCategories, 3, (x) => x.id, new Set([branch.id]));
         if (wrong.length < 3) return null;
-        return { prompt: t("qBranch", { name: m.name }),
+        return { subject: `math:${m.slug}`, prompt: t("qBranch", { name: m.name }),
                  ...options(branch.name, wrong.map((x) => x.name)) };
       }},
 
@@ -221,7 +221,7 @@ window.ATLAS_QUIZ = (() => {
         const m = sample(mathConcepts);
         const wrong = distractors(mathConcepts, 3, (x) => x.slug, new Set([m.slug]));
         if (wrong.length < 3) return null;
-        return { prompt: t("qMathSummary", { summary: m.summary }),
+        return { subject: `math:${m.slug}`, prompt: t("qMathSummary", { summary: m.summary }),
                  ...options(m.name, wrong.map((x) => x.name)) };
       }},
 
@@ -239,7 +239,7 @@ window.ATLAS_QUIZ = (() => {
         const taken = new Set([c.slug, ...(c.related ?? [])]);
         const wrong = distractors(concepts, 3, (x) => x.slug, taken);
         if (wrong.length < 3) return null;
-        return { prompt: t("qRelated", { name: c.name }),
+        return { subject: c.slug, prompt: t("qRelated", { name: c.name }),
                  ...options(answer.name, wrong.map((x) => x.name)) };
       }},
 
@@ -253,7 +253,7 @@ window.ATLAS_QUIZ = (() => {
         const taken = new Set((c.mathFoundations ?? []).map((l) => l.slug));
         const wrong = distractors(mathConcepts, 3, (x) => x.slug, taken);
         if (wrong.length < 3) return null;
-        return { prompt: t("qFoundation", { name: c.name }),
+        return { subject: c.slug, prompt: t("qFoundation", { name: c.name }),
                  ...options(answer.name, wrong.map((x) => x.name)) };
       }},
 
@@ -266,7 +266,7 @@ window.ATLAS_QUIZ = (() => {
         const taken = new Set((usedByMath.get(m.slug) ?? []).map((u) => u.concept.slug));
         const wrong = distractors(concepts, 3, (x) => x.slug, taken);
         if (wrong.length < 3) return null;
-        return { prompt: t("qUsedBy", { name: m.name }),
+        return { subject: `math:${m.slug}`, prompt: t("qUsedBy", { name: m.name }),
                  ...options(answer.name, wrong.map((x) => x.name)) };
       }},
 
@@ -280,7 +280,7 @@ window.ATLAS_QUIZ = (() => {
         const taken = new Set([m.slug, ...(m.prerequisites ?? []), ...(m.related ?? [])]);
         const wrong = distractors(mathConcepts, 3, (x) => x.slug, taken);
         if (wrong.length < 3) return null;
-        return { prompt: t("qPrereq", { name: m.name }),
+        return { subject: `math:${m.slug}`, prompt: t("qPrereq", { name: m.name }),
                  ...options(answer.name, wrong.map((x) => x.name)) };
       }},
 
@@ -296,7 +296,7 @@ window.ATLAS_QUIZ = (() => {
         const verb = link.relation ?? m.relation;
         const others = [...new Set(mathConcepts.map((x) => x.relation))].filter((v) => v !== verb);
         if (others.length < 3) return null;
-        return { prompt: t("qRelation", { concept: c.name, math: m.name }),
+        return { subject: c.slug, prompt: t("qRelation", { concept: c.name, math: m.name }),
                  ...options(relationLabel(verb), shuffle(others).slice(0, 3).map(relationLabel)) };
       }},
 
@@ -311,7 +311,7 @@ window.ATLAS_QUIZ = (() => {
         // Only three levels exist, so this question has three options by
         // nature. Padding it to four would mean inventing a level.
         const all = shuffle([c.mathIntensity, ...wrong]).map((l) => t(`intensity${l[0].toUpperCase()}${l.slice(1)}`));
-        return { prompt: t("qIntensity", { name: c.name }),
+        return { subject: c.slug, prompt: t("qIntensity", { name: c.name }),
                  options: all,
                  answer: all.indexOf(t(`intensity${c.mathIntensity[0].toUpperCase()}${c.mathIntensity.slice(1)}`)) };
       }},
@@ -323,7 +323,7 @@ window.ATLAS_QUIZ = (() => {
         const outside = mathConcepts.filter((m) => m.difficulty !== level);
         if (!inside.length || outside.length < 3) return null;
         const answer = sample(inside);
-        return { prompt: t("qDifficulty", { level: t(`difficulty${level[0].toUpperCase()}${level.slice(1)}`) }),
+        return { subject: `level:${level}`, prompt: t("qDifficulty", { level: t(`difficulty${level[0].toUpperCase()}${level.slice(1)}`) }),
                  ...options(answer.name, shuffle(outside).slice(0, 3).map((m) => m.name)) };
       }}
     ];
@@ -334,7 +334,15 @@ window.ATLAS_QUIZ = (() => {
      * Two things are being balanced here, and getting either wrong is visible
      * to the player.
      *
-     * DEDUPLICATION is on the prompt *and* the options together, not the
+     * NO SUBJECT IS ASKED ABOUT TWICE. Deduplicating identical questions is
+     * not enough: being asked what LoRA stands for and then which domain LoRA
+     * belongs to reads as repetition even though the two questions share no
+     * text at all. Every generator declares the concept its question is about,
+     * and a run refuses a subject it has already used. With 125 concepts plus
+     * the domain and difficulty subjects there is room for a hundred distinct
+     * ones, so even the longest run never revisits a topic.
+     *
+     * DEDUPLICATION is also on the prompt *and* the options together, not the
      * prompt alone. Some generators have very few possible prompts — there
      * are only eight domains, so "which of these does not belong to X" can
      * phrase itself eight ways — and deduplicating on the prompt alone threw
@@ -357,6 +365,7 @@ window.ATLAS_QUIZ = (() => {
       const perType = Math.max(2, Math.ceil(count / 4));
       const used = new Map();
       const seen = new Set();
+      const subjects = new Set();
       const out = [];
       let attempts = 0;
       const ceiling = count * 80;
@@ -375,10 +384,16 @@ window.ATLAS_QUIZ = (() => {
         // ambiguous or trivially guessable; drop it rather than show it.
         if (new Set(question.options).size !== question.options.length) continue;
 
-        const key = `${question.prompt} ${question.options.slice().sort().join("")}`;
+        const key = `${question.prompt} ${question.options.slice().sort().join("|")}`;
         if (seen.has(key)) continue;
 
+        // Relaxing the subject rule is a last resort and only once the attempt
+        // budget is nearly spent: a run that repeats a topic still beats one
+        // that comes up short of the length the reader actually chose.
+        if (!relaxed && question.subject && subjects.has(question.subject)) continue;
+
         seen.add(key);
+        if (question.subject) subjects.add(question.subject);
         used.set(index, (used.get(index) ?? 0) + 1);
         out.push(question);
       }

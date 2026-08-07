@@ -1032,7 +1032,14 @@ footer {
 
 .quiz-view { width: min(100%, 860px); margin: 0 auto; padding: 12px 0 90px; }
 .quiz-header { text-align: center; margin-bottom: 34px; }
-.quiz-header h1 { font-size: clamp(2.1rem, 5vw, 3rem); margin: 6px 0 14px; }
+.quiz-header h1 {
+  font-size: clamp(2.1rem, 5vw, 3rem);
+  /* `auto` on the inline axis is load-bearing: the global h1 rule centres a
+     15ch-wide block that way, and a shorthand with 0 here silently pins it
+     left while the text inside stays centred. */
+  margin: 6px auto 14px;
+  max-width: 20ch;
+}
 .quiz-header .learn-summary { margin-inline: auto; max-width: 62ch; }
 .quiz-subhead { text-align: center; font-size: 1.05rem; margin: 0 0 18px; }
 .quiz-note { color: var(--muted); font-size: .88rem; text-align: center; margin: 14px 0 0; }
@@ -1344,4 +1351,98 @@ footer {
    than making a reader who asked for less movement wait the same time. */
 @media (prefers-reduced-motion: reduce) {
   .rei-kanji, .belt-art.is-tied, .dojo-call { animation: none; }
+}
+
+/* =====================================================================
+   Dojo, second pass — making the room read as Japanese
+   ---------------------------------------------------------------------
+   Three changes carry most of it: a noren over the entrance, real belts
+   hanging on the rack instead of colour chips, and warm straw light in
+   place of the atlas's cool cyan. The palette shift is the important
+   one — a tatami room lit cyan still reads as a dashboard.
+   ===================================================================== */
+
+/* 暖簾 — the split curtain at a dojo door. Panels of unequal length, as
+   they hang in reality, with the slit between them at the centre. */
+.dojo-noren {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  height: 54px;
+  margin: -34px -18px 6px;
+  overflow: hidden;
+}
+.dojo-noren span {
+  flex: 1 1 0;
+  max-width: 128px;
+  border-radius: 0 0 3px 3px;
+  background: linear-gradient(180deg, #1d2b3f 0%, #16233a 62%, rgba(22,35,58,0) 100%);
+  border-inline: 1px solid rgba(255, 201, 120, .14);
+  border-top: 3px solid rgba(255, 201, 120, .5);
+}
+.dojo-noren span:nth-child(2) { height: 86%; }
+.dojo-noren span:nth-child(3) { height: 78%; }
+.dojo-noren span:nth-child(4) { height: 86%; }
+.dojo-noren span:nth-child(5) { height: 94%; }
+
+/* Warmer light inside the dojo. The tatami was already straw-toned; this
+   takes the surfaces with it so the room stops reading as a dashboard. */
+.quiz-view { --line: rgba(255, 201, 120, .17); }
+.quiz-view .quiz-length,
+.quiz-view .quiz-option { background: rgba(255, 201, 120, .035); }
+.quiz-view .quiz-length:hover,
+.quiz-view .quiz-option:not(:disabled):hover {
+  border-color: rgba(255, 201, 120, .5);
+  background: rgba(255, 201, 120, .08);
+}
+.quiz-view .eyebrow { color: var(--math); }
+.quiz-view .primary-button {
+  color: #241703;
+  background: linear-gradient(135deg, var(--math), #ffe3b4);
+  box-shadow: 0 10px 28px rgba(255, 201, 120, .18);
+}
+.quiz-view .quiz-bar span { background: linear-gradient(90deg, var(--math), #ffe3b4); }
+
+/* A kanji mark set beside a heading, the way a dojo labels its walls. */
+.jp-mark {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--math);
+  opacity: .82;
+  letter-spacing: .12em;
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+}
+.dan-ladder-title { text-align: center; margin: 34px 0 0; }
+
+/* Belts hanging on the rack ------------------------------------------- */
+.belt-hang { width: 58px; height: auto; filter: drop-shadow(0 3px 6px rgba(0,0,0,.45)); }
+.belt-row, .dan-row { grid-template-columns: 58px 3rem 1fr auto; }
+.belt-row { padding: 11px 16px; }
+.belt-wall { max-width: 600px; }
+.belt-wall h2 { text-align: center; margin-bottom: 18px; }
+/* Mincho for the kanji: a brush-derived serif is what a dojo sign uses, and
+   it separates the Japanese from the interface sans without shouting. */
+.belt-kanji {
+  font-size: 1.4rem;
+  font-weight: 500;
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", "Yu Gothic", serif;
+}
+.belt-names strong { font-size: 1rem; letter-spacing: .01em; }
+.dojo-shomen {
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+  color: rgba(255, 201, 120, .14);
+}
+.rei-kanji, .award-kanji {
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+  font-weight: 500;
+}
+
+@media (max-width: 600px) {
+  .dojo-noren { height: 40px; margin-top: -26px; }
+  .belt-row, .dan-row { grid-template-columns: 44px 2.4rem 1fr auto; gap: 10px; }
+  .belt-hang { width: 44px; }
+  .belt-kanji { font-size: 1.15rem; }
+  .belt-row .belt-min { display: revert; font-size: .78rem; }
 }

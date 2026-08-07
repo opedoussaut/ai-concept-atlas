@@ -880,6 +880,28 @@ if (/path:\s*\.\s*$/m.test(workflow)) fail("workflow uploads the whole repositor
 /* ------------------------------------------------------------------ */
 /* 6. Secret scan                                                       */
 /* ------------------------------------------------------------------ */
+/* A stray control byte is nearly invisible: editors render it as nothing,
+   git shows the file as binary but still commits it, and JavaScript happily
+   accepts it inside a template string. One reached quiz.js and survived every
+   test, because a NUL works perfectly well as a separator. Cheap to check. */
+section("Source hygiene");
+
+const CONTROL = /[\u0000-\u0008\u000e-\u001f]/;
+let dirty = 0;
+for (const file of REQUIRED_FILES) {
+  if (!existsSync(join(ROOT, file))) continue;
+  if (/\.(ico|png|svg)$/.test(file)) continue;
+  const body = read(file);
+  const hit = body.match(CONTROL);
+  if (hit) {
+    const at = body.indexOf(hit[0]);
+    const line = body.slice(0, at).split("\n").length;
+    fail(`${file} contains a control byte U+${hit[0].charCodeAt(0).toString(16).padStart(4, "0")} at line ${line}`);
+    dirty += 1;
+  }
+}
+if (!dirty) ok("no stray control bytes in any source file");
+
 section("Secret scan");
 
 const SECRET_PATTERNS = [

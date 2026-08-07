@@ -1516,28 +1516,57 @@
       `<i class="${belt.gated ? "is-locked" : ""}" style="background:${escapeHtml(belt.colour)}"></i>`).join("");
   }
 
-  /* The wall of belts, shown before you start and again while you play. Seeing
-     brown and black hanging out of reach is the argument for the long run. */
+  /**
+   * A belt hanging on the rack — the same knotted object as the award belt,
+   * drawn small. A colour chip would have been simpler, but the wall and the
+   * ceremony should obviously show the same thing.
+   */
+  function beltHang(colour, style = "plain") {
+    const band = style === "kohaku"
+      ? [0, 1, 2, 3].map((i) =>
+          `<rect x="${2 + i * 21}" y="9" width="21" height="9" fill="${i % 2 ? "#f4f6f8" : "#c0392b"}" />`).join("")
+      : `<rect x="2" y="9" width="84" height="9" rx="1.5" fill="${escapeHtml(colour)}" />`;
+    return `<svg class="belt-hang" viewBox="0 0 88 30" aria-hidden="true">
+      ${band}
+      <rect x="34" y="5" width="20" height="16" rx="2" fill="${style === "kohaku" ? "#c0392b" : escapeHtml(colour)}"
+            stroke="rgba(0,0,0,.3)" stroke-width=".6" />
+      <path d="M39 21 L36 29 L43 26 Z" fill="${escapeHtml(colour)}" stroke="rgba(0,0,0,.22)" stroke-width=".5" />
+      <path d="M49 21 L52 29 L45 26 Z" fill="${escapeHtml(colour)}" stroke="rgba(0,0,0,.22)" stroke-width=".5" />
+    </svg>`;
+  }
+
+  /* The wall of belts, shown before you start. Seeing brown and black hanging
+     out of reach is the argument for the long run, so they are dimmed rather
+     than hidden. */
   function beltWall(currentId) {
     const rows = window.ATLAS_QUIZ.BELTS.map((belt) => {
       const rank = belt.kyu === 0 ? t("quizDanBeltBlack") : kyuLabel(belt);
       return `<li class="belt-row${belt.id === currentId ? " is-current" : ""}${belt.gated ? " is-gated" : ""}">
-        <span class="belt-swatch" style="background:${escapeHtml(belt.colour)}"></span>
+        ${beltHang(belt.colour)}
         <span class="belt-kanji" lang="ja">${escapeHtml(belt.kanji)}</span>
         <span class="belt-names">
-          <strong>${escapeHtml(belt.romaji)}</strong>
+          <strong lang="ja-Latn">${escapeHtml(belt.romaji)}</strong>
           <small>${escapeHtml(beltName(belt))} · ${escapeHtml(rank)}</small>
         </span>
         <span class="belt-min">${belt.min}%</span>
-        ${belt.gated ? `<span class="belt-lock" title="${escapeHtml(t("dojoLocked"))}">🔒</span>` : ""}
       </li>`;
     }).join("");
-    return `<div class="belt-wall">
-      <h2>${escapeHtml(t("dojoBeltWallTitle"))}</h2>
+    return `<section class="belt-wall" aria-labelledby="beltWallTitle">
+      <h2 id="beltWallTitle">
+        <span class="jp-mark" lang="ja" aria-hidden="true">帯</span>
+        ${escapeHtml(t("dojoBeltWallTitle"))}
+      </h2>
       <ol>${rows}</ol>
       <p class="quiz-note">${escapeHtml(t("dojoBeltWallNote"))}</p>
-    </div>`;
+    </section>`;
   }
+
+  /* 暖簾 — the split curtain hung at a dojo entrance. Purely decorative, so it
+     is aria-hidden; it is the one thing that makes the panel read as a doorway
+     rather than a page. */
+  const noren = () => `<div class="dojo-noren" aria-hidden="true">
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>`;
 
   function renderQuizMenu() {
     quiz.stage = "menu";
@@ -1548,6 +1577,7 @@
       </button>`).join("");
 
     quizStage.innerHTML = `
+      ${noren()}
       <p class="dojo-shomen" lang="ja" aria-hidden="true">${escapeHtml(t("dojoShomen"))}</p>
       <header class="quiz-header">
         <p class="eyebrow">${escapeHtml(t("quizEyebrow"))}</p>
@@ -1773,12 +1803,14 @@
     quiz.stage = "danIntro";
     const grades = window.ATLAS_QUIZ.DANS.map((dan) => `
       <li class="dan-row dan-${dan.style}">
+        ${beltHang(dan.style === "red" ? "#c0392b" : "#15181c", dan.style)}
         <span class="belt-kanji" lang="ja">${escapeHtml(dan.kanji)}</span>
-        <span class="belt-names"><strong>${escapeHtml(dan.name)}</strong><small>${escapeHtml(danLabel(dan))}</small></span>
+        <span class="belt-names"><strong lang="ja-Latn">${escapeHtml(dan.name)}</strong><small>${escapeHtml(danLabel(dan))}</small></span>
         <span class="belt-min">${dan.min}%</span>
       </li>`).join("");
 
     quizStage.innerHTML = `
+      ${noren()}
       <p class="dojo-shomen" lang="ja" aria-hidden="true">${escapeHtml(t("dojoShomen"))}</p>
       <header class="quiz-header dan-header">
         <p class="eyebrow">${escapeHtml(t("quizDanEyebrow"))}</p>
@@ -1786,6 +1818,7 @@
         <p class="learn-summary">${escapeHtml(t("quizDanIntro"))}</p>
       </header>
       ${beltArt("#15181c", "#f2f5f8", 0, "plain")}
+      <h2 class="dan-ladder-title"><span class="jp-mark" lang="ja" aria-hidden="true">段位</span></h2>
       <ol class="dan-ladder">${grades}</ol>
       <div class="quiz-actions">
         <button class="primary-button" type="button" data-quiz-start-dan>${escapeHtml(t("quizDanStart"))}</button>
