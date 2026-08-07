@@ -601,7 +601,29 @@ if (!quizApi) {
   };
 
   ascending(belts, "belt ladder");
-  ascending(dans, "dan grades");
+
+  /* The dan grades are graded on mistakes, which count DOWN as the grade goes
+     up — Judan allows none, Shodan allows nine. Checking that they descend by
+     exactly one is what guarantees every grade is reachable, which is the
+     property a percentage scale silently lost at this run length. */
+  let lastDropped = null;
+  let danBad = 0;
+  for (const dan of dans) {
+    if (lastDropped !== null && dan.dropped !== lastDropped - 1) {
+      fail(`dan grades: ${dan.name} allows ${dan.dropped} dropped, expected ${lastDropped - 1}`);
+      danBad += 1;
+    }
+    lastDropped = dan.dropped;
+  }
+  if (dans[dans.length - 1]?.dropped !== 0) fail("dan grades: the highest grade must allow no mistakes");
+  else if (!danBad) ok(`dan grades: ${dans.length} steps descending one mistake at a time to a flawless Judan`);
+
+  /* Every grade must be reachable on a run of DAN_LENGTH. This is the check
+     that would have caught Hachidan being unearnable under the old scale. */
+  const unearnable = dans.filter((dan) =>
+    dan.dropped > quizApi.DAN_LENGTH || quizApi.danFor(dan.dropped)?.rank !== dan.rank);
+  if (unearnable.length) unearnable.forEach((d) => fail(`dan grade ${d.name} cannot be earned on a ${quizApi.DAN_LENGTH}-question run`));
+  else ok(`every dan grade is reachable on the ${quizApi.DAN_LENGTH}-question challenge`);
 
   if (belts[0]?.min !== 0) fail("belt ladder: the lowest belt must start at 0, or a bad score awards nothing");
   else ok("belt ladder: starts at 0, so every run awards a belt");
@@ -631,10 +653,10 @@ if (!quizApi) {
     fail("dan grades: expected black, red-and-white and red belt styles");
   } else ok("dan belt styles cover black, red-and-white and red");
 
-  if (quizApi.danFor(dans[0].min - 1) !== null) fail("dan grades: a score below the first threshold must award nothing");
-  else ok("below the first dan threshold no grade is awarded");
-  if (quizApi.danFor(100)?.rank !== 10) fail("dan grades: a perfect score must award the tenth dan");
-  else ok("a perfect dan run awards Judan");
+  if (quizApi.danFor(dans[0].dropped + 1) !== null) fail("dan grades: dropping more than the lowest grade allows must award nothing");
+  else ok("dropping more than the limit awards no dan");
+  if (quizApi.danFor(0)?.rank !== 10) fail("dan grades: a flawless run must award the tenth dan");
+  else ok("a flawless dan run awards Judan");
 }
 
 /* ------------------------------------------------------------------ */

@@ -1457,3 +1457,22 @@ footer {
   .belt-kanji { font-size: 1.15rem; }
   .belt-row .belt-min { display: revert; font-size: .78rem; }
 }
+
+/* Belt wall, final proportions -----------------------------------------
+   The percentage thresholds are hidden from sight but kept in the markup
+   for assistive tech — the wall is there to be admired before a run, and
+   a column of numbers turned it into a specification. With that column
+   gone the row is three items, so the list narrows and centres and the
+   belts grow to where they read as objects rather than icons. */
+.belt-row, .dan-row { grid-template-columns: 88px 3.2rem 1fr; }
+.belt-hang { width: 88px; justify-self: center; }
+.belt-wall ol, .dan-ladder { max-width: 440px; margin-inline: auto; }
+.belt-wall { max-width: 640px; }
+.belt-row { padding: 13px 18px; }
+.dan-row { padding: 10px 18px; }
+
+@media (max-width: 600px) {
+  .belt-row, .dan-row { grid-template-columns: 62px 2.6rem 1fr; gap: 10px; }
+  .belt-hang { width: 62px; }
+  .belt-wall ol, .dan-ladder { max-width: none; }
+}

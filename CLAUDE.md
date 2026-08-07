@@ -219,11 +219,23 @@ kept literally, and the reason there is no leaderboard to game.
 
 Brown and black are `gated: true` and need the 100-question run; without that a
 lucky streak on ten questions would award a brown belt and the top of the ladder
-would mean nothing. Earning black reveals the Dan challenge — 100 hard-only
-questions graded across the ten dan, black for 1–5, kōhaku red-and-white for 6–8
-and red for 9–10. The validator checks the tables rather than the questions:
-thresholds strictly ascending, every belt reachable at its own threshold, gated
-belts unreachable on a short run, and a perfect dan run awarding Judan. An
+would mean nothing. Earning black reveals the Dan challenge.
+
+**The Dan challenge is 25 questions graded on mistakes, not a percentage.** Ten
+dropped is the limit; nine earns Shodan and a flawless run earns Judan, with
+black for 1–5, kōhaku red-and-white for 6–8 and red for 9–10. The mistake count
+is not a stylistic choice. Over 25 questions a percentage can only land on
+multiples of four, which left Hachidan at 93% **unreachable** — 92 gave Nanadan
+and the next attainable score, 96, was already Kudan. Ten mistake counts for ten
+grades is exact by construction, and it is how a grading is actually spoken
+about. It also draws from `hardest` generators only: the mathematical-intensity
+question offers three options rather than four, making it a 33% guess rather
+than a hard question.
+
+The validator checks the tables rather than the questions: belt thresholds
+strictly ascending, dan grades descending exactly one mistake at a time, every
+belt reachable at its own threshold, every dan reachable at `DAN_LENGTH`, gated
+belts unreachable on a short run, and a flawless dan run awarding Judan. An
 unearnable grade is invisible in play and would never otherwise be noticed.
 
 **Search.** `app.js` builds an in-memory index at startup. Queries are normalized

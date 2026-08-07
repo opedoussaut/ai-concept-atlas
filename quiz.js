@@ -57,20 +57,29 @@ window.ATLAS_QUIZ = (() => {
 
   /**
    * The ten dan grades. 1–5 wear black, 6–8 the red-and-white kōhaku obi,
-   * 9–10 red. `min` is a percentage on the hundred-question hard challenge;
-   * below the first threshold no dan is awarded and the black belt stands.
+   * 9–10 red.
+   *
+   * `dropped` is how many questions you may get WRONG and still hold the
+   * grade, not a percentage. That is not a stylistic choice — over 25
+   * questions a percentage can only land on multiples of four, which left
+   * Hachidan at 93% unreachable: 92 gave Nanadan and the next attainable
+   * score, 96, was already Kudan. An unearnable grade is invisible in play
+   * and would never have been reported.
+   *
+   * Ten mistake counts for ten grades is exact by construction, and it is
+   * how a grading is actually spoken about — you dropped three.
    */
   const DANS = [
-    { rank: 1,  min: 60, name: "Shodan",   kanji: "初段",   style: "black" },
-    { rank: 2,  min: 65, name: "Nidan",    kanji: "二段",   style: "black" },
-    { rank: 3,  min: 70, name: "Sandan",   kanji: "三段",   style: "black" },
-    { rank: 4,  min: 75, name: "Yondan",   kanji: "四段",   style: "black" },
-    { rank: 5,  min: 80, name: "Godan",    kanji: "五段",   style: "black" },
-    { rank: 6,  min: 85, name: "Rokudan",  kanji: "六段",   style: "kohaku" },
-    { rank: 7,  min: 89, name: "Nanadan",  kanji: "七段",   style: "kohaku" },
-    { rank: 8,  min: 93, name: "Hachidan", kanji: "八段",   style: "kohaku" },
-    { rank: 9,  min: 96, name: "Kudan",    kanji: "九段",   style: "red" },
-    { rank: 10, min: 99, name: "Judan",    kanji: "十段",   style: "red" }
+    { rank: 1,  dropped: 9, name: "Shodan",   kanji: "初段",   style: "black" },
+    { rank: 2,  dropped: 8, name: "Nidan",    kanji: "二段",   style: "black" },
+    { rank: 3,  dropped: 7, name: "Sandan",   kanji: "三段",   style: "black" },
+    { rank: 4,  dropped: 6, name: "Yondan",   kanji: "四段",   style: "black" },
+    { rank: 5,  dropped: 5, name: "Godan",    kanji: "五段",   style: "black" },
+    { rank: 6,  dropped: 4, name: "Rokudan",  kanji: "六段",   style: "kohaku" },
+    { rank: 7,  dropped: 3, name: "Nanadan",  kanji: "七段",   style: "kohaku" },
+    { rank: 8,  dropped: 2, name: "Hachidan", kanji: "八段",   style: "kohaku" },
+    { rank: 9,  dropped: 1, name: "Kudan",    kanji: "九段",   style: "red" },
+    { rank: 10, dropped: 0, name: "Judan",    kanji: "十段",   style: "red" }
   ];
 
   /* Shodan is 初段, "first dan", not 一段 — the first rank has its own word.
@@ -78,7 +87,7 @@ window.ATLAS_QUIZ = (() => {
      immediately, which is the whole reason the kanji is stored per grade
      rather than composed from the number. */
 
-  const DAN_LENGTH = 100;
+  const DAN_LENGTH = 25;
 
   /** Highest belt earned at this score, respecting the length gate. */
   function beltFor(percent, total) {
@@ -89,10 +98,15 @@ window.ATLAS_QUIZ = (() => {
     return earned;
   }
 
-  /** The dan grade at this score, or null — a failed challenge is not a demotion. */
-  function danFor(percent) {
+  /**
+   * The dan grade for a number of wrong answers, or null.
+   *
+   * A failed challenge is not a demotion — the black belt already earned
+   * stands, and you may try again. Ten or more dropped means no dan.
+   */
+  function danFor(wrong) {
     let earned = null;
-    for (const dan of DANS) if (percent >= dan.min) earned = dan;
+    for (const dan of DANS) if (wrong <= dan.dropped) earned = dan;
     return earned;
   }
 
@@ -230,7 +244,7 @@ window.ATLAS_QUIZ = (() => {
          the one being asked about — otherwise a second genuine neighbour
          could appear as a distractor and the question would have two
          correct answers. */
-      { hard: true, make: () => {
+      { hard: true, hardest: true, make: () => {
         if (!withRelated.length) return null;
         const c = sample(withRelated);
         const related = (c.related ?? []).map((s) => bySlug.get(s)).filter(Boolean);
@@ -244,7 +258,7 @@ window.ATLAS_QUIZ = (() => {
       }},
 
       /* --- Mathematical foundations (hard) ---------------------------- */
-      { hard: true, make: () => {
+      { hard: true, hardest: true, make: () => {
         if (!withFoundations.length) return null;
         const c = sample(withFoundations);
         const links = (c.mathFoundations ?? []).map((l) => mathBySlug.get(l.slug)).filter(Boolean);
@@ -258,7 +272,7 @@ window.ATLAS_QUIZ = (() => {
       }},
 
       /* --- Which AI concept rests on this mathematics (hard) ---------- */
-      { hard: true, make: () => {
+      { hard: true, hardest: true, make: () => {
         const m = sample(mathConcepts);
         const users = (usedByMath.get(m.slug) ?? []).filter((u) => u.importance === "primary");
         if (!users.length) return null;
@@ -271,7 +285,7 @@ window.ATLAS_QUIZ = (() => {
       }},
 
       /* --- Prerequisites (hard) --------------------------------------- */
-      { hard: true, make: () => {
+      { hard: true, hardest: true, make: () => {
         if (!withPrereqs.length) return null;
         const m = sample(withPrereqs);
         const prereqs = (m.prerequisites ?? []).map((s) => mathBySlug.get(s)).filter(Boolean);
@@ -287,7 +301,7 @@ window.ATLAS_QUIZ = (() => {
       /* --- Relation verb (hard) ---------------------------------------
          The atlas stores the verb on the mathematics concept, so the answer
          is well defined; distractors are other verbs actually in use. */
-      { hard: true, make: () => {
+      { hard: true, hardest: true, make: () => {
         if (!withFoundations.length) return null;
         const c = sample(withFoundations);
         const link = sample(c.mathFoundations ?? []);
@@ -300,8 +314,8 @@ window.ATLAS_QUIZ = (() => {
                  ...options(relationLabel(verb), shuffle(others).slice(0, 3).map(relationLabel)) };
       }},
 
-      /* --- Mathematical intensity (hard) ------------------------------ */
-      { hard: true, make: () => {
+      /* --- Mathematical intensity (hard, but only three options) ------ */
+      { hard: true, hardest: false, make: () => {
         const scored = concepts.filter((c) => c.mathIntensity);
         if (!scored.length) return null;
         const c = sample(scored);
@@ -317,7 +331,7 @@ window.ATLAS_QUIZ = (() => {
       }},
 
       /* --- Difficulty of a mathematics page (hard) -------------------- */
-      { hard: true, make: () => {
+      { hard: true, hardest: true, make: () => {
         const level = sample(["introductory", "intermediate", "advanced"]);
         const inside = mathConcepts.filter((m) => m.difficulty === level);
         const outside = mathConcepts.filter((m) => m.difficulty !== level);
@@ -360,8 +374,10 @@ window.ATLAS_QUIZ = (() => {
      * Falling a few short is better than hanging, and the grade is a
      * percentage, so a short run still scores correctly.
      */
-    function draw(count, { hardOnly = false } = {}) {
-      const pool = hardOnly ? GENERATORS.filter((g) => g.hard) : GENERATORS;
+    function draw(count, { hardOnly = false, hardestOnly = false } = {}) {
+      const pool = hardestOnly ? GENERATORS.filter((g) => g.hardest)
+        : hardOnly ? GENERATORS.filter((g) => g.hard)
+        : GENERATORS;
       const perType = Math.max(2, Math.ceil(count / 4));
       const used = new Map();
       const seen = new Set();

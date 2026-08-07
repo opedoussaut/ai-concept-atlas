@@ -1477,11 +1477,22 @@
 
   const beltName = (belt) => t(`belt${belt.id[0].toUpperCase()}${belt.id.slice(1)}`);
 
-  /** "6ᵗʰ kyū" / "1ˢᵗ kyū" — the ordinal is irregular at 1 in both languages. */
-  const kyuLabel = (belt) =>
-    belt.kyu === 0 ? "" : belt.kyu === 1 ? t("dojoKyuFirst") : t("dojoKyu", { n: belt.kyu });
-  const danLabel = (dan) =>
-    dan.rank === 1 ? t("dojoDanFirst") : t("dojoDanRank", { n: dan.rank });
+  /**
+   * English ordinals are irregular at one, two AND three — 1st, 2nd, 3rd, then
+   * 4th onwards. Special-casing only the first produced "2ᵗʰ kyū" and "3ʳᵈ"
+   * written as "3ᵗʰ", which is the kind of mistake that makes a carefully
+   * researched belt table look careless. French is regular after 1ᵉʳ, so its
+   * second and third forms simply repeat the generic one — the table carries
+   * both rather than the code guessing which languages need the exception.
+   */
+  const ordinal = (n, prefix) => {
+    if (n === 1) return t(`${prefix}First`);
+    if (n === 2) return t(`${prefix}Second`);
+    if (n === 3) return t(`${prefix}Third`);
+    return t(prefix === "dojoKyu" ? "dojoKyu" : "dojoDanRank", { n });
+  };
+  const kyuLabel = (belt) => (belt.kyu === 0 ? "" : ordinal(belt.kyu, "dojoKyu"));
+  const danLabel = (dan) => ordinal(dan.rank, "dojoDan");
 
   /**
    * The belt itself, drawn rather than described.
@@ -1548,7 +1559,7 @@
           <strong lang="ja-Latn">${escapeHtml(belt.romaji)}</strong>
           <small>${escapeHtml(beltName(belt))} · ${escapeHtml(rank)}</small>
         </span>
-        <span class="belt-min">${belt.min}%</span>
+        <span class="sr-only">${belt.min}%</span>
       </li>`;
     }).join("");
     return `<section class="belt-wall" aria-labelledby="beltWallTitle">
@@ -1613,7 +1624,7 @@
   }
 
   function startQuiz(count, { dan = false } = {}) {
-    quiz.questions = quizEngine.draw(count, { hardOnly: dan });
+    quiz.questions = quizEngine.draw(count, { hardOnly: dan, hardestOnly: dan });
     quiz.index = 0;
     quiz.correct = 0;
     quiz.streak = 0;
@@ -1741,7 +1752,8 @@
       ? `<p class="quiz-note">${escapeHtml(t("dojoStreak", { n: quiz.best }))}</p>` : "";
 
     if (quiz.dan) {
-      const dan = window.ATLAS_QUIZ.danFor(percent);
+      const wrong = total - quiz.correct;
+      const dan = window.ATLAS_QUIZ.danFor(wrong);
       const style = dan?.style ?? "plain";
       const colour = style === "red" ? "#c0392b" : "#15181c";
       const beltWord = dan
@@ -1757,7 +1769,8 @@
         ${dan ? `<p class="award-kanji" lang="ja">${escapeHtml(dan.kanji)}</p>` : ""}
         <p class="quiz-award">${escapeHtml(dan
           ? `${dan.name} — ${danLabel(dan)}`
-          : t("quizDanNone", { n: percent }))}</p>
+          : t("quizDanNone", { n: wrong }))}</p>
+        <p class="award-sub">${escapeHtml(t("quizDanDropped", { n: wrong }))}</p>
         <p class="quiz-note">${escapeHtml(beltWord)}</p>
         ${streakNote}
         <p class="quiz-note dojo-seal">${escapeHtml(t("dojoAwardedIn"))}</p>
@@ -1805,8 +1818,7 @@
       <li class="dan-row dan-${dan.style}">
         ${beltHang(dan.style === "red" ? "#c0392b" : "#15181c", dan.style)}
         <span class="belt-kanji" lang="ja">${escapeHtml(dan.kanji)}</span>
-        <span class="belt-names"><strong lang="ja-Latn">${escapeHtml(dan.name)}</strong><small>${escapeHtml(danLabel(dan))}</small></span>
-        <span class="belt-min">${dan.min}%</span>
+        <span class="belt-names"><strong lang="ja-Latn">${escapeHtml(dan.name)}</strong><small>${escapeHtml(danLabel(dan))} · ${escapeHtml(t("quizDanAllows", { n: dan.dropped }))}</small></span>
       </li>`).join("");
 
     quizStage.innerHTML = `
