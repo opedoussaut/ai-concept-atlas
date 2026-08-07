@@ -1,11 +1,38 @@
 (() => {
-  const concepts = window.AI_CONCEPTS ?? [];
-  const categories = window.AI_CATEGORIES ?? [];
+  /* ================================================================= */
+  /* Language                                                           */
+  /*                                                                    */
+  /* i18n.js reads ?lang off the URL and folds the French overlay into  */
+  /* the data ONCE, here, before anything indexes or renders it. Every  */
+  /* line below this point therefore reads an object that is already in */
+  /* the right language and never asks which language it is in. The     */
+  /* only exceptions are the handful of places that must say "this bit  */
+  /* is still English" — they call i18n.isEnglish(item, field).         */
+  /*                                                                    */
+  /* Language is a property of the URL, so changing it is an ordinary   */
+  /* navigation and the page reloads. There is no live re-render path.  */
+  /* ================================================================= */
+
+  const i18n = window.ATLAS_I18N;
+  const t = i18n.t;
+
+  /* Translate the static markup first. app.js runs at the end of <body>, so
+     the document is parsed; doing it here means nothing below ever reads a
+     placeholder, label or heading that is still in the wrong language. */
+  i18n.applyStatic();
+
+  const concepts = i18n.localize(
+    window.AI_CONCEPTS ?? [], window.AI_CONCEPTS_FR, ["name", "summary", "why", "how", "example", "mathNote"]
+  );
+  const categories = i18n.localize(
+    (window.AI_CATEGORIES ?? []).map((item) => ({ ...item, slug: item.id })),
+    window.AI_CATEGORIES_FR, ["name", "short"]
+  );
   const conceptBySlug = new Map(concepts.map((item) => [item.slug, item]));
   const categoryById = new Map(categories.map((item) => [item.id, item]));
-  const FALLBACK_CATEGORY = { id: "all", name: "Uncategorized", short: "Other", color: "#5de7ff" };
+  const FALLBACK_CATEGORY = { id: "all", name: "—", short: "—", color: "#5de7ff" };
   const MAX_SUGGESTIONS = 7;
-  const BASE_TITLE = "AI Concept Atlas — From LoRA to MCP";
+  const BASE_TITLE = t("baseTitle");
 
   /* ----------------------------------------------------------------- */
   /* Mathematics layer                                                   */
@@ -16,17 +43,27 @@
   /* is derived below rather than stored, so the two can never disagree. */
   /* ----------------------------------------------------------------- */
 
-  const mathConcepts = window.MATH_CONCEPTS ?? [];
-  const mathCategories = window.MATH_CATEGORIES ?? [];
+  const mathConcepts = i18n.localize(
+    window.MATH_CONCEPTS ?? [], window.MATH_CONCEPTS_FR,
+    ["name", "summary", "intuition", "equationNote", "worked", "whyInAI"]
+  );
+  const mathCategories = i18n.localize(
+    (window.MATH_CATEGORIES ?? []).map((item) => ({ ...item, slug: item.id })),
+    window.MATH_CATEGORIES_FR, ["name", "short"]
+  );
   const mathBySlug = new Map(mathConcepts.map((item) => [item.slug, item]));
   const mathCategoryById = new Map(mathCategories.map((item) => [item.id, item]));
-  const FALLBACK_MATH_CATEGORY = { id: "all", name: "Mathematics", short: "Mathematics", color: "#ffc978" };
+  const FALLBACK_MATH_CATEGORY = {
+    id: "all", name: t("graphLegendMath"), short: t("graphLegendMath"), color: "#ffc978"
+  };
 
-  const INTENSITY_LABEL = { high: "High", medium: "Medium", low: "Low" };
+  const INTENSITY_LABEL = {
+    high: t("intensityHigh"), medium: t("intensityMedium"), low: t("intensityLow")
+  };
   const DIFFICULTY_LABEL = {
-    introductory: "Introductory",
-    intermediate: "Intermediate",
-    advanced: "Advanced"
+    introductory: t("difficultyIntroductory"),
+    intermediate: t("difficultyIntermediate"),
+    advanced: t("difficultyAdvanced")
   };
 
   /** mathSlug → [{ concept, importance, note }], the reverse of mathFoundations. */
@@ -102,6 +139,37 @@
     "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
   })[char]);
 
+  /**
+   * Flag a section heading whose body is still English.
+   *
+   * Idempotent, and a no-op in English — an English page has nothing to mark,
+   * so the chip cannot leak into the default language. The chip is appended to
+   * the heading rather than wrapped around the prose so it survives the
+   * `textContent =` assignments the renderers use for the body.
+   */
+  function markLanguage(headingId, item, field) {
+    const heading = $(headingId);
+    if (!heading) return;
+    const existing = heading.querySelector(".lang-chip");
+    if (!i18n.isEnglish(item, field)) { existing?.remove(); return; }
+    if (existing) return;
+    const chip = document.createElement("span");
+    chip.className = "lang-chip";
+    chip.lang = i18n.defaultLang;
+    chip.textContent = t("englishChip");
+    chip.title = t("englishChipTitle");
+    heading.appendChild(chip);
+  }
+
+  /** Body text that may still be English needs its own `lang` for screen readers. */
+  function setProse(elementId, item, field) {
+    const node = $(elementId);
+    if (!node) return;
+    node.textContent = item[field] || "";
+    if (i18n.isEnglish(item, field)) node.setAttribute("lang", i18n.defaultLang);
+    else node.removeAttribute("lang");
+  }
+
   const hostOf = (url) => { try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return ""; } };
 
   /* ================================================================= */
@@ -118,27 +186,49 @@
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
 
+  /**
+   * The concept's name in the OTHER language.
+   *
+   * Search is bilingual on purpose. A French reader who has only ever seen
+   * "Retrieval-Augmented Generation" in a paper must still find it on the
+   * French site, and an English reader who types "apprentissage profond" should
+   * land on Deep Learning. Both names go into the index in both modes; only the
+   * displayed one changes. Costs one extra string per concept and removes the
+   * single most likely way for a reader to conclude the atlas does not have
+   * something it plainly does.
+   */
+  const otherName = (item, overlay) =>
+    i18n.isDefault ? (overlay?.[item.slug]?.name ?? "") : (item._enName ?? "");
+
   const searchIndex = new Map(concepts.map((concept) => {
     const category = categoryOf(concept);
+    const alt = otherName(concept, window.AI_CONCEPTS_FR);
     return [concept.slug, {
       acronym: normalize(concept.acronym),
       name: normalize(concept.name),
+      alt: normalize(alt),
       slug: normalize(concept.slug),
       tags: normalize((concept.tags ?? []).join(" ")),
       summary: normalize(concept.summary),
       category: normalize(`${category.name} ${category.short ?? ""}`),
       prose: normalize(`${concept.summary} ${concept.why} ${concept.how} ${concept.example ?? ""}`),
-      compact: normalize(`${concept.acronym} ${concept.name} ${concept.slug}`).replace(/ /g, "")
+      compact: normalize(`${concept.acronym} ${concept.name} ${alt} ${concept.slug}`).replace(/ /g, "")
     }];
   }));
 
+  /* The other language's name scores just under the displayed one at every
+     tier, so a bilingual match never outranks a match in the language the
+     reader is actually looking at. */
   function scoreToken(entry, token) {
     if (entry.acronym === token) return 120;
     if (entry.name === token || entry.slug === token) return 110;
+    if (entry.alt && entry.alt === token) return 105;
     if (entry.acronym.startsWith(token)) return 90;
     if (entry.name.startsWith(token)) return 80;
+    if (entry.alt && entry.alt.startsWith(token)) return 75;
     if (entry.compact.startsWith(token)) return 70;
     if (new RegExp(`\\b${token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`).test(entry.name)) return 60;
+    if (entry.alt && new RegExp(`\\b${token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`).test(entry.alt)) return 55;
     if (entry.tags.includes(token)) return 45;
     if (entry.category.includes(token)) return 35;
     if (entry.summary.includes(token)) return 30;
@@ -146,6 +236,10 @@
     if (entry.prose.includes(token)) return 12;
     return 0;
   }
+
+  /* Sort ties by name in the reader's own language: a plain localeCompare()
+     with no locale orders "Élagage" after "Zéro" in some engines. */
+  const collator = new Intl.Collator(i18n.lang, { sensitivity: "base", numeric: true });
 
   /** All tokens must match (AND semantics); results are ranked by total score. */
   function search(rawQuery) {
@@ -166,7 +260,7 @@
     }
 
     return scored
-      .sort((a, b) => b.score - a.score || a.concept.name.localeCompare(b.concept.name))
+      .sort((a, b) => b.score - a.score || collator.compare(a.concept.name, b.concept.name))
       .map((item) => item.concept);
   }
 
@@ -185,15 +279,17 @@
    */
   const mathSearchIndex = new Map(mathConcepts.map((item) => {
     const category = mathCategoryOf(item);
+    const alt = otherName(item, window.MATH_CONCEPTS_FR);
     return [item.slug, {
       acronym: normalize(item.symbol),
       name: normalize(item.name),
+      alt: normalize(alt),
       slug: normalize(item.slug),
       tags: normalize((item.tags ?? []).join(" ")),
       summary: normalize(item.summary),
-      category: normalize(`${category.name} ${category.short ?? ""} mathematics maths math`),
+      category: normalize(`${category.name} ${category.short ?? ""} mathematics maths math mathematiques maths`),
       prose: normalize(`${item.summary} ${item.intuition} ${(item.whyInAI ?? []).join(" ")}`),
-      compact: normalize(`${item.symbol} ${item.name} ${item.slug}`).replace(/ /g, "")
+      compact: normalize(`${item.symbol} ${item.name} ${alt} ${item.slug}`).replace(/ /g, "")
     }];
   }));
 
@@ -216,7 +312,7 @@
     const scored = [];
     rank(mathConcepts, mathSearchIndex, tokens, "math", scored);
     return scored
-      .sort((a, b) => b.score - a.score || a.item.name.localeCompare(b.item.name))
+      .sort((a, b) => b.score - a.score || collator.compare(a.item.name, b.item.name))
       .map((entry) => entry.item);
   }
 
@@ -228,7 +324,7 @@
     rank(concepts, searchIndex, tokens, "concept", scored);
     rank(mathConcepts, mathSearchIndex, tokens, "math", scored);
     return scored
-      .sort((a, b) => b.score - a.score || a.item.name.localeCompare(b.item.name))
+      .sort((a, b) => b.score - a.score || collator.compare(a.item.name, b.item.name))
       .map((entry) => ({ kind: entry.kind, item: entry.item }));
   }
 
@@ -246,13 +342,13 @@
   const MATH_ID = (slug) => `math:${slug}`;
 
   const RELATION_LABEL = {
-    USES: "uses",
-    DEPENDS_ON: "depends on",
-    MEASURED_WITH: "measured with",
-    OPTIMIZED_BY: "optimized by",
-    APPROXIMATES: "approximates",
-    GENERALIZES: "generalizes",
-    RELATED_TO: "related to"
+    USES: t("relUSES"),
+    DEPENDS_ON: t("relDEPENDS_ON"),
+    MEASURED_WITH: t("relMEASURED_WITH"),
+    OPTIMIZED_BY: t("relOPTIMIZED_BY"),
+    APPROXIMATES: t("relAPPROXIMATES"),
+    GENERALIZES: t("relGENERALIZES"),
+    RELATED_TO: t("relRELATED_TO")
   };
 
   const graphNodeList = [
@@ -532,7 +628,7 @@
 
   function nodeMarkup(node, position, { dim = false, r = null, degree = null, label = null } = {}) {
     const size = r ?? radiusOf(node.id, degree);
-    const kindWord = node.kind === "math" ? "Mathematics" : "AI concept";
+    const kindWord = node.kind === "math" ? t("graphLegendMath") : t("graphLegendAI");
     const connections = degree ?? graphDegree.get(node.id) ?? 0;
     return `<g class="graph-node ${NODE_CLASS[node.kind]}${dim ? " dim" : ""}"
       data-id="${escapeHtml(node.id)}" data-kind="${escapeHtml(node.kind)}"
@@ -572,8 +668,8 @@
     if (!centre || !dependencies.length) {
       graphSvg.innerHTML = "";
       graphLegend.innerHTML =
-        `<p class="graph-empty">${escapeHtml(concept.name)} declares no mathematical foundations. ${escapeHtml(concept.mathNote ?? "")}</p>`;
-      resultStatus.textContent = `${concept.name} has no mapped mathematical dependencies.`;
+        `<p class="graph-empty">${escapeHtml(t("graphNoFoundations", { name: concept.name }))} ${escapeHtml(concept.mathNote ?? "")}</p>`;
+      resultStatus.textContent = t("graphNoFoundationsStatus", { name: concept.name });
       return;
     }
 
@@ -652,8 +748,8 @@
   }
 
   function renderGraphLegend(mode, inMode) {
-    const shapes = `<span class="legend-shape"><span class="legend-dot legend-circle"></span>AI concept</span>
-      <span class="legend-shape"><span class="legend-dot legend-diamond"></span>Mathematics</span>`;
+    const shapes = `<span class="legend-shape"><span class="legend-dot legend-circle"></span>${escapeHtml(t("graphLegendAI"))}</span>
+      <span class="legend-shape"><span class="legend-dot legend-diamond"></span>${escapeHtml(t("graphLegendMath"))}</span>`;
 
     const domains = mode === "math" ? "" : categories.map((category) => {
       const count = concepts.filter((concept) => concept.category === category.id).length;
@@ -672,19 +768,20 @@
       </span>`;
     }).join("");
 
-    graphLegend.innerHTML = `<div class="legend-shapes">${shapes}<span class="legend-count">${inMode.length} nodes</span></div>${domains}${branches}`;
+    graphLegend.innerHTML = `<div class="legend-shapes">${shapes}<span class="legend-count">${escapeHtml(t("graphNodeCount", { n: inMode.length }))}</span></div>${domains}${branches}`;
   }
 
   /* Graph controls: layer toggle + single-concept focus ---------------- */
 
   const GRAPH_LAYERS = [
-    ["both", "Both layers"],
-    ["ai", "AI only"],
-    ["math", "Mathematics only"]
+    ["both", "graphLayerBoth"],
+    ["ai", "graphLayerAI"],
+    ["math", "graphLayerMath"]
   ];
 
   function renderGraphControls() {
-    graphLayers.innerHTML = GRAPH_LAYERS.map(([id, label]) => {
+    graphLayers.innerHTML = GRAPH_LAYERS.map(([id, labelKey]) => {
+      const label = t(labelKey);
       const active = !state.graphFocus && state.graphLayer === id;
       return `<button class="filter-button${active ? " active" : ""}" type="button"
         data-graph-layer="${escapeHtml(id)}" aria-pressed="${active}">${escapeHtml(label)}</button>`;
@@ -699,7 +796,7 @@
         return `<optgroup label="${escapeHtml(category.name)}">${items.map((concept) =>
           `<option value="${escapeHtml(concept.slug)}">${escapeHtml(concept.name)}</option>`).join("")}</optgroup>`;
       }).join("");
-      graphFocusSelect.innerHTML = `<option value="">Whole atlas</option>${groups}`;
+      graphFocusSelect.innerHTML = `<option value="">${escapeHtml(t("graphWholeAtlas"))}</option>${groups}`;
     }
     graphFocusSelect.value = state.graphFocus ?? "";
   }
@@ -757,17 +854,17 @@
       return `<section class="domain-band" style="--band-accent:${escapeHtml(category.color)}" aria-labelledby="band-${escapeHtml(category.id)}">
         <div class="band-heading">
           <h3 id="band-${escapeHtml(category.id)}">${escapeHtml(category.name)}</h3>
-          <span class="band-count">${items.length} concept${items.length === 1 ? "" : "s"}</span>
+          <span class="band-count">${escapeHtml(t("bandCount", { n: items.length }))}</span>
           <button class="band-filter" type="button" data-category="${escapeHtml(category.id)}"
                   aria-pressed="${state.category === category.id}">
-            ${state.category === category.id ? "Show all domains" : "Focus"}
+            ${escapeHtml(state.category === category.id ? t("bandShowAll") : t("bandFocus"))}
           </button>
         </div>
         <div class="concept-grid">${items.map(conceptCard).join("")}</div>
       </section>`;
     }).join("");
 
-    bands.innerHTML = sections || `<div class="empty-state"><h3>No matching concept</h3><p>Try another acronym, full name, keyword or domain.</p></div>`;
+    bands.innerHTML = sections || `<div class="empty-state"><h3>${escapeHtml(t("emptyTitle"))}</h3><p>${escapeHtml(t("emptyBody"))}</p></div>`;
     return visible;
   }
 
@@ -776,15 +873,15 @@
     if (state.view === "graph") renderGraph();
 
     const domain = state.category === "all"
-      ? "all domains"
+      ? t("allDomains")
       : (categoryById.get(state.category)?.name ?? state.category);
     resultStatus.textContent = visible.length
-      ? `${visible.length} concept${visible.length === 1 ? "" : "s"} shown in ${domain}.`
-      : `No concepts match the current search in ${domain}.`;
+      ? t("resultCount", { n: visible.length, domain })
+      : t("resultNone", { domain });
   }
 
   function renderFilters() {
-    const items = [{ id: "all", short: "All" }, ...categories];
+    const items = [{ id: "all", short: t("filterAll") }, ...categories];
     filters.innerHTML = items.map((category) => {
       const active = state.category === category.id;
       const accent = category.color ? ` style="--chip-accent:${escapeHtml(category.color)}"` : "";
@@ -864,12 +961,12 @@
             <b class="${isMath ? "is-math" : ""}">${escapeHtml(token)}</b>
             <span>
               ${escapeHtml(item.name)}
-              <small class="result-kind">${isMath ? "Mathematics" : "AI concept"} · ${escapeHtml(category.name)}</small>
+              <small class="result-kind">${escapeHtml(isMath ? t("resultKindMath") : t("resultKindAI"))} · ${escapeHtml(category.name)}</small>
               <small>${escapeHtml(item.summary)}</small>
             </span>
           </button>`;
         }).join("")
-      : `<p class="empty-state" style="padding:24px">No concept found.</p>`;
+      : `<p class="empty-state" style="padding:24px">${escapeHtml(t("noConceptFound"))}</p>`;
 
     state.activeSuggestion = -1;
     searchInput.removeAttribute("aria-activedescendant");
@@ -899,7 +996,7 @@
     const related = (concept.related ?? []).map((slug) => conceptBySlug.get(slug)).filter(Boolean);
     container.innerHTML = related.length
       ? related.map((item) => `<button type="button" data-slug="${escapeHtml(item.slug)}">${escapeHtml(item.acronym || item.name)}</button>`).join("")
-      : `<p class="related-empty">No related concepts recorded yet.</p>`;
+      : `<p class="related-empty">${escapeHtml(t("noRelated"))}</p>`;
     container.onclick = (event) => {
       const button = event.target.closest("button[data-slug]");
       if (button) onNavigate(button.dataset.slug);
@@ -914,10 +1011,8 @@
   function renderMath(container, concept) {
     const math = concept.math;
     if (!math || !(math.formulas ?? []).length) {
-      container.innerHTML = concept.source
-        ? `<p class="math-pending">A worked mathematical treatment of this concept has not been written yet.
-             The primary reference alongside carries the full derivation.</p>`
-        : `<p class="math-pending">A worked mathematical treatment of this concept has not been written yet.</p>`;
+      container.innerHTML =
+        `<p class="math-pending">${escapeHtml(t(concept.source ? "mathPendingWithSource" : "mathPending"))}</p>`;
       return;
     }
     const intro = math.intro ? `<p class="math-intro">${escapeHtml(math.intro)}</p>` : "";
@@ -940,7 +1035,7 @@
       .map((step) => `<i class="${step <= filled ? "on" : ""}"></i>`).join("");
     return `<p class="intensity-badge intensity-${escapeHtml(level ?? "none")}">
       <span class="intensity-bars" aria-hidden="true">${bars}</span>
-      Mathematical intensity: <b>${escapeHtml(known ?? "not mapped")}</b>
+      ${escapeHtml(t("intensityLabel"))} <b>${escapeHtml(known ?? t("intensityUnmapped"))}</b>
     </p>`;
   }
 
@@ -948,7 +1043,7 @@
     const category = mathCategoryOf(item);
     return `<button class="math-chip" type="button" data-math="${escapeHtml(item.slug)}"
       style="--card-accent:${escapeHtml(category.color)}"
-      aria-label="${escapeHtml(`${item.name}. ${category.name}. Open the mathematics page.`)}">
+      aria-label="${escapeHtml(t("mathChipAria", { name: item.name, branch: category.name }))}">
       <span class="math-chip-symbol" aria-hidden="true">${escapeHtml(item.symbol)}</span>
       <span class="math-chip-name">${escapeHtml(item.name)}</span>
       ${note ? "" : `<small>${escapeHtml(category.short ?? category.name)}</small>`}
@@ -965,7 +1060,7 @@
 
     if (!concept.mathIntensity) {
       container.innerHTML =
-        `<p class="math-pending">The mathematical foundations of this concept have not been mapped yet.</p>`;
+        `<p class="math-pending">${escapeHtml(t("foundationsUnmapped"))}</p>`;
       return;
     }
 
@@ -973,7 +1068,7 @@
       .map((link) => ({ ...link, item: mathBySlug.get(link.slug) }))
       .filter((link) => link.item);
 
-    const groups = [["primary", "Core mathematics"], ["supporting", "Supporting mathematics"]]
+    const groups = [["primary", t("foundationsCore")], ["supporting", t("foundationsSupporting")]]
       .map(([importance, heading]) => {
         const items = links.filter((link) => link.importance === importance);
         if (!items.length) return "";
@@ -988,13 +1083,18 @@
 
     const none = links.length
       ? ""
-      : `<p class="foundation-none">Core mathematical foundation: none.</p>`;
+      : `<p class="foundation-none">${escapeHtml(t("foundationsNone"))}</p>`;
     const note = concept.mathNote
       ? `<p class="foundation-note">${escapeHtml(concept.mathNote)}</p>`
       : "";
     const more = compact
       ? ""
-      : `<p class="foundation-more"><a href="#mathematics">Browse the whole mathematics layer →</a></p>`;
+      : `<p class="foundation-more"><a href="#mathematics">${escapeHtml(t("foundationsBrowse"))}</a></p>`;
+
+    const hasEnglishNotes = !i18n.isDefault &&
+      (Boolean(concept.mathNote) || links.some((link) => Boolean(link.note)));
+    markLanguage(compact ? "dialogFoundationsTitle" : "learnFoundationsTitle",
+      { _en: hasEnglishNotes ? new Set(["notes"]) : new Set() }, "notes");
 
     container.innerHTML = intensityBadge(concept.mathIntensity) + none + note + groups + more;
     container.onclick = (event) => {
@@ -1019,11 +1119,14 @@
     $("dialogCategory").textContent = category.name;
     $("dialogAcronym").textContent = concept.acronym;
     $("dialogName").textContent = concept.name;
-    $("dialogSummary").textContent = concept.summary;
-    $("dialogWhy").textContent = concept.why;
-    $("dialogHow").textContent = concept.how;
-    $("dialogExample").textContent = concept.example || "";
+    setProse("dialogSummary", concept, "summary");
+    setProse("dialogWhy", concept, "why");
+    setProse("dialogHow", concept, "how");
+    setProse("dialogExample", concept, "example");
     $("exampleSection").hidden = !concept.example;
+    markLanguage("dialogWhyTitle", concept, "why");
+    markLanguage("dialogHowTitle", concept, "how");
+    markLanguage("dialogExampleTitle", concept, "example");
 
     $("sourceSection").hidden = !renderReference(
       $("dialogSource"), $("dialogSourceLabel"), $("dialogSourceHost"), concept
@@ -1033,7 +1136,7 @@
     renderRelated($("relatedLinks"), concept, (next) => openConcept(next));
     $("openLearn").setAttribute("href", `#learn/${concept.slug}`);
 
-    document.title = `${concept.acronym} — ${concept.name} | AI Concept Atlas`;
+    document.title = t("conceptTitle", { acronym: concept.acronym, name: concept.name });
 
     if (!dialog.open) dialog.showModal();
     dialog.querySelector(".dialog-body")?.scrollTo({ top: 0 });
@@ -1073,11 +1176,14 @@
     $("learnDomain").textContent = category.name;
     $("learnAcronym").textContent = concept.acronym;
     $("learnName").textContent = concept.name;
-    $("learnSummary").textContent = concept.summary;
-    $("learnWhy").textContent = concept.why;
-    $("learnHow").textContent = concept.how;
-    $("learnExample").textContent = concept.example || "";
+    setProse("learnSummary", concept, "summary");
+    setProse("learnWhy", concept, "why");
+    setProse("learnHow", concept, "how");
+    setProse("learnExample", concept, "example");
     $("learnExampleSection").hidden = !concept.example;
+    markLanguage("learnWhyTitle", concept, "why");
+    markLanguage("learnHowTitle", concept, "how");
+    markLanguage("learnExampleTitle", concept, "example");
 
     $("learnSourceSection").hidden = !renderReference(
       $("learnSource"), $("learnSourceLabel"), $("learnSourceHost"), concept
@@ -1087,7 +1193,7 @@
     renderRelated($("learnRelated"), concept, (next) => openLearn(next));
 
     showView("learn");
-    document.title = `${concept.acronym} — ${concept.name} | AI Concept Atlas`;
+    document.title = t("conceptTitle", { acronym: concept.acronym, name: concept.name });
     window.scrollTo({ top: 0, behavior: "auto" });
     $("learnName").setAttribute("tabindex", "-1");
     $("learnName").focus({ preventScroll: true });
@@ -1116,7 +1222,7 @@
       <p>${escapeHtml(item.summary)}</p>
       <span class="card-meta">
         ${difficultyChip(item.difficulty)}
-        <span>${uses} AI concept${uses === 1 ? "" : "s"}</span>
+        <span>${escapeHtml(t("usesCount", { n: uses }))}</span>
       </span>
     </button>`;
   }
@@ -1128,7 +1234,7 @@
   }
 
   function renderMathFilters() {
-    const branches = [{ id: "all", short: "All branches" }, ...mathCategories];
+    const branches = [{ id: "all", short: t("mathAllBranches") }, ...mathCategories];
     mathFilters.innerHTML = branches.map((category) => {
       const active = state.mathCategory === category.id;
       const accent = category.color ? ` style="--chip-accent:${escapeHtml(category.color)}"` : "";
@@ -1138,7 +1244,7 @@
       </button>`;
     }).join("");
 
-    const levels = [["all", "Any level"], ...Object.entries(DIFFICULTY_LABEL)];
+    const levels = [["all", t("mathAnyLevel")], ...Object.entries(DIFFICULTY_LABEL)];
     mathDifficultyFilters.innerHTML = levels.map(([id, label]) => {
       const active = state.mathDifficulty === id;
       return `<button class="filter-button${active ? " active" : ""}" type="button"
@@ -1157,19 +1263,19 @@
         aria-labelledby="branch-${escapeHtml(category.id)}">
         <div class="band-heading">
           <h3 id="branch-${escapeHtml(category.id)}">${escapeHtml(category.name)}</h3>
-          <span class="band-count">${items.length} concept${items.length === 1 ? "" : "s"}</span>
+          <span class="band-count">${escapeHtml(t("bandCount", { n: items.length }))}</span>
           <button class="band-filter" type="button" data-math-category="${escapeHtml(category.id)}"
                   aria-pressed="${state.mathCategory === category.id}">
-            ${state.mathCategory === category.id ? "Show all branches" : "Focus"}
+            ${escapeHtml(state.mathCategory === category.id ? t("mathShowAllBranches") : t("bandFocus"))}
           </button>
         </div>
         <div class="concept-grid">${items.map(mathCard).join("")}</div>
       </section>`;
-    }).join("") || `<div class="empty-state"><h3>No matching concept</h3><p>Try another name, symbol, keyword or branch.</p></div>`;
+    }).join("") || `<div class="empty-state"><h3>${escapeHtml(t("emptyTitle"))}</h3><p>${escapeHtml(t("mathEmptyBody"))}</p></div>`;
 
     mathStatus.textContent = visible.length
-      ? `${visible.length} mathematical concept${visible.length === 1 ? "" : "s"} shown.`
-      : "No mathematical concepts match the current filters.";
+      ? t("mathResultCount", { n: visible.length })
+      : t("mathResultNone");
   }
 
   function openMathIndex(updateHash = true) {
@@ -1182,7 +1288,7 @@
     renderMathFilters();
     renderMathIndex();
     showView("mathIndex");
-    document.title = `Mathematics Behind AI | AI Concept Atlas`;
+    document.title = t("mathIndexTitleDoc");
     window.scrollTo({ top: 0, behavior: "auto" });
     $("mathIndexTitle").setAttribute("tabindex", "-1");
     $("mathIndexTitle").focus({ preventScroll: true });
@@ -1211,12 +1317,12 @@
   function renderUsedBy(container, item) {
     const users = usedByMath.get(item.slug) ?? [];
     if (!users.length) {
-      container.innerHTML = `<p class="math-pending">No AI concept in the atlas has been mapped to this mathematics yet.</p>`;
+      container.innerHTML = `<p class="math-pending">${escapeHtml(t("usedByNone"))}</p>`;
       container.onclick = null;
       return;
     }
 
-    const groups = [["primary", "Core to"], ["supporting", "Supporting"]].map(([importance, heading]) => {
+    const groups = [["primary", t("usedByCore")], ["supporting", t("usedBySupporting")]].map(([importance, heading]) => {
       const rows = users.filter((entry) => entry.importance === importance);
       if (!rows.length) return "";
       return `<div class="foundation-group"><h4>${heading}</h4>
@@ -1225,7 +1331,7 @@
           return `<li>
             <button class="math-chip" type="button" data-slug="${escapeHtml(entry.concept.slug)}"
               style="--card-accent:${escapeHtml(category.color)}"
-              aria-label="${escapeHtml(`${entry.concept.name}. ${category.name}. Open the concept page.`)}">
+              aria-label="${escapeHtml(t("conceptChipAria", { name: entry.concept.name, domain: category.name }))}">
               <span class="math-chip-symbol" aria-hidden="true">${escapeHtml(entry.concept.acronym)}</span>
               <span class="math-chip-name">${escapeHtml(entry.concept.name)}</span>
             </button>
@@ -1263,7 +1369,7 @@
     state.math = item;
 
     const back = state.mathOrigin ? conceptBySlug.get(state.mathOrigin) : null;
-    $("mathBack").textContent = back ? `← Back to ${back.acronym}` : "← All mathematics";
+    $("mathBack").textContent = back ? t("mathBackTo", { acronym: back.acronym }) : t("mathBackAll");
     $("mathBack").setAttribute("href", back ? `#learn/${back.slug}` : "#mathematics");
     $("mathBackAll").hidden = !back;
 
@@ -1274,8 +1380,12 @@
     $("mathDifficultyChip").className = `difficulty-chip difficulty-${item.difficulty}`;
     $("mathSymbol").textContent = item.symbol;
     $("mathName").textContent = item.name;
-    $("mathSummary").textContent = item.summary;
-    $("mathIntuition").textContent = item.intuition;
+    setProse("mathSummary", item, "summary");
+    setProse("mathIntuition", item, "intuition");
+    markLanguage("mathIntuitionTitle", item, "intuition");
+    markLanguage("mathWorkedTitle", item, "worked");
+    markLanguage("mathEquationTitle", item, "equationNote");
+    markLanguage("mathWhyTitle", item, "whyInAI");
 
     $("mathEquationSection").hidden = !item.equation;
     if (item.equation) {
@@ -1300,16 +1410,16 @@
       .map((line) => `<li>${escapeHtml(line)}</li>`).join("");
 
     renderUsedBy($("mathUsedBy"), item);
-    renderMathLinks($("mathRelated"), item.related, "No related mathematics recorded yet.");
+    renderMathLinks($("mathRelated"), item.related, t("noRelatedMath"));
     $("mathPrereqSection").hidden = !(item.prerequisites ?? []).length;
-    renderMathLinks($("mathPrereq"), item.prerequisites, "None — this is a starting point.");
+    renderMathLinks($("mathPrereq"), item.prerequisites, t("noPrerequisites"));
 
     $("mathSourceSection").hidden = !renderReference(
       $("mathSource"), $("mathSourceLabel"), $("mathSourceHost"), item
     );
 
     showView("math");
-    document.title = `${item.name} — Mathematics | AI Concept Atlas`;
+    document.title = t("mathTitle", { name: item.name });
     window.scrollTo({ top: 0, behavior: "auto" });
     $("mathName").setAttribute("tabindex", "-1");
     $("mathName").focus({ preventScroll: true });
@@ -1329,6 +1439,13 @@
    * page and the dialog can never be open at once.
    */
   function handleRoute() {
+    // First, not last: handleRoute() has an early return per route, and an
+    // exception in any of the open* calls below must not be able to strand the
+    // language links pointing at a page the reader has already left. The hash
+    // is already current here — popstate and hashchange both fire after the
+    // address bar updates.
+    syncLanguageLinks();
+
     const hash = decodeURIComponent(location.hash);
     const math = hash.match(/^#math\/(.+)$/);
     const learn = hash.match(/^#learn\/(.+)$/);
@@ -1369,7 +1486,7 @@
     if (navigator.clipboard?.writeText) {
       try {
         await navigator.clipboard.writeText(url);
-        showToast(`${label} copied`);
+        showToast(t("toastCopied", { label }));
         return;
       } catch { /* fall through to the file:// path */ }
     }
@@ -1383,7 +1500,7 @@
       field.select();
       field.setSelectionRange(0, field.value.length);
       if (document.execCommand("copy")) {
-        showToast(`${label} copied`);
+        showToast(t("toastCopied", { label }));
         return;
       }
     } catch { /* fall through */ }
@@ -1391,7 +1508,7 @@
       field.remove();
     }
 
-    showToast(`Copy this link: ${url}`);
+    showToast(t("toastCopyManually", { url }));
   }
 
   /* Everything before the hash, whatever the scheme. Not origin + pathname:
@@ -1562,19 +1679,35 @@
   });
 
   $("copyLink").addEventListener("click", () => {
-    copyLink(state.current ? absolute(`#concept/${state.current.slug}`) : location.href, "Concept link");
+    copyLink(state.current ? absolute(`#concept/${state.current.slug}`) : location.href, t("labelConceptLink"));
   });
 
   $("learnCopy").addEventListener("click", () => {
-    copyLink(state.learning ? absolute(`#learn/${state.learning.slug}`) : location.href, "Page link");
+    copyLink(state.learning ? absolute(`#learn/${state.learning.slug}`) : location.href, t("labelPageLink"));
   });
 
   $("mathCopy").addEventListener("click", () => {
-    copyLink(state.math ? absolute(`#math/${state.math.slug}`) : location.href, "Page link");
+    copyLink(state.math ? absolute(`#math/${state.math.slug}`) : location.href, t("labelPageLink"));
   });
 
   window.addEventListener("popstate", handleRoute);
   window.addEventListener("hashchange", handleRoute);
+
+  /**
+   * Keep the language links pointing at the CURRENT page.
+   *
+   * Switching language must land the reader on the same concept, not back at
+   * the top of the atlas — so the hash has to be copied across, and it changes
+   * as they navigate. handleRoute() is the one place that always runs on a
+   * route change, which makes it the right hook.
+   */
+  function syncLanguageLinks() {
+    for (const link of document.querySelectorAll("[data-lang-link]")) {
+      const target = link.dataset.langLink;
+      link.setAttribute("href", i18n.hrefFor(target, location.hash));
+      link.setAttribute("aria-current", target === i18n.lang ? "true" : "false");
+    }
+  }
 
   renderFilters();
   renderMathFilters();

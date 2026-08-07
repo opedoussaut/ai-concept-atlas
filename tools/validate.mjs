@@ -41,6 +41,9 @@ const REQUIRED_FILES = [
   "app.js",
   "data.js",
   "math-data.js",
+  "i18n.js",
+  "data-fr.js",
+  "math-data-fr.js",
   "README.md",
   "LICENSE",
   "CLAUDE.md",
@@ -71,6 +74,11 @@ let concepts = [];
 let categories = [];
 let mathConcepts = [];
 let mathCategories = [];
+let conceptsFr = {};
+let categoriesFr = {};
+let mathConceptsFr = {};
+let mathCategoriesFr = {};
+let i18nStrings = {};
 
 try {
   new vm.Script(read("data.js"), { filename: "data.js" }).runInContext(sandbox);
@@ -88,6 +96,41 @@ try {
   ok("math-data.js parses and evaluates");
 } catch (error) {
   fail(`math-data.js failed to evaluate: ${error.message}`);
+}
+
+try {
+  new vm.Script(read("data-fr.js"), { filename: "data-fr.js" }).runInContext(sandbox);
+  conceptsFr = sandbox.window.AI_CONCEPTS_FR ?? {};
+  categoriesFr = sandbox.window.AI_CATEGORIES_FR ?? {};
+  ok("data-fr.js parses and evaluates");
+} catch (error) {
+  fail(`data-fr.js failed to evaluate: ${error.message}`);
+}
+
+try {
+  new vm.Script(read("math-data-fr.js"), { filename: "math-data-fr.js" }).runInContext(sandbox);
+  mathConceptsFr = sandbox.window.MATH_CONCEPTS_FR ?? {};
+  mathCategoriesFr = sandbox.window.MATH_CATEGORIES_FR ?? {};
+  ok("math-data-fr.js parses and evaluates");
+} catch (error) {
+  fail(`math-data-fr.js failed to evaluate: ${error.message}`);
+}
+
+try {
+  // i18n.js reads location at module scope, so give it just enough to run.
+  const i18nBox = {
+    window: {},
+    location: { search: "", hash: "", href: "https://example.test/" },
+    document: undefined,
+    URLSearchParams,
+    Intl
+  };
+  vm.createContext(i18nBox);
+  new vm.Script(read("i18n.js"), { filename: "i18n.js" }).runInContext(i18nBox);
+  i18nStrings = i18nBox.window.ATLAS_I18N?.strings ?? {};
+  ok("i18n.js parses and evaluates");
+} catch (error) {
+  fail(`i18n.js failed to evaluate: ${error.message}`);
 }
 
 try {
@@ -367,6 +410,102 @@ if (orphans.length) orphans.forEach((item) => fail(`mathematics page "${item.slu
 else ok("no orphan mathematics pages — every one is used by at least one AI concept");
 
 /* ------------------------------------------------------------------ */
+/* 2b. French layer                                                     */
+/*                                                                      */
+/* The French files are an OVERLAY keyed by slug, not a parallel copy,   */
+/* so the failure mode is not "the translation disagrees with English"   */
+/* but "the translation points at something that no longer exists".      */
+/* A renamed slug in data.js silently orphans its French text, and the   */
+/* page quietly reverts to English with nobody the wiser. That is what   */
+/* these checks are for.                                                */
+/* ------------------------------------------------------------------ */
+section("French layer");
+
+const TRANSLATABLE = ["name", "summary", "why", "how", "example", "mathNote"];
+const MATH_TRANSLATABLE = ["name", "summary", "intuition", "equationNote", "worked"];
+
+function checkOverlay(label, overlay, validSlugs, allowed, total, required = allowed) {
+  const keys = Object.keys(overlay);
+  const unknown = keys.filter((slug) => !validSlugs.has(slug));
+  if (unknown.length) {
+    unknown.forEach((slug) =>
+      fail(`${label}: "${slug}" does not exist in the English data — renamed or deleted?`));
+  } else {
+    ok(`${label}: all ${keys.length} entries resolve to a real slug`);
+  }
+
+  let badField = 0;
+  let empty = 0;
+  for (const [slug, patch] of Object.entries(overlay)) {
+    if (!patch || typeof patch !== "object") { fail(`${label}: "${slug}" is not an object`); continue; }
+    for (const [field, value] of Object.entries(patch)) {
+      if (!allowed.includes(field)) { fail(`${label}: "${slug}" has unknown field "${field}"`); badField += 1; }
+      else if (typeof value !== "string" || !value.trim()) { fail(`${label}: "${slug}.${field}" is empty`); empty += 1; }
+    }
+  }
+  if (!badField && !empty) ok(`${label}: every field is a known, non-empty string`);
+
+  // Phase-one French covers names and summaries. Falling short of that is not
+  // an error — it renders in English and says so — but it is worth reporting,
+  // because a card that is half-translated is the most visible kind of gap.
+  const missing = [...validSlugs].filter((slug) =>
+    required.some((field) => !String(overlay[slug]?.[field] ?? "").trim()));
+  if (missing.length) warn(`${label}: ${missing.length} of ${total} entries lack ${required.join(" or ")}`);
+  else ok(`${label}: all ${total} entries carry ${required.join(" + ")}`);
+}
+
+checkOverlay("data-fr.js concepts", conceptsFr, slugs, TRANSLATABLE, concepts.length, ["name", "summary"]);
+checkOverlay("math-data-fr.js concepts", mathConceptsFr, mathSlugs, MATH_TRANSLATABLE, mathConcepts.length, ["name", "summary"]);
+checkOverlay("data-fr.js domains", categoriesFr, categoryIds, ["name", "short"], categories.length);
+checkOverlay("math-data-fr.js branches", mathCategoriesFr, mathCategoryIds, ["name", "short"], mathCategories.length);
+
+// A key present in one language and absent in the other renders as a blank
+// label or, worse, silently falls back mid-sentence. Both tables must match.
+const enKeys = Object.keys(i18nStrings.en ?? {});
+const frKeys = Object.keys(i18nStrings.fr ?? {});
+if (!enKeys.length || !frKeys.length) {
+  fail("i18n.js exposed no string tables");
+} else {
+  const missingFr = enKeys.filter((key) => !(key in i18nStrings.fr));
+  const missingEn = frKeys.filter((key) => !(key in i18nStrings.en));
+  missingFr.forEach((key) => fail(`i18n.js: "${key}" is missing from the French table`));
+  missingEn.forEach((key) => fail(`i18n.js: "${key}" is missing from the English table`));
+  if (!missingFr.length && !missingEn.length) ok(`i18n.js: both string tables carry the same ${enKeys.length} keys`);
+
+  // A {placeholder} that exists in one language and not the other prints the
+  // literal braces at the reader, and a plural form present on only one side
+  // silently drops the count.
+  let mismatched = 0;
+  for (const key of enKeys) {
+    const en = String(i18nStrings.en[key] ?? "");
+    const fr = String(i18nStrings.fr[key] ?? "");
+    const vars = (value) => [...new Set(value.match(/\{(\w+)\}/g) ?? [])].sort().join(",");
+    if (vars(en) !== vars(fr)) { fail(`i18n.js: "${key}" uses different placeholders in each language`); mismatched += 1; }
+    if (en.includes("|") !== fr.includes("|")) { fail(`i18n.js: "${key}" has a plural form in only one language`); mismatched += 1; }
+  }
+  if (!mismatched) ok("i18n.js: placeholders and plural forms agree across both languages");
+
+  // Untranslated French is the failure this layer exists to prevent.
+  const SAME_BY_DESIGN = new Set([
+    "htmlLang",           // the language code itself
+    "langEnglish",        // each language is named in its own language
+    "langFrench",
+    "englishChip",        // "EN" is the same token everywhere
+    "noscriptLink",       // a filename
+    "footerName",         // "AI Concept Atlas" is the product name, not prose
+    "conceptTitle",       // ditto — only the interpolated concept name changes
+    "statConcepts",       // "concepts" and "branches" are spelled the same
+    "statBranches",
+    "bandCount"           // "{n} concept|{n} concepts" happens to be identical
+  ]);
+  const identical = enKeys.filter((key) =>
+    !SAME_BY_DESIGN.has(key) &&
+    String(i18nStrings.en[key]).length > 12 && i18nStrings.en[key] === i18nStrings.fr[key]);
+  if (identical.length) identical.forEach((key) => warn(`i18n.js: "${key}" is identical in both languages`));
+  else ok("i18n.js: no French string is a verbatim copy of its English original");
+}
+
+/* ------------------------------------------------------------------ */
 /* 3. Generated concept map                                             */
 /* ------------------------------------------------------------------ */
 section("Concept map (assets/ai-concept-map.svg)");
@@ -476,7 +615,8 @@ else ok("no placeholder GitHub URL");
 // can pair a fresh index.html with a stale app.js and see a half-rendered page.
 // A shared version token prevents that — but only if every file carries the
 // same one, so a partial bump must fail rather than ship a subtler mismatch.
-const VERSIONED = ["styles.css", "data.js", "math-data.js", "app.js", "assets/ai-concept-map.svg"];
+const VERSIONED = ["styles.css", "data.js", "math-data.js", "data-fr.js", "math-data-fr.js",
+  "i18n.js", "app.js", "assets/ai-concept-map.svg"];
 const versions = new Map();
 for (const file of VERSIONED) {
   const match = html.match(new RegExp(`(?:href|src)="${file.replace(".", "\\.")}\\?v=([^"]+)"`));
@@ -575,7 +715,10 @@ const WORKFLOW_CHECKS = [
   [/actions\/upload-pages-artifact@v\d+/, "uses actions/upload-pages-artifact"],
   [/actions\/deploy-pages@v\d+/, "uses actions/deploy-pages"],
   [/path:\s*_site/, "uploads only the staged _site directory"],
-  [/cp .*\bmath-data\.js\b.* _site\//, "math-data.js is staged for publication"]
+  [/cp .*\bmath-data\.js\b.* _site\//, "math-data.js is staged for publication"],
+  [/cp .*\bi18n\.js\b.* _site\//, "i18n.js is staged for publication"],
+  [/cp .*\bdata-fr\.js\b.* _site\//, "data-fr.js is staged for publication"],
+  [/cp .*\bmath-data-fr\.js\b.* _site\//, "math-data-fr.js is staged for publication"]
 ];
 
 for (const [pattern, label] of WORKFLOW_CHECKS) {

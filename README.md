@@ -51,6 +51,31 @@ LoRA  →  Matrix rank  →  Low-rank factorization  →  LoRA, QLoRA, PEFT
 Equations are plain text in a monospaced block — no maths library, no external
 request, consistent with the no-third-party-requests promise.
 
+## Français
+
+Add `?lang=fr` to any URL and the atlas reads in French, including deep links:
+`…/?lang=fr#math/dot-product`. There is an EN / FR switch in the header that
+keeps you on the page you are already reading.
+
+The language is decided by the URL alone — nothing is auto-detected from your
+browser and nothing is stored — so a link you share renders the same page for
+whoever opens it, and the "no cookies, no analytics, no tracking" line in the
+footer stays literally true.
+
+French currently covers the interface and the name and one-line summary of all
+125 concepts: everything on a card, in search, in the graph and in the filters.
+The longer explanations are still English and carry a small **EN** marker on
+their heading, so you always know which you are reading rather than wondering
+whether something broke. Search works in both languages either way round — the
+French site finds "retrieval augmented", the English site finds "apprentissage
+profond".
+
+Acronyms and mathematical symbols are never translated. LoRA stays LoRA, ∇ stays
+∇, and established practitioner vocabulary — embedding, fine-tuning, token,
+prompt, softmax — stays in English inside the French text, because that is how
+French-speaking practitioners actually talk. Mathematical terminology is the
+opposite: it is settled in French, so it is translated properly.
+
 ## The relationship graph spans both layers
 
 Circles are AI concepts, diamonds are mathematics. Every edge is a relationship
@@ -167,6 +192,10 @@ Without it the workflow fails at `actions/configure-pages` with
 
 - Edit concept content in `data.js` (see `CLAUDE.md` § 4 for the required shape).
 - Edit mathematics content in `math-data.js` (same section for its shape).
+- Edit French content in `data-fr.js` and `math-data-fr.js`. These are overlays
+  keyed by the same slug, holding only the fields that differ — not copies of the
+  data. Leave a field out and it renders in English, marked as such. Interface
+  strings live in `i18n.js`, where both language tables must carry the same keys.
 - Add a `math` block to a concept and its formulation appears on `#learn/<slug>`.
 - Link a concept to mathematics with `mathIntensity` and `mathFoundations`. The
   reverse direction — which AI concepts use a given piece of mathematics — is

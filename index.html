@@ -4,8 +4,16 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#07111f" />
-  <meta name="description" content="An interactive, visual atlas of essential AI concepts—from LoRA and QLoRA to RAG, agents, MCP, multimodal AI, inference, evaluation and safety." />
+  <meta name="description" data-i18n-attr="content:metaDescription" content="An interactive, visual atlas of essential AI concepts—from LoRA and QLoRA to RAG, agents, MCP, multimodal AI, inference, evaluation and safety." />
   <link rel="canonical" href="https://opedoussaut.github.io/ai-concept-atlas/" />
+  <!-- Two languages, one document. `?lang=fr` selects French; anything else is
+       English. Nothing is auto-detected and nothing is stored, so a shared link
+       renders the same page for every reader — which is the whole premise of an
+       atlas built on shareable deep links, and keeps the footer's no-cookies
+       promise literally true. -->
+  <link rel="alternate" hreflang="en" href="https://opedoussaut.github.io/ai-concept-atlas/" />
+  <link rel="alternate" hreflang="fr" href="https://opedoussaut.github.io/ai-concept-atlas/?lang=fr" />
+  <link rel="alternate" hreflang="x-default" href="https://opedoussaut.github.io/ai-concept-atlas/" />
   <meta property="og:site_name" content="AI Concept Atlas" />
   <meta property="og:title" content="AI Concept Atlas — From LoRA to MCP" />
   <meta property="og:description" content="Explore essential AI concepts through a visual, searchable and shareable interactive map." />
@@ -21,31 +29,38 @@
   <meta name="twitter:image" content="https://opedoussaut.github.io/ai-concept-atlas/assets/ai-concept-map.png" />
   <title>AI Concept Atlas — From LoRA to MCP</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
-  <link rel="preload" href="assets/ai-concept-map.svg?v=2026-08-06" as="image" type="image/svg+xml" />
+  <link rel="preload" href="assets/ai-concept-map.svg?v=2026-08-07" as="image" type="image/svg+xml" />
   <!-- Version token on every local script and stylesheet. GitHub Pages serves
        these with max-age=600, so without it a returning visitor can get a fresh
        index.html alongside a stale app.js and see half a page. Bump the token
        whenever app.js, styles.css, data.js or math-data.js changes; the
        validator fails the build if the four ever disagree. -->
-  <link rel="stylesheet" href="styles.css?v=2026-08-06" />
+  <link rel="stylesheet" href="styles.css?v=2026-08-07" />
 </head>
 <body>
-  <a class="skip-link" href="#atlas">Skip to the atlas</a>
+  <a class="skip-link" href="#atlas" data-i18n="skipLink">Skip to the atlas</a>
   <div class="background" aria-hidden="true"></div>
 
   <header class="site-header">
-    <a class="brand" href="#" aria-label="AI Concept Atlas home">
+    <a class="brand" href="#" data-i18n-attr="aria-label:brandAria" aria-label="AI Concept Atlas home">
       <span class="brand-mark">AI</span>
       <span>
-        <strong>Concept Atlas</strong>
-        <small>From LoRA to MCP</small>
+        <strong data-i18n="brandName">Concept Atlas</strong>
+        <small data-i18n="brandTagline">From LoRA to MCP</small>
       </span>
     </a>
-    <nav class="top-actions" aria-label="Primary navigation">
-      <button class="ghost-button" id="randomButton" type="button">Surprise me</button>
-      <a class="ghost-button" href="#mathematics">Mathematics</a>
-      <a class="ghost-button" href="#about">About</a>
-      <a class="primary-button" href="https://github.com/opedoussaut/ai-concept-atlas" target="_blank" rel="noopener noreferrer">View on GitHub</a>
+    <nav class="top-actions" data-i18n-attr="aria-label:navAria" aria-label="Primary navigation">
+      <button class="ghost-button" id="randomButton" type="button" data-i18n="navRandom">Surprise me</button>
+      <a class="ghost-button" href="#mathematics" data-i18n="navMath">Mathematics</a>
+      <a class="ghost-button" href="#about" data-i18n="navAbout">About</a>
+      <a class="primary-button" href="https://github.com/opedoussaut/ai-concept-atlas" target="_blank" rel="noopener noreferrer" data-i18n="navGithub">View on GitHub</a>
+      <!-- Real links, not buttons: switching language is a navigation to a
+           different URL, so it should be openable in a new tab, crawlable and
+           bookmarkable. app.js keeps the hash in sync as the reader moves. -->
+      <div class="lang-switch" role="group" data-i18n-attr="aria-label:langAria" aria-label="Language">
+        <a data-lang-link="en" hreflang="en" href="?" data-i18n-attr="title:langSwitchToEnglish"><span data-i18n="langEnglish">English</span></a>
+        <a data-lang-link="fr" hreflang="fr" href="?lang=fr" data-i18n-attr="title:langSwitchToFrench"><span data-i18n="langFrench">Français</span></a>
+      </div>
     </nav>
   </header>
 
@@ -53,28 +68,30 @@
    <div id="atlasView">
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-copy">
-        <p class="eyebrow">Interactive AI knowledge map</p>
-        <h1 id="hero-title">Understand the language of modern AI.</h1>
-        <p class="hero-intro">Explore the foundations, architectures, training methods, retrieval systems, agents, optimization techniques, multimodal capabilities and safety practices shaping today’s AI systems.</p>
+        <p class="eyebrow" data-i18n="heroEyebrow">Interactive AI knowledge map</p>
+        <h1 id="hero-title" data-i18n="heroTitle">Understand the language of modern AI.</h1>
+        <p class="hero-intro" data-i18n="heroIntro">Explore the foundations, architectures, training methods, retrieval systems, agents, optimization techniques, multimodal capabilities and safety practices shaping today’s AI systems.</p>
         <div class="search-shell" role="search">
           <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m21 21-4.3-4.3m2.3-5.2a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0Z"/></svg>
-          <label class="sr-only" for="searchInput">Search concepts</label>
+          <label class="sr-only" for="searchInput" data-i18n="searchLabel">Search concepts</label>
           <input id="searchInput" type="search" autocomplete="off" spellcheck="false"
+                 data-i18n-attr="placeholder:searchPlaceholder"
                  placeholder="Search LoRA, MCP, RAG, Transformer…"
                  role="combobox" aria-expanded="false" aria-controls="searchResults"
                  aria-autocomplete="list" aria-describedby="searchHint" />
           <kbd aria-hidden="true">/</kbd>
-          <span class="sr-only" id="searchHint">Press the slash key to focus this field. Use the arrow keys to move through suggestions and Enter to open a concept.</span>
+          <span class="sr-only" id="searchHint" data-i18n="searchHint">Press the slash key to focus this field. Use the arrow keys to move through suggestions and Enter to open a concept.</span>
         </div>
-        <div id="searchResults" class="search-results" role="listbox" aria-label="Search suggestions" hidden></div>
-        <div class="hero-stats" aria-label="Atlas statistics">
-          <span><strong id="conceptCount">0</strong> concepts</span>
-          <span><strong id="categoryCount">0</strong> domains</span>
-          <span>Shareable deep links</span>
+        <div id="searchResults" class="search-results" role="listbox" data-i18n-attr="aria-label:searchSuggestionsAria" aria-label="Search suggestions" hidden></div>
+        <div class="hero-stats" data-i18n-attr="aria-label:heroStatsAria" aria-label="Atlas statistics">
+          <span><strong id="conceptCount">0</strong> <span data-i18n="statConcepts">concepts</span></span>
+          <span><strong id="categoryCount">0</strong> <span data-i18n="statDomains">domains</span></span>
+          <span data-i18n="statDeepLinks">Shareable deep links</span>
         </div>
       </div>
       <figure class="hero-visual">
-        <img src="assets/ai-concept-map.svg?v=2026-08-06" width="1200" height="820" decoding="async"
+        <img src="assets/ai-concept-map.svg?v=2026-08-07" width="1200" height="820" decoding="async"
+             data-i18n-attr="alt:heroImageAlt"
              alt="Concept map of 87 AI terms grouped into eight domains — foundations, model architectures, training and adaptation, retrieval and knowledge, agents and orchestration, inference and optimization, multimodal AI, and evaluation, safety and reliability — arranged around a central hub encircled by the seven branches of mathematics they rest on: linear algebra, probability, information theory, optimization, numerics, graphs and dynamics." />
         <span class="visual-glow" aria-hidden="true"></span>
       </figure>
@@ -83,23 +100,23 @@
     <section class="atlas-section" id="atlas" aria-labelledby="atlas-title">
       <div class="section-heading">
         <div>
-          <p class="eyebrow">Explore by domain</p>
-          <h2 id="atlas-title">The AI landscape, one concept at a time</h2>
+          <p class="eyebrow" data-i18n="atlasEyebrow">Explore by domain</p>
+          <h2 id="atlas-title" data-i18n="atlasTitle">The AI landscape, one concept at a time</h2>
         </div>
         <div class="heading-controls">
-          <div class="view-toggle" role="tablist" aria-label="Atlas view">
+          <div class="view-toggle" role="tablist" data-i18n-attr="aria-label:viewToggleAria" aria-label="Atlas view">
             <button class="view-tab" type="button" role="tab" id="tabBands" data-view="bands"
                     aria-selected="true" aria-controls="bandsPanel">
               <svg aria-hidden="true" viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="4" rx="1"/><rect x="1" y="9" width="14" height="4" rx="1"/></svg>
-              Domains
+              <span data-i18n="tabDomains">Domains</span>
             </button>
             <button class="view-tab" type="button" role="tab" id="tabGraph" data-view="graph"
                     aria-selected="false" aria-controls="graphPanel" tabindex="-1">
               <svg aria-hidden="true" viewBox="0 0 16 16"><circle cx="3" cy="4" r="2"/><circle cx="13" cy="7" r="2"/><circle cx="6" cy="13" r="2"/><path d="M3 4 13 7M13 7 6 13M3 4 6 13"/></svg>
-              Graph
+              <span data-i18n="tabGraph">Graph</span>
             </button>
           </div>
-          <div class="filter-row" id="filters" role="group" aria-label="Filter concepts by domain"></div>
+          <div class="filter-row" id="filters" role="group" data-i18n-attr="aria-label:filtersAria" aria-label="Filter concepts by domain"></div>
         </div>
       </div>
 
@@ -110,21 +127,22 @@
       </div>
 
       <div id="graphPanel" role="tabpanel" aria-labelledby="tabGraph" tabindex="0" hidden>
-        <p class="graph-hint">
+        <p class="graph-hint" data-i18n="graphHint">
           Circles are AI concepts, diamonds are mathematics. Every line is a relationship declared in
           the atlas data, and node size reflects how many things connect to it. Select a node to open
           it, or press Tab to step through them. Focus a single concept to see only the mathematics it
           depends on directly, with each relationship named.
         </p>
         <div class="graph-controls">
-          <div class="layer-toggle" id="graphLayers" role="group" aria-label="Graph layers"></div>
+          <div class="layer-toggle" id="graphLayers" role="group" data-i18n-attr="aria-label:graphLayersAria" aria-label="Graph layers"></div>
           <label class="graph-focus">
-            <span>Focus</span>
+            <span data-i18n="graphFocusLabel">Focus</span>
             <select id="graphFocus"></select>
           </label>
         </div>
         <div class="graph-shell">
           <svg id="conceptGraph" viewBox="0 0 1000 680" role="group"
+               data-i18n-attr="aria-label:graphAria"
                aria-label="Relationship graph of AI concepts and the mathematics they use"
                preserveAspectRatio="xMidYMid meet"></svg>
         </div>
@@ -132,6 +150,8 @@
       </div>
 
       <noscript>
+        <!-- Not translated: <noscript> renders precisely when the script that
+             would translate it never runs. English is the honest fallback. -->
         <p class="noscript-note">
           This atlas renders its concept cards with JavaScript. Enable JavaScript to search, filter and open
           concepts. The full concept data set remains readable in
@@ -143,20 +163,20 @@
 
     <section class="about-section" id="about" aria-labelledby="about-title">
       <div>
-        <p class="eyebrow">Why this atlas exists</p>
-        <h2 id="about-title">A practical map for navigating AI conversations.</h2>
+        <p class="eyebrow" data-i18n="aboutEyebrow">Why this atlas exists</p>
+        <h2 id="about-title" data-i18n="aboutTitle">A practical map for navigating AI conversations.</h2>
       </div>
       <div class="about-copy">
-        <p>AI terminology evolves quickly and concepts are often discussed in isolation. This atlas connects each term to the larger system: what it means, why it matters, how it works and which concepts sit around it.</p>
-        <p>Each concept has its own shareable URL. Open a concept, copy the link and use it in a presentation, learning session, technical discussion or LinkedIn post.</p>
+        <p data-i18n="aboutBody1">AI terminology evolves quickly and concepts are often discussed in isolation. This atlas connects each term to the larger system: what it means, why it matters, how it works and which concepts sit around it.</p>
+        <p data-i18n="aboutBody2">Each concept has its own shareable URL. Open a concept, copy the link and use it in a presentation, learning session, technical discussion or LinkedIn post.</p>
       </div>
     </section>
    </div>
 
    <!-- Full concept page, routed at #learn/<slug>. Rendered by app.js. -->
    <article id="learnView" class="learn-view" aria-labelledby="learnName" hidden>
-     <nav class="learn-back" aria-label="Breadcrumb">
-       <a class="ghost-button" id="learnBack" href="#">← Back to the atlas</a>
+     <nav class="learn-back" data-i18n-attr="aria-label:breadcrumbAria" aria-label="Breadcrumb">
+       <a class="ghost-button" id="learnBack" href="#" data-i18n="backToAtlas">← Back to the atlas</a>
        <span class="learn-domain" id="learnDomain"></span>
      </nav>
 
@@ -169,42 +189,42 @@
      <div class="learn-body">
        <div class="learn-main">
          <section aria-labelledby="learnWhyTitle">
-           <h2 id="learnWhyTitle">Why it matters</h2>
+           <h2 id="learnWhyTitle" data-i18n="sectionWhy">Why it matters</h2>
            <p id="learnWhy"></p>
          </section>
          <section aria-labelledby="learnHowTitle">
-           <h2 id="learnHowTitle">How it works</h2>
+           <h2 id="learnHowTitle" data-i18n="sectionHow">How it works</h2>
            <p id="learnHow"></p>
          </section>
          <section id="learnExampleSection" aria-labelledby="learnExampleTitle">
-           <h2 id="learnExampleTitle">Concrete example</h2>
+           <h2 id="learnExampleTitle" data-i18n="sectionExample">Concrete example</h2>
            <p id="learnExample"></p>
          </section>
          <section id="learnFoundationsSection" aria-labelledby="learnFoundationsTitle">
-           <h2 id="learnFoundationsTitle">Mathematical foundations</h2>
+           <h2 id="learnFoundationsTitle" data-i18n="sectionFoundations">Mathematical foundations</h2>
            <div id="learnFoundations"></div>
          </section>
          <section id="learnMathSection" aria-labelledby="learnMathTitle">
-           <h2 id="learnMathTitle">Mathematical formulation</h2>
+           <h2 id="learnMathTitle" data-i18n="sectionFormulation">Mathematical formulation</h2>
            <div id="learnMath"></div>
          </section>
        </div>
 
-       <aside class="learn-aside" aria-label="References and related concepts">
+       <aside class="learn-aside" data-i18n-attr="aria-label:learnAsideAria" aria-label="References and related concepts">
          <section id="learnSourceSection">
-           <h2>Primary reference</h2>
+           <h2 data-i18n="sectionReference">Primary reference</h2>
            <a class="reference-card" id="learnSource" target="_blank" rel="noopener noreferrer">
              <span class="reference-label" id="learnSourceLabel"></span>
              <span class="reference-host" id="learnSourceHost"></span>
            </a>
          </section>
          <section>
-           <h2>Related concepts</h2>
+           <h2 data-i18n="sectionRelated">Related concepts</h2>
            <div class="related-links" id="learnRelated"></div>
          </section>
          <section>
-           <h2>Share</h2>
-           <button class="ghost-button" id="learnCopy" type="button">Copy page link</button>
+           <h2 data-i18n="sectionShare">Share</h2>
+           <button class="ghost-button" id="learnCopy" type="button" data-i18n="copyPageLink">Copy page link</button>
          </section>
        </aside>
      </div>
@@ -212,31 +232,32 @@
 
    <!-- Mathematics overview, routed at #mathematics. Rendered by app.js. -->
    <section id="mathIndexView" class="math-index" aria-labelledby="mathIndexTitle" hidden>
-     <nav class="learn-back" aria-label="Breadcrumb">
-       <a class="ghost-button" href="#">← Back to the atlas</a>
-       <span class="math-layer-badge">Cross-cutting layer</span>
+     <nav class="learn-back" data-i18n-attr="aria-label:breadcrumbAria" aria-label="Breadcrumb">
+       <a class="ghost-button" href="#" data-i18n="backToAtlas">← Back to the atlas</a>
+       <span class="math-layer-badge" data-i18n="mathLayerBadge">Cross-cutting layer</span>
      </nav>
 
      <header class="math-index-header">
-       <p class="eyebrow">A supporting layer, not a ninth domain</p>
-       <h1 id="mathIndexTitle">Mathematics Behind AI</h1>
-       <p class="learn-summary">Modern AI rests on a surprisingly small set of recurring mathematical ideas: vectors, matrices, probability distributions, optimization, information theory, graph theory and numerical approximation. This section connects each idea to the techniques that use it. The aim is not to reproduce a textbook, but to make the mathematics behind modern AI intuitive, navigable and tied to concrete technology.</p>
+       <p class="eyebrow" data-i18n="mathIndexEyebrow">A supporting layer, not a ninth domain</p>
+       <h1 id="mathIndexTitle" data-i18n="mathIndexTitle">Mathematics Behind AI</h1>
+       <p class="learn-summary" data-i18n="mathIndexIntro">Modern AI rests on a surprisingly small set of recurring mathematical ideas: vectors, matrices, probability distributions, optimization, information theory, graph theory and numerical approximation. This section connects each idea to the techniques that use it. The aim is not to reproduce a textbook, but to make the mathematics behind modern AI intuitive, navigable and tied to concrete technology.</p>
        <div class="search-shell" role="search">
          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m21 21-4.3-4.3m2.3-5.2a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0Z"/></svg>
-         <label class="sr-only" for="mathSearchInput">Search mathematical concepts</label>
+         <label class="sr-only" for="mathSearchInput" data-i18n="mathSearchLabel">Search mathematical concepts</label>
          <input id="mathSearchInput" type="search" autocomplete="off" spellcheck="false"
+                data-i18n-attr="placeholder:mathSearchPlaceholder"
                 placeholder="Search softmax, matrix rank, entropy…" />
        </div>
-       <div class="hero-stats" aria-label="Mathematics layer statistics">
-         <span><strong id="mathCount">0</strong> mathematical concepts</span>
-         <span><strong id="mathBranchCount">0</strong> branches</span>
-         <span><strong id="mathLinkCount">0</strong> links to AI concepts</span>
+       <div class="hero-stats" data-i18n-attr="aria-label:mathStatsAria" aria-label="Mathematics layer statistics">
+         <span><strong id="mathCount">0</strong> <span data-i18n="statMathConcepts">mathematical concepts</span></span>
+         <span><strong id="mathBranchCount">0</strong> <span data-i18n="statBranches">branches</span></span>
+         <span><strong id="mathLinkCount">0</strong> <span data-i18n="statMathLinks">links to AI concepts</span></span>
        </div>
      </header>
 
      <div class="math-controls">
-       <div class="filter-row" id="mathFilters" role="group" aria-label="Filter by branch of mathematics"></div>
-       <div class="filter-row" id="mathDifficultyFilters" role="group" aria-label="Filter by difficulty"></div>
+       <div class="filter-row" id="mathFilters" role="group" data-i18n-attr="aria-label:mathFiltersAria" aria-label="Filter by branch of mathematics"></div>
+       <div class="filter-row" id="mathDifficultyFilters" role="group" data-i18n-attr="aria-label:mathDifficultyAria" aria-label="Filter by difficulty"></div>
      </div>
 
      <p class="sr-only" id="mathStatus" role="status" aria-live="polite"></p>
@@ -245,9 +266,9 @@
 
    <!-- Mathematics concept page, routed at #math/<slug>. Rendered by app.js. -->
    <article id="mathView" class="learn-view math-view" aria-labelledby="mathName" hidden>
-     <nav class="learn-back" aria-label="Breadcrumb">
-       <a class="ghost-button" id="mathBack" href="#mathematics">← All mathematics</a>
-       <a class="ghost-button subtle-link" id="mathBackAll" href="#mathematics" hidden>All mathematics</a>
+     <nav class="learn-back" data-i18n-attr="aria-label:breadcrumbAria" aria-label="Breadcrumb">
+       <a class="ghost-button" id="mathBack" href="#mathematics" data-i18n="mathBackAll">← All mathematics</a>
+       <a class="ghost-button subtle-link" id="mathBackAll" href="#mathematics" data-i18n="mathBackAllPlain" hidden>All mathematics</a>
        <span class="learn-domain" id="mathBranch"></span>
        <span class="difficulty-chip" id="mathDifficultyChip"></span>
      </nav>
@@ -261,50 +282,50 @@
      <div class="learn-body">
        <div class="learn-main">
          <section aria-labelledby="mathIntuitionTitle">
-           <h2 id="mathIntuitionTitle">Intuitive explanation</h2>
+           <h2 id="mathIntuitionTitle" data-i18n="sectionIntuition">Intuitive explanation</h2>
            <p id="mathIntuition"></p>
          </section>
          <section id="mathEquationSection" aria-labelledby="mathEquationTitle">
-           <h2 id="mathEquationTitle">Essential equation</h2>
+           <h2 id="mathEquationTitle" data-i18n="sectionEquation">Essential equation</h2>
            <div id="mathEquation"></div>
          </section>
          <section id="mathLegendSection" aria-labelledby="mathLegendTitle">
-           <h2 id="mathLegendTitle">What each symbol means</h2>
+           <h2 id="mathLegendTitle" data-i18n="sectionLegend">What each symbol means</h2>
            <dl class="symbol-legend" id="mathLegend"></dl>
          </section>
          <section id="mathWorkedSection" aria-labelledby="mathWorkedTitle">
-           <h2 id="mathWorkedTitle">Worked example</h2>
+           <h2 id="mathWorkedTitle" data-i18n="sectionWorked">Worked example</h2>
            <div id="mathWorked"></div>
          </section>
          <section aria-labelledby="mathWhyTitle">
-           <h2 id="mathWhyTitle">Why it matters in AI</h2>
+           <h2 id="mathWhyTitle" data-i18n="sectionWhyInAI">Why it matters in AI</h2>
            <ul class="why-list" id="mathWhy"></ul>
          </section>
          <section aria-labelledby="mathUsedByTitle">
-           <h2 id="mathUsedByTitle">AI concepts using it</h2>
+           <h2 id="mathUsedByTitle" data-i18n="sectionUsedBy">AI concepts using it</h2>
            <div id="mathUsedBy"></div>
          </section>
        </div>
 
-       <aside class="learn-aside" aria-label="References and related mathematics">
+       <aside class="learn-aside" data-i18n-attr="aria-label:mathAsideAria" aria-label="References and related mathematics">
          <section id="mathSourceSection">
-           <h2>Primary reference</h2>
+           <h2 data-i18n="sectionReference">Primary reference</h2>
            <a class="reference-card" id="mathSource" target="_blank" rel="noopener noreferrer">
              <span class="reference-label" id="mathSourceLabel"></span>
              <span class="reference-host" id="mathSourceHost"></span>
            </a>
          </section>
          <section id="mathPrereqSection">
-           <h2>Prerequisites</h2>
+           <h2 data-i18n="sectionPrerequisites">Prerequisites</h2>
            <div class="related-links" id="mathPrereq"></div>
          </section>
          <section>
-           <h2>Related mathematics</h2>
+           <h2 data-i18n="sectionRelatedMath">Related mathematics</h2>
            <div class="related-links" id="mathRelated"></div>
          </section>
          <section>
-           <h2>Share</h2>
-           <button class="ghost-button" id="mathCopy" type="button">Copy page link</button>
+           <h2 data-i18n="sectionShare">Share</h2>
+           <button class="ghost-button" id="mathCopy" type="button" data-i18n="copyPageLink">Copy page link</button>
          </section>
        </aside>
      </div>
@@ -312,13 +333,13 @@
   </main>
 
   <footer>
-    <span>AI Concept Atlas</span>
-    <span>Built as an open educational resource. No cookies, no analytics, no tracking.</span>
+    <span data-i18n="footerName">AI Concept Atlas</span>
+    <span data-i18n="footerNote">Built as an open educational resource. No cookies, no analytics, no tracking.</span>
   </footer>
 
   <dialog class="concept-dialog" id="conceptDialog" aria-labelledby="dialogName">
     <article class="dialog-card">
-      <button class="dialog-close" id="closeDialog" type="button" aria-label="Close concept details">×</button>
+      <button class="dialog-close" id="closeDialog" type="button" data-i18n-attr="aria-label:dialogClose" aria-label="Close concept details">×</button>
       <div class="dialog-header">
         <span class="dialog-category" id="dialogCategory"></span>
         <p class="dialog-acronym" id="dialogAcronym"></p>
@@ -327,27 +348,27 @@
       </div>
       <div class="dialog-body">
         <section>
-          <h3>Why it matters</h3>
+          <h3 id="dialogWhyTitle" data-i18n="sectionWhy">Why it matters</h3>
           <p id="dialogWhy"></p>
         </section>
         <section>
-          <h3>How it works</h3>
+          <h3 id="dialogHowTitle" data-i18n="sectionHow">How it works</h3>
           <p id="dialogHow"></p>
         </section>
         <section id="exampleSection">
-          <h3>Concrete example</h3>
+          <h3 id="dialogExampleTitle" data-i18n="sectionExample">Concrete example</h3>
           <p id="dialogExample"></p>
         </section>
         <section>
-          <h3>Mathematical foundations</h3>
+          <h3 id="dialogFoundationsTitle" data-i18n="sectionFoundations">Mathematical foundations</h3>
           <div id="dialogFoundations"></div>
         </section>
         <section>
-          <h3>Related concepts</h3>
+          <h3 data-i18n="sectionRelated">Related concepts</h3>
           <div class="related-links" id="relatedLinks"></div>
         </section>
         <section id="sourceSection">
-          <h3>Primary reference</h3>
+          <h3 data-i18n="sectionReference">Primary reference</h3>
           <a class="reference-card" id="dialogSource" target="_blank" rel="noopener noreferrer">
             <span class="reference-label" id="dialogSourceLabel"></span>
             <span class="reference-host" id="dialogSourceHost"></span>
@@ -355,16 +376,22 @@
         </section>
       </div>
       <div class="dialog-actions">
-        <a class="primary-button" id="openLearn" href="#">Open the full page</a>
-        <button class="ghost-button" id="copyLink" type="button">Copy concept link</button>
-        <button class="ghost-button" id="nextConcept" type="button">Next concept</button>
+        <a class="primary-button" id="openLearn" href="#" data-i18n="openFullPage">Open the full page</a>
+        <button class="ghost-button" id="copyLink" type="button" data-i18n="copyConceptLink">Copy concept link</button>
+        <button class="ghost-button" id="nextConcept" type="button" data-i18n="nextConcept">Next concept</button>
       </div>
     </article>
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="data.js?v=2026-08-06"></script>
-  <script src="math-data.js?v=2026-08-06"></script>
-  <script src="app.js?v=2026-08-06"></script>
+  <!-- Order matters: the English data publishes its globals, the French
+       overlays publish theirs, i18n.js decides which language is in force, and
+       app.js folds them together exactly once. -->
+  <script src="data.js?v=2026-08-07"></script>
+  <script src="math-data.js?v=2026-08-07"></script>
+  <script src="data-fr.js?v=2026-08-07"></script>
+  <script src="math-data-fr.js?v=2026-08-07"></script>
+  <script src="i18n.js?v=2026-08-07"></script>
+  <script src="app.js?v=2026-08-07"></script>
 </body>
 </html>

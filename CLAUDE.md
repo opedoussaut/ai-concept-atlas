@@ -34,6 +34,9 @@ styles.css                  All styling (single stylesheet, CSS custom propertie
 app.js                      Search, filtering, routing, dialog, clipboard (one IIFE)
 data.js                     Concept + category data (window.AI_CONCEPTS, window.AI_CATEGORIES)
 math-data.js                Mathematics layer (window.MATH_CONCEPTS, window.MATH_CATEGORIES)
+i18n.js                     Language selection, UI strings (en/fr), the localize() overlay fold
+data-fr.js                  French overlay for the AI layer (window.AI_CONCEPTS_FR, window.AI_CATEGORIES_FR)
+math-data-fr.js             French overlay for mathematics (window.MATH_CONCEPTS_FR, window.MATH_CATEGORIES_FR)
 assets/                     favicon.svg, ai-concept-map.svg (hero), .png (social preview)
 tools/validate.mjs          Zero-dependency validation script (also runs in CI)
 tools/build-map.mjs         Regenerates assets/ai-concept-map.svg from data.js
@@ -100,8 +103,10 @@ Do **not** verify the SVG with ImageMagick: it renders `radialGradient` with
 `stop-opacity` as opaque and mangles `tspan` whitespace, so a perfectly good map
 comes out as a solid blob. Use a real SVG renderer, or a browser.
 
-`data.js`, `math-data.js` and `app.js` are loaded as classic scripts at the end of
-`<body>`, in that order: the data files publish the four globals `app.js` consumes.
+`data.js`, `math-data.js`, `data-fr.js`, `math-data-fr.js`, `i18n.js` and `app.js`
+are loaded as classic scripts at the end of `<body>`, in that order: the data
+files publish the globals, the overlays publish theirs, `i18n.js` decides which
+language is in force, and `app.js` folds them together exactly once.
 There are currently **87 concepts across 8 domains** and **38 mathematics concepts
 across 7 branches**, each with a primary reference.
 
@@ -114,6 +119,52 @@ across 7 branches**, each with a primary reference.
 That asymmetry is deliberate. A stored reverse index is a second source of truth that
 silently drifts; deriving it means the two directions cannot disagree. The validator
 enforces that every forward link resolves and that no mathematics page is an orphan.
+
+**The French layer is an overlay, not a translation of the site.** Three rules
+hold it together, and each one exists because the alternative rots:
+
+- **The URL is the only source of truth.** `?lang=fr` selects French; anything
+  else, including `?lang=de`, is English. Nothing reads `navigator.language` and
+  nothing is written to storage — so a shared link renders the same page for
+  every reader, which is the entire premise of an atlas built on shareable deep
+  links, and it keeps the footer's no-cookies promise literally rather than
+  nearly true. Auto-detection was considered and rejected on exactly that basis.
+- **Translations are an overlay keyed by slug**, holding only the fields that
+  differ. There is no second array of concepts, so French cannot disagree with
+  English about how many concepts exist or which relate to which. Same asymmetry
+  as `usedByMath`: one record, one truth.
+- **Localization happens once, at boot.** `i18n.localize()` folds the overlay in
+  before `app.js` indexes anything, so search, cards, dialog, pages and graph all
+  read an object that is already correct and never ask what language they are in.
+  Changing language is a navigation that reloads the page; there is no live
+  re-render path to get wrong.
+
+**Missing French is a state, not a bug.** `localize()` leaves the English in
+place and records the field in `_en`; `markLanguage()` then puts a small "EN"
+chip on that section's heading and `setProse()` sets `lang="en"` on the body so
+screen readers switch voice. That is what makes a phased translation shippable —
+the site is never half-broken, only partly translated, and it says which parts.
+Today the overlays carry `name` and `summary` for all 125 concepts; the four
+explanation layers are still English.
+
+**What is deliberately never translated:** `acronym` and `symbol`. LoRA is LoRA
+and ∇ is ∇, and because the token chip sits next to the name on every card, a
+name can be fully French without the reader losing the term they will actually
+hear in a meeting. Established English practitioner terms stay English inside
+French prose too — embedding, fine-tuning, token, prompt, softmax. Mathematical
+vocabulary is the opposite case and translates properly, because French
+mathematical terminology is settled: `dot product` → `produit scalaire`.
+
+**Search is bilingual in both directions.** Each index entry carries an `alt`
+field holding the concept's name in the *other* language, scoring just below the
+displayed one at every tier. A French reader who has only seen "Retrieval-
+Augmented Generation" in a paper finds it on the French site, and "apprentissage
+profond" finds Deep Learning on the English one. Without it, the most likely
+outcome is a reader concluding the atlas lacks something it plainly has.
+
+`syncLanguageLinks()` is called at the **top** of `handleRoute()`, not the
+bottom. Each route returns early, and an exception in any `open*` call must not
+be able to strand the language links pointing at a page the reader already left.
 
 **Search.** `app.js` builds an in-memory index at startup. Queries are normalized
 (lower-cased, accent-folded, punctuation and hyphens collapsed to spaces), split
@@ -340,6 +391,13 @@ Four public routes, all stable contracts:
 | `#mathematics` | Opens the mathematics overview |
 | `#math/<slug>` | Opens a mathematics concept page |
 
+`?lang=fr` selects French and composes with all four, so
+`…/?lang=fr#math/dot-product` is a valid public URL. It is a **query parameter,
+not a route**: `history.pushState` with a hash-only relative URL preserves the
+query for free, so navigation, the copy-link buttons and `absolute()` all carry
+the language without a single extra line. Nothing else in this table changed —
+an existing English deep link is byte-for-byte what it was.
+
 - Example: `https://opedoussaut.github.io/ai-concept-atlas/#concept/qlora`.
 - Opening a concept calls `history.pushState`, so browser back and forward move
   through the concepts the reader visited.
@@ -433,6 +491,16 @@ existence, every element id `app.js` expects (via `getElementById` **or** the
 `$()` helper), CSS brace balance and focus-visible presence, the workflow YAML
 contract, and a secret scan. Exit code 1 means the change must not ship.
 
+For the French layer it checks that every overlay key resolves to a slug that
+still exists in the English data (a renamed slug silently orphans its French text
+and the page quietly reverts, which is the failure this catches), that every
+overlay field is a known non-empty string, that both `i18n.js` string tables carry
+identical key sets, and that their `{placeholders}` and plural forms agree — a
+placeholder present in one language prints literal braces at the reader. It warns
+when a concept lacks a French name or summary, and when a French string is a
+verbatim copy of its English original; strings that are legitimately identical are
+listed by name in `SAME_BY_DESIGN` rather than the check being loosened.
+
 For the mathematics layer it additionally checks the mathematics data model,
 unique URL-safe mathematics slugs, valid branches and difficulty values,
 resolvable `related` and `prerequisites`, that every `mathIntensity` is one of
@@ -465,6 +533,11 @@ Also confirm manually:
 - `#learn/mcp` states "Core mathematical foundation: none." rather than showing
   an empty section
 - Copy-link behaviour over HTTPS (the Clipboard API needs a secure context)
+- `?lang=fr`: the FR/EN switch preserves the current route from every panel,
+  a French deep link opened cold resolves, an English link is unchanged, and
+  `?lang=de` falls back to English rather than rendering blanks
+- In French, confirm the "EN" chip appears on Why/How/Example and on Intuitive
+  explanation, and does **not** appear anywhere on the English site
 - Keyboard-only pass: `/` focuses search, arrows move suggestions, Enter opens,
   Tab reaches graph nodes and Enter opens them, Escape closes, focus returns to
   the triggering card
@@ -534,7 +607,14 @@ with **zero warnings**. Keep it that way: a new concept must arrive with a
   Sampling. Splitting them today would create stubs, not pages.
 - Add a glossary index and a compare mode for two concepts.
 - Add downloadable PNG/PDF concept cards.
-- Add optional French localization.
+- Translate the four explanation layers into French. `data-fr.js` carries
+  `name` and `summary` for all 87 concepts (and `math-data-fr.js` the same for
+  all 38); `why`, `how`, `example`, `intuition`, `equationNote`, `worked` and
+  `whyInAI` are still English and say so on the page. ~19,000 words remain.
+  Nothing needs building first — add the field to the overlay and it renders.
+- Add a third language if one is ever wanted. `i18n.js` takes a new code in
+  `SUPPORTED` plus a string table and one more overlay file; nothing in `app.js`
+  is language-specific.
 - Consider persisting the chosen view, if it can be done without anything a
   reader would reasonably call tracking.
 - Reassess plain-text formulas now that 38 mathematics pages carry equations. If

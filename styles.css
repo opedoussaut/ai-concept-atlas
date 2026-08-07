@@ -137,6 +137,63 @@ img { max-width: 100%; height: auto; }
 .primary-button:hover, .ghost-button:hover { transform: translateY(-1px); }
 .ghost-button:hover { border-color: rgba(93,231,255,.5); background: rgba(93,231,255,.06); }
 
+/* Language switch ---------------------------------------------------------
+   A segmented pair rather than a dropdown: there are two languages, both fit,
+   and a reader can see which one they are on without opening anything. These
+   are real <a> elements pointing at real URLs, so they carry the current hash
+   and can be opened in a new tab — the state lives in the address bar, not in
+   a variable. `aria-current` is what marks the active one, kept in sync by
+   app.js on every route change. */
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 4px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255,255,255,.035);
+}
+.lang-switch a {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 11px;
+  border-radius: 9px;
+  color: var(--muted);
+  font-size: .82rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+  text-decoration: none;
+  transition: color .18s ease, background .18s ease;
+}
+.lang-switch a:hover { color: var(--text); background: rgba(93,231,255,.07); }
+.lang-switch a[aria-current="true"] {
+  color: #04111a;
+  background: linear-gradient(135deg, var(--cyan), #a3f5ff);
+}
+
+/* "Still in English" marker -----------------------------------------------
+   The French layer translates names and summaries; the longer explanations
+   are English for now. A reader meeting an English paragraph with no warning
+   would fairly assume the translation is broken rather than partial, so the
+   section heading says which. Never rendered on the English site — there is
+   nothing there for it to mean. Deliberately quiet: it is a footnote about
+   the text, not a defect badge on it. */
+.lang-chip {
+  display: inline-block;
+  margin-left: 9px;
+  padding: 2px 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  cursor: help;
+}
+
 main { width: min(calc(100% - 40px), var(--max)); margin: 0 auto; }
 
 /* Hero: one centered column, with the concept map beneath it. */
@@ -940,6 +997,10 @@ footer {
   .brand small { display: none; }
   .top-actions { flex-wrap: wrap; gap: 8px; }
   .top-actions .ghost-button, .top-actions .primary-button { font-size: .85rem; padding-inline: 12px; min-height: 38px; }
+  /* The language pair stays whole on a wrapped header — splitting a segmented
+     control across two lines reads as two unrelated links. */
+  .lang-switch { margin-left: 0; }
+  .lang-switch a { font-size: .78rem; padding-inline: 9px; min-height: 32px; }
   h1 { font-size: clamp(2rem, 9vw, 2.7rem); max-width: none; }
   .hero-intro { font-size: 1rem; }
   .concept-grid { grid-template-columns: 1fr; }
