@@ -44,6 +44,7 @@ const REQUIRED_FILES = [
   "i18n.js",
   "data-fr.js",
   "math-data-fr.js",
+  "quiz.js",
   "README.md",
   "LICENSE",
   "CLAUDE.md",
@@ -79,6 +80,7 @@ let categoriesFr = {};
 let mathConceptsFr = {};
 let mathCategoriesFr = {};
 let i18nStrings = {};
+let quizApi = null;
 
 try {
   new vm.Script(read("data.js"), { filename: "data.js" }).runInContext(sandbox);
@@ -131,6 +133,18 @@ try {
   ok("i18n.js parses and evaluates");
 } catch (error) {
   fail(`i18n.js failed to evaluate: ${error.message}`);
+}
+
+try {
+  // quiz.js is a pure module — no DOM, no location — so it can be evaluated
+  // and its belt tables checked directly.
+  const quizBox = { window: {} };
+  vm.createContext(quizBox);
+  new vm.Script(read("quiz.js"), { filename: "quiz.js" }).runInContext(quizBox);
+  quizApi = quizBox.window.ATLAS_QUIZ ?? null;
+  ok("quiz.js parses and evaluates");
+} catch (error) {
+  fail(`quiz.js failed to evaluate: ${error.message}`);
 }
 
 try {
@@ -424,7 +438,41 @@ section("French layer");
 const TRANSLATABLE = ["name", "summary", "why", "how", "example", "mathNote"];
 const MATH_TRANSLATABLE = ["name", "summary", "intuition", "equationNote", "worked"];
 
-function checkOverlay(label, overlay, validSlugs, allowed, total, required = allowed) {
+/* Fields that are not plain strings. Each is checked against the ENGLISH
+   record it overlays, because that is where the failure lives: a legend keyed
+   by a symbol that no longer exists, or a whyInAI list that no longer matches
+   the number of English bullets, both silently revert the section to English
+   with nothing on screen to say why. */
+const SHAPED = {
+  legend: (fr, en) => {
+    if (typeof fr !== "object" || Array.isArray(fr)) return "must be an object keyed by symbol";
+    const symbols = new Set((en ?? []).map((row) => row.symbol));
+    const stray = Object.keys(fr).filter((key) => !symbols.has(key));
+    if (stray.length) return `has keys not in the English legend: ${stray.join(", ")}`;
+    const missing = [...symbols].filter((sym) => !String(fr[sym] ?? "").trim());
+    if (missing.length) return `is missing meanings for: ${missing.join(", ")}`;
+    return null;
+  },
+  whyInAI: (fr, en) => {
+    if (!Array.isArray(fr)) return "must be an array";
+    if (fr.length !== (en ?? []).length) return `has ${fr.length} items but English has ${(en ?? []).length}`;
+    if (fr.some((item) => typeof item !== "string" || !item.trim())) return "contains an empty item";
+    return null;
+  },
+  foundations: (fr, en) => {
+    if (typeof fr !== "object" || Array.isArray(fr)) return "must be an object keyed by mathematics slug";
+    const known = new Set((en ?? []).map((link) => link.slug));
+    const stray = Object.keys(fr).filter((key) => !known.has(key));
+    if (stray.length) return `points at mathematics the concept does not declare: ${stray.join(", ")}`;
+    if (Object.values(fr).some((note) => typeof note !== "string" || !note.trim())) return "contains an empty note";
+    return null;
+  }
+};
+
+/** Which English field a shaped overlay field is checked against. */
+const SHAPED_SOURCE = { legend: "legend", whyInAI: "whyInAI", foundations: "mathFoundations" };
+
+function checkOverlay(label, overlay, validSlugs, allowed, total, required = allowed, english = new Map()) {
   const keys = Object.keys(overlay);
   const unknown = keys.filter((slug) => !validSlugs.has(slug));
   if (unknown.length) {
@@ -439,11 +487,18 @@ function checkOverlay(label, overlay, validSlugs, allowed, total, required = all
   for (const [slug, patch] of Object.entries(overlay)) {
     if (!patch || typeof patch !== "object") { fail(`${label}: "${slug}" is not an object`); continue; }
     for (const [field, value] of Object.entries(patch)) {
-      if (!allowed.includes(field)) { fail(`${label}: "${slug}" has unknown field "${field}"`); badField += 1; }
-      else if (typeof value !== "string" || !value.trim()) { fail(`${label}: "${slug}.${field}" is empty`); empty += 1; }
+      if (SHAPED[field]) {
+        const source = english.get(slug)?.[SHAPED_SOURCE[field]];
+        const problem = SHAPED[field](value, source);
+        if (problem) { fail(`${label}: "${slug}.${field}" ${problem}`); badField += 1; }
+      } else if (!allowed.includes(field)) {
+        fail(`${label}: "${slug}" has unknown field "${field}"`); badField += 1;
+      } else if (typeof value !== "string" || !value.trim()) {
+        fail(`${label}: "${slug}.${field}" is empty`); empty += 1;
+      }
     }
   }
-  if (!badField && !empty) ok(`${label}: every field is a known, non-empty string`);
+  if (!badField && !empty) ok(`${label}: every field is known, well-shaped and non-empty`);
 
   // Phase-one French covers names and summaries. Falling short of that is not
   // an error — it renders in English and says so — but it is worth reporting,
@@ -454,8 +509,13 @@ function checkOverlay(label, overlay, validSlugs, allowed, total, required = all
   else ok(`${label}: all ${total} entries carry ${required.join(" + ")}`);
 }
 
-checkOverlay("data-fr.js concepts", conceptsFr, slugs, TRANSLATABLE, concepts.length, ["name", "summary"]);
-checkOverlay("math-data-fr.js concepts", mathConceptsFr, mathSlugs, MATH_TRANSLATABLE, mathConcepts.length, ["name", "summary"]);
+const conceptBySlugEn = new Map(concepts.map((item) => [item.slug, item]));
+const mathBySlugEn = new Map(mathConcepts.map((item) => [item.slug, item]));
+
+checkOverlay("data-fr.js concepts", conceptsFr, slugs, TRANSLATABLE,
+  concepts.length, ["name", "summary"], conceptBySlugEn);
+checkOverlay("math-data-fr.js concepts", mathConceptsFr, mathSlugs, MATH_TRANSLATABLE,
+  mathConcepts.length, ["name", "summary"], mathBySlugEn);
 checkOverlay("data-fr.js domains", categoriesFr, categoryIds, ["name", "short"], categories.length);
 checkOverlay("math-data-fr.js branches", mathCategoriesFr, mathCategoryIds, ["name", "short"], mathCategories.length);
 
@@ -496,13 +556,78 @@ if (!enKeys.length || !frKeys.length) {
     "conceptTitle",       // ditto — only the interpolated concept name changes
     "statConcepts",       // "concepts" and "branches" are spelled the same
     "statBranches",
-    "bandCount"           // "{n} concept|{n} concepts" happens to be identical
+    "bandCount",          // "{n} concept|{n} concepts" happens to be identical
+    "quizQuestions"       // same word in both languages, same plural break
   ]);
   const identical = enKeys.filter((key) =>
     !SAME_BY_DESIGN.has(key) &&
     String(i18nStrings.en[key]).length > 12 && i18nStrings.en[key] === i18nStrings.fr[key]);
   if (identical.length) identical.forEach((key) => warn(`i18n.js: "${key}" is identical in both languages`));
   else ok("i18n.js: no French string is a verbatim copy of its English original");
+}
+
+/* ------------------------------------------------------------------ */
+/* 2c. The Dojo                                                         */
+/*                                                                      */
+/* The quiz generates its questions from the atlas, so most of what     */
+/* could go wrong is caught by the concept checks above. What is left   */
+/* is the grading table itself, which no other check touches: an        */
+/* unreachable belt or an out-of-order threshold would silently make a  */
+/* grade impossible to earn and nobody would ever notice.               */
+/* ------------------------------------------------------------------ */
+section("The Dojo");
+
+if (!quizApi) {
+  fail("quiz.js exposed no ATLAS_QUIZ");
+} else {
+  const belts = quizApi.BELTS ?? [];
+  const dans = quizApi.DANS ?? [];
+
+  const ascending = (list, label) => {
+    let last = -1;
+    let bad = 0;
+    for (const item of list) {
+      if (item.min <= last) { fail(`${label}: "${item.id ?? item.name}" threshold ${item.min} is not above the previous`); bad += 1; }
+      last = item.min;
+    }
+    if (!bad) ok(`${label}: ${list.length} thresholds strictly ascending`);
+  };
+
+  ascending(belts, "belt ladder");
+  ascending(dans, "dan grades");
+
+  if (belts[0]?.min !== 0) fail("belt ladder: the lowest belt must start at 0, or a bad score awards nothing");
+  else ok("belt ladder: starts at 0, so every run awards a belt");
+
+  // Every belt must be reachable on the run length it is gated to, or the
+  // ladder is advertising a rank that cannot be earned.
+  const unreachable = belts.filter((belt) => {
+    const total = belt.gated ? quizApi.FULL_LENGTH : Math.max(...quizApi.LENGTHS.filter((n) => n < quizApi.FULL_LENGTH));
+    return quizApi.beltFor(100, total).id !== belts[belts.length - 1].id && belt.gated
+      ? false
+      : quizApi.beltFor(belt.min, belt.gated ? quizApi.FULL_LENGTH : total).id !== belt.id;
+  });
+  if (unreachable.length) unreachable.forEach((b) => fail(`belt "${b.id}" cannot be earned at its own threshold`));
+  else ok("every belt is reachable at its own threshold");
+
+  // The gate is the whole point of the hundred-question run.
+  const gated = belts.filter((b) => b.gated);
+  const leaked = gated.filter((b) => quizApi.beltFor(100, 10).id === b.id);
+  if (leaked.length) leaked.forEach((b) => fail(`gated belt "${b.id}" is awardable on a short run`));
+  else ok(`${gated.length} gated belts require the ${quizApi.FULL_LENGTH}-question run`);
+
+  if (dans.length !== 10) fail(`dan grades: expected 10, found ${dans.length}`);
+  else ok("ten dan grades, Shodan through Judan");
+
+  const styles = new Set(dans.map((d) => d.style));
+  if (!styles.has("black") || !styles.has("kohaku") || !styles.has("red")) {
+    fail("dan grades: expected black, red-and-white and red belt styles");
+  } else ok("dan belt styles cover black, red-and-white and red");
+
+  if (quizApi.danFor(dans[0].min - 1) !== null) fail("dan grades: a score below the first threshold must award nothing");
+  else ok("below the first dan threshold no grade is awarded");
+  if (quizApi.danFor(100)?.rank !== 10) fail("dan grades: a perfect score must award the tenth dan");
+  else ok("a perfect dan run awards Judan");
 }
 
 /* ------------------------------------------------------------------ */
@@ -616,7 +741,7 @@ else ok("no placeholder GitHub URL");
 // A shared version token prevents that — but only if every file carries the
 // same one, so a partial bump must fail rather than ship a subtler mismatch.
 const VERSIONED = ["styles.css", "data.js", "math-data.js", "data-fr.js", "math-data-fr.js",
-  "i18n.js", "app.js", "assets/ai-concept-map.svg"];
+  "i18n.js", "quiz.js", "app.js", "assets/ai-concept-map.svg"];
 const versions = new Map();
 for (const file of VERSIONED) {
   const match = html.match(new RegExp(`(?:href|src)="${file.replace(".", "\\.")}\\?v=([^"]+)"`));
@@ -645,7 +770,23 @@ const referencedIds = [
 ];
 const uniqueIds = new Set(referencedIds);
 if (uniqueIds.size < 10) fail(`only ${uniqueIds.size} element ids detected in app.js — the id check is not matching, fix the pattern`);
-const missingIds = [...uniqueIds].filter((id) => !new RegExp(`id="${id}"`).test(html));
+
+// Ids the Dojo writes into #quizStage itself. They are looked up immediately
+// after the innerHTML that creates them, so they always exist by the time $()
+// runs — but they are not in the static markup and never should be, because
+// the quiz screen is rebuilt from scratch on every state change. Listed by
+// name rather than by loosening the check: an id genuinely forgotten from
+// index.html must still fail the build.
+const RUNTIME_IDS = new Set(["quizTitle", "quizPrompt"]);
+for (const id of RUNTIME_IDS) {
+  if (!new RegExp(`id="${id}"`).test(appSource)) {
+    fail(`"${id}" is exempted as runtime-created but app.js never creates it`);
+  }
+}
+
+const missingIds = [...uniqueIds]
+  .filter((id) => !RUNTIME_IDS.has(id))
+  .filter((id) => !new RegExp(`id="${id}"`).test(html));
 if (missingIds.length) missingIds.forEach((id) => fail(`app.js expects #${id}, which is absent from index.html`));
 else ok(`${uniqueIds.size} element ids required by app.js exist`);
 
@@ -718,7 +859,8 @@ const WORKFLOW_CHECKS = [
   [/cp .*\bmath-data\.js\b.* _site\//, "math-data.js is staged for publication"],
   [/cp .*\bi18n\.js\b.* _site\//, "i18n.js is staged for publication"],
   [/cp .*\bdata-fr\.js\b.* _site\//, "data-fr.js is staged for publication"],
-  [/cp .*\bmath-data-fr\.js\b.* _site\//, "math-data-fr.js is staged for publication"]
+  [/cp .*\bmath-data-fr\.js\b.* _site\//, "math-data-fr.js is staged for publication"],
+  [/cp .*\bquiz\.js\b.* _site\//, "quiz.js is staged for publication"]
 ];
 
 for (const [pattern, label] of WORKFLOW_CHECKS) {

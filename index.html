@@ -53,7 +53,7 @@
       <button class="ghost-button" id="randomButton" type="button" data-i18n="navRandom">Surprise me</button>
       <a class="ghost-button" href="#mathematics" data-i18n="navMath">Mathematics</a>
       <a class="ghost-button" href="#about" data-i18n="navAbout">About</a>
-      <a class="primary-button" href="https://github.com/opedoussaut/ai-concept-atlas" target="_blank" rel="noopener noreferrer" data-i18n="navGithub">View on GitHub</a>
+      <a class="ghost-button" href="#quiz" data-i18n="navQuiz">Dojo</a>
       <!-- Real links, not buttons: switching language is a navigation to a
            different URL, so it should be openable in a new tab, crawlable and
            bookmarkable. app.js keeps the hash in sync as the reader moves. -->
@@ -61,6 +61,7 @@
         <a data-lang-link="en" hreflang="en" href="?" data-i18n-attr="title:langSwitchToEnglish"><span data-i18n="langEnglish">English</span></a>
         <a data-lang-link="fr" hreflang="fr" href="?lang=fr" data-i18n-attr="title:langSwitchToFrench"><span data-i18n="langFrench">Français</span></a>
       </div>
+      <a class="primary-button" href="https://github.com/opedoussaut/ai-concept-atlas" target="_blank" rel="noopener noreferrer" data-i18n="navGithub">View on GitHub</a>
     </nav>
   </header>
 
@@ -330,6 +331,13 @@
        </aside>
      </div>
    </article>
+   <!-- The Dojo, routed at #quiz and #quiz/dan. Rendered by app.js. -->
+   <section id="quizView" class="quiz-view" aria-labelledby="quizTitle" hidden>
+     <nav class="learn-back" data-i18n-attr="aria-label:breadcrumbAria" aria-label="Breadcrumb">
+       <a class="ghost-button" href="#" data-i18n="backToAtlas">← Back to the atlas</a>
+     </nav>
+     <div id="quizStage"></div>
+   </section>
   </main>
 
   <footer>
@@ -392,6 +400,7 @@
   <script src="data-fr.js?v=2026-08-07"></script>
   <script src="math-data-fr.js?v=2026-08-07"></script>
   <script src="i18n.js?v=2026-08-07"></script>
+  <script src="quiz.js?v=2026-08-07"></script>
   <script src="app.js?v=2026-08-07"></script>
 </body>
 </html>

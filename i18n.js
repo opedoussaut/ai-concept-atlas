@@ -259,6 +259,73 @@ window.ATLAS_I18N = (() => {
       englishChip: "EN",
       englishChipTitle: "This section has not been translated yet and is shown in English.",
 
+
+      /* Quiz — The Dojo ----------------------------------------------- */
+      navQuiz: "Dojo",
+      quizTitle: "The Dojo",
+      quizEyebrow: "Test what the atlas taught you",
+      quizIntro: "One run, no second chances, nothing saved. Answer as many as you can and earn your belt. Nothing is stored — no score, no account, no cookie — so the only record of how you did is the one you keep yourself.",
+      quizPickLength: "How many questions?",
+      quizLengthNote: "Brown and black belts are only awarded on the hundred-question run.",
+      quizStart: "Begin",
+      quizQuestions: "{n} question|{n} questions",
+      quizProgress: "Question {n} of {total}",
+      quizScore: "Score: {n}",
+      quizCorrect: "Correct",
+      quizWrong: "Not quite",
+      quizAnswerWas: "The answer was {answer}.",
+      quizNext: "Next question",
+      quizFinish: "See my belt",
+      quizAbandon: "Leave the dojo",
+      quizKeyHint: "Press 1–4 to answer, Enter to continue.",
+      quizResultTitle: "You scored {correct} out of {total}",
+      quizResultPercent: "{n}%",
+      quizBeltAwarded: "{belt} belt",
+      quizAgain: "Try again",
+      quizBackToAtlas: "Back to the atlas",
+      quizGatedNote: "Brown and black belts need the hundred-question run. You reached {belt}.",
+      quizPerfect: "A perfect run.",
+
+      /* Belt names ------------------------------------------------------ */
+      beltWhite: "White",
+      beltYellow: "Yellow",
+      beltOrange: "Orange",
+      beltGreen: "Green",
+      beltBlue: "Blue",
+      beltBrown: "Brown",
+      beltBlack: "Black",
+
+      /* Dan challenge --------------------------------------------------- */
+      quizDanUnlocked: "You have earned your black belt. The dojo has one more door.",
+      quizDanEnter: "Enter the Dan challenge",
+      quizDanTitle: "Dan Challenge",
+      quizDanEyebrow: "Black belt only",
+      quizDanIntro: "One hundred questions, hard ones only — relations, foundations, prerequisites and the verbs that join them. Score sixty or better to be graded. Ten dan grades exist; almost nobody sees the tenth.",
+      quizDanStart: "Begin the challenge",
+      quizDanAwarded: "{rank} dan — {name}",
+      quizDanNone: "No dan awarded. Sixty is the threshold; you scored {n}. Your black belt stands.",
+      quizDanBeltBlack: "Black belt",
+      quizDanBeltKohaku: "Red-and-white belt",
+      quizDanBeltRed: "Red belt",
+
+      /* Question prompts ------------------------------------------------ */
+      qAcronym: "What does {token} stand for?",
+      qName: "Which token is used for “{name}”?",
+      qSummary: "Which concept does this describe?\n\n“{summary}”",
+      qDomain: "Which domain does {name} belong to?",
+      qOddOne: "Which of these does NOT belong to {domain}?",
+      qSymbol: "Which mathematical concept does {symbol} denote?",
+      qMathName: "Which symbol denotes {name}?",
+      qBranch: "Which branch of mathematics does {name} belong to?",
+      qMathSummary: "Which mathematical concept does this describe?\n\n“{summary}”",
+      qRelated: "Which concept does {name} declare a relationship with?",
+      qFoundation: "Which mathematics does {name} rest on?",
+      qUsedBy: "Which concept has {name} as a core mathematical foundation?",
+      qPrereq: "Which is a prerequisite of {name}?",
+      qRelation: "How does {concept} relate to {math}?",
+      qIntensity: "What is the mathematical intensity of {name}?",
+      qDifficulty: "Which of these is an {level}-level mathematical concept?",
+
       /* Footer --------------------------------------------------------- */
       footerName: "AI Concept Atlas",
       footerNote: "Built as an open educational resource. No cookies, no analytics, no tracking."
@@ -451,6 +518,73 @@ window.ATLAS_I18N = (() => {
       englishChip: "EN",
       englishChipTitle: "Cette section n’est pas encore traduite et s’affiche en anglais.",
 
+
+      /* Quiz — The Dojo ----------------------------------------------- */
+      navQuiz: "Dojo",
+      quizTitle: "Le Dojo",
+      quizEyebrow: "Vérifiez ce que l’atlas vous a appris",
+      quizIntro: "Une seule tentative, aucune seconde chance, rien d’enregistré. Répondez au mieux et gagnez votre ceinture. Rien n’est conservé — ni score, ni compte, ni cookie — si bien que la seule trace de votre résultat est celle que vous gardez vous-même.",
+      quizPickLength: "Combien de questions ?",
+      quizLengthNote: "Les ceintures marron et noire ne s’obtiennent que sur la série de cent questions.",
+      quizStart: "Commencer",
+      quizQuestions: "{n} question|{n} questions",
+      quizProgress: "Question {n} sur {total}",
+      quizScore: "Score : {n}",
+      quizCorrect: "Correct",
+      quizWrong: "Presque",
+      quizAnswerWas: "La réponse était {answer}.",
+      quizNext: "Question suivante",
+      quizFinish: "Voir ma ceinture",
+      quizAbandon: "Quitter le dojo",
+      quizKeyHint: "Appuyez sur 1 à 4 pour répondre, Entrée pour continuer.",
+      quizResultTitle: "Vous obtenez {correct} sur {total}",
+      quizResultPercent: "{n} %",
+      quizBeltAwarded: "Ceinture {belt}",
+      quizAgain: "Réessayer",
+      quizBackToAtlas: "Retour à l’atlas",
+      quizGatedNote: "Les ceintures marron et noire exigent la série de cent questions. Vous atteignez {belt}.",
+      quizPerfect: "Un parcours parfait.",
+
+      /* Belt names ------------------------------------------------------ */
+      beltWhite: "blanche",
+      beltYellow: "jaune",
+      beltOrange: "orange",
+      beltGreen: "verte",
+      beltBlue: "bleue",
+      beltBrown: "marron",
+      beltBlack: "noire",
+
+      /* Dan challenge --------------------------------------------------- */
+      quizDanUnlocked: "Vous avez gagné votre ceinture noire. Le dojo a encore une porte.",
+      quizDanEnter: "Entrer dans le défi Dan",
+      quizDanTitle: "Défi Dan",
+      quizDanEyebrow: "Ceinture noire uniquement",
+      quizDanIntro: "Cent questions, difficiles uniquement — relations, fondements, prérequis et les verbes qui les relient. Obtenez soixante ou plus pour être gradé. Il existe dix dans ; presque personne ne voit le dixième.",
+      quizDanStart: "Commencer le défi",
+      quizDanAwarded: "{rank}e dan — {name}",
+      quizDanNone: "Aucun dan attribué. Le seuil est de soixante ; vous obtenez {n}. Votre ceinture noire demeure.",
+      quizDanBeltBlack: "Ceinture noire",
+      quizDanBeltKohaku: "Ceinture rouge et blanche",
+      quizDanBeltRed: "Ceinture rouge",
+
+      /* Question prompts ------------------------------------------------ */
+      qAcronym: "Que signifie {token} ?",
+      qName: "Quel token désigne « {name} » ?",
+      qSummary: "Quel concept est ici décrit ?\n\n« {summary} »",
+      qDomain: "À quel domaine appartient {name} ?",
+      qOddOne: "Lequel de ces concepts n’appartient PAS à {domain} ?",
+      qSymbol: "Quel concept mathématique {symbol} désigne-t-il ?",
+      qMathName: "Quel symbole désigne {name} ?",
+      qBranch: "À quelle branche des mathématiques appartient {name} ?",
+      qMathSummary: "Quel concept mathématique est ici décrit ?\n\n« {summary} »",
+      qRelated: "Avec quel concept {name} déclare-t-il une relation ?",
+      qFoundation: "Sur quelles mathématiques {name} repose-t-il ?",
+      qUsedBy: "Quel concept a {name} pour fondement mathématique essentiel ?",
+      qPrereq: "Lequel est un prérequis de {name} ?",
+      qRelation: "Quelle relation {concept} entretient-il avec {math} ?",
+      qIntensity: "Quelle est l’intensité mathématique de {name} ?",
+      qDifficulty: "Lequel de ces concepts mathématiques est de niveau {level} ?",
+
       /* Footer --------------------------------------------------------- */
       footerName: "AI Concept Atlas",
       footerNote:
@@ -493,6 +627,10 @@ window.ATLAS_I18N = (() => {
    * result carries a non-enumerable-ish `_en` Set naming the fields that fell
    * back to English, which is what the renderers use to mark a section.
    */
+  const isEmpty = (value) =>
+    value === undefined || value === null || value === "" ||
+    (Array.isArray(value) && value.length === 0);
+
   function localize(items, overlay, fields) {
     if (lang === DEFAULT_LANG) return items;
     const map = overlay ?? {};
@@ -502,14 +640,61 @@ window.ATLAS_I18N = (() => {
       const untranslated = new Set();
       for (const field of fields) {
         const value = patch?.[field];
-        if (value === undefined || value === null || value === "") {
-          if (item[field] !== undefined && item[field] !== null && item[field] !== "") {
-            untranslated.add(field);
-          }
+        if (isEmpty(value)) {
+          if (!isEmpty(item[field])) untranslated.add(field);
         } else {
           copy[field] = value;
         }
       }
+
+      /* ---- Fields that are not plain strings ----------------------------
+         Three shapes need their own handling, and each is keyed rather than
+         positional wherever a key exists, so reordering the English can never
+         silently pair a French sentence with the wrong entry.
+
+         whyInAI  — a positional array. Position is the only identity a bare
+                    list has, so the overlay must match it exactly in length;
+                    a mismatch is ignored and reported, never half-applied.
+         legend   — keyed by the symbol it explains, which is never translated
+                    and therefore makes a stable key.
+         mathFoundations[].note — keyed by the mathematics slug it points at.
+                    The notes live on the AI concept but surface on both page
+                    types, so translating them here fixes both at once. */
+
+      if (Array.isArray(item.whyInAI) && item.whyInAI.length) {
+        const list = patch?.whyInAI;
+        if (Array.isArray(list) && list.length === item.whyInAI.length && list.every(Boolean)) {
+          copy.whyInAI = list;
+          untranslated.delete("whyInAI");
+        } else {
+          untranslated.add("whyInAI");
+        }
+      }
+
+      if (Array.isArray(item.legend) && item.legend.length) {
+        const bySymbol = patch?.legend;
+        const missing = item.legend.some((row) => !bySymbol?.[row.symbol]);
+        if (bySymbol && !missing) {
+          copy.legend = item.legend.map((row) => ({ ...row, meaning: bySymbol[row.symbol] }));
+          untranslated.delete("legend");
+        } else if (missing || !bySymbol) {
+          untranslated.add("legend");
+        }
+      }
+
+      if (Array.isArray(item.mathFoundations) && item.mathFoundations.length) {
+        const notes = patch?.foundations;
+        const withNotes = item.mathFoundations.filter((link) => link.note);
+        const missing = withNotes.some((link) => !notes?.[link.slug]);
+        if (notes && !missing) {
+          copy.mathFoundations = item.mathFoundations.map((link) =>
+            notes[link.slug] ? { ...link, note: notes[link.slug] } : link);
+          untranslated.delete("foundations");
+        } else if (withNotes.length) {
+          untranslated.add("foundations");
+        }
+      }
+
       copy._en = untranslated;
       copy._enName = item.name;
       return copy;

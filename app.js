@@ -22,7 +22,9 @@
   i18n.applyStatic();
 
   const concepts = i18n.localize(
-    window.AI_CONCEPTS ?? [], window.AI_CONCEPTS_FR, ["name", "summary", "why", "how", "example", "mathNote"]
+    window.AI_CONCEPTS ?? [], window.AI_CONCEPTS_FR,
+    // `foundations` is not listed: it is nested, so localize() handles it by shape.
+    ["name", "summary", "why", "how", "example", "mathNote"]
   );
   const categories = i18n.localize(
     (window.AI_CATEGORIES ?? []).map((item) => ({ ...item, slug: item.id })),
@@ -45,7 +47,9 @@
 
   const mathConcepts = i18n.localize(
     window.MATH_CONCEPTS ?? [], window.MATH_CONCEPTS_FR,
-    ["name", "summary", "intuition", "equationNote", "worked", "whyInAI"]
+    // `whyInAI` and `legend` are not listed: an array and a keyed map, both
+    // handled by shape in localize() rather than as plain strings.
+    ["name", "summary", "intuition", "equationNote", "worked"]
   );
   const mathCategories = i18n.localize(
     (window.MATH_CATEGORIES ?? []).map((item) => ({ ...item, slug: item.id })),
@@ -112,6 +116,8 @@
   const tabs = [$("tabBands"), $("tabGraph")];
   const mathIndexView = $("mathIndexView");
   const mathView = $("mathView");
+  const quizView = $("quizView");
+  const quizStage = $("quizStage");
   const mathBranches = $("mathBranches");
   const mathFilters = $("mathFilters");
   const mathDifficultyFilters = $("mathDifficultyFilters");
@@ -127,7 +133,9 @@
   $("mathLinkCount").textContent = String(mathLinkCount);
 
   /** The four top-level panels are mutually exclusive; this is the only switch. */
-  const VIEWS = { atlas: atlasView, learn: learnView, mathIndex: mathIndexView, math: mathView };
+  const VIEWS = {
+    atlas: atlasView, learn: learnView, mathIndex: mathIndexView, math: mathView, quiz: quizView
+  };
   function showView(name) {
     for (const key of Object.keys(VIEWS)) VIEWS[key].hidden = key !== name;
   }
@@ -1091,10 +1099,14 @@
       ? ""
       : `<p class="foundation-more"><a href="#mathematics">${escapeHtml(t("foundationsBrowse"))}</a></p>`;
 
-    const hasEnglishNotes = !i18n.isDefault &&
-      (Boolean(concept.mathNote) || links.some((link) => Boolean(link.note)));
+    // Two independent sources of English here — the per-link notes and the
+    // concept's own mathNote — so the chip goes up if either is untranslated.
+    const englishHere = new Set();
+    if (i18n.isEnglish(concept, "foundations") || i18n.isEnglish(concept, "mathNote")) {
+      englishHere.add("notes");
+    }
     markLanguage(compact ? "dialogFoundationsTitle" : "learnFoundationsTitle",
-      { _en: hasEnglishNotes ? new Set(["notes"]) : new Set() }, "notes");
+      { _en: englishHere }, "notes");
 
     container.innerHTML = intensityBadge(concept.mathIntensity) + none + note + groups + more;
     container.onclick = (event) => {
@@ -1386,6 +1398,7 @@
     markLanguage("mathWorkedTitle", item, "worked");
     markLanguage("mathEquationTitle", item, "equationNote");
     markLanguage("mathWhyTitle", item, "whyInAI");
+    markLanguage("mathLegendTitle", item, "legend");
 
     $("mathEquationSection").hidden = !item.equation;
     if (item.equation) {
@@ -1433,9 +1446,279 @@
   /* Routing                                                            */
   /* ================================================================= */
 
+
+  /* ================================================================= */
+  /* The Dojo (#quiz, #quiz/dan)                                        */
+  /*                                                                    */
+  /* A run lives entirely in this closure and dies with the page. There */
+  /* is no storage, no account and no leaderboard — which is both the   */
+  /* footer's promise kept and the reason the score cannot be gamed.    */
+  /* ================================================================= */
+
+  const quizEngine = window.ATLAS_QUIZ.build({
+    concepts, categories, mathConcepts, mathCategories, usedByMath,
+    categoryOf, mathCategoryOf,
+    relationLabel: (verb) => RELATION_LABEL[verb] ?? verb
+  }, t);
+
+  const quiz = {
+    stage: "menu",   // menu | playing | result | danIntro
+    questions: [],
+    index: 0,
+    correct: 0,
+    chosen: null,
+    dan: false,
+    unlockedDan: false
+  };
+
+  const beltName = (belt) => t(`belt${belt.id[0].toUpperCase()}${belt.id.slice(1)}`);
+
+  /**
+   * The belt itself, drawn rather than described.
+   *
+   * A kōhaku (6th–8th dan) belt is red and white in alternating panels and a
+   * 9th–10th is solid red, so the dan styles are not just a colour swap.
+   * Dan grades add one stripe per rank at the tip, which is how they are
+   * actually marked on a real obi.
+   */
+  function beltArt(colour, ink, stripes = 0, style = "plain") {
+    const panels = style === "kohaku"
+      ? [0, 1, 2, 3, 4, 5].map((i) =>
+          `<rect x="${10 + i * 46.7}" y="34" width="46.7" height="26" fill="${i % 2 ? "#f4f6f8" : "#c0392b"}" />`).join("")
+      : `<rect x="10" y="34" width="280" height="26" rx="3" fill="${escapeHtml(colour)}" />`;
+
+    const marks = Array.from({ length: stripes }, (_, i) =>
+      `<rect x="${248 - i * 11}" y="38" width="6" height="18" rx="1" fill="${escapeHtml(ink)}" opacity=".9" />`).join("");
+
+    return `<svg class="belt-art" viewBox="0 0 300 110" role="img" aria-hidden="true">
+      ${panels}${marks}
+      <rect x="118" y="24" width="64" height="46" rx="6" fill="${style === "kohaku" ? "#c0392b" : escapeHtml(colour)}" />
+      <rect x="118" y="24" width="64" height="46" rx="6" fill="none" stroke="rgba(0,0,0,.28)" />
+      <path d="M132 70 L124 100 L146 92 Z" fill="${style === "kohaku" ? "#f4f6f8" : escapeHtml(colour)}" stroke="rgba(0,0,0,.2)" />
+      <path d="M168 70 L176 100 L154 92 Z" fill="${style === "kohaku" ? "#c0392b" : escapeHtml(colour)}" stroke="rgba(0,0,0,.2)" />
+    </svg>`;
+  }
+
+  function renderQuizMenu() {
+    quiz.stage = "menu";
+    const lengths = window.ATLAS_QUIZ.LENGTHS.map((n) => `
+      <button class="quiz-length" type="button" data-quiz-length="${n}">
+        <strong>${n}</strong>
+        <span>${escapeHtml(t("quizQuestions", { n }))}</span>
+      </button>`).join("");
+
+    const ladder = window.ATLAS_QUIZ.BELTS.map((belt) => `
+      <li class="belt-step${belt.gated ? " gated" : ""}">
+        <span class="belt-swatch" style="background:${escapeHtml(belt.colour)}"></span>
+        <span class="belt-label">${escapeHtml(beltName(belt))}</span>
+        <span class="belt-min">${belt.min}%+</span>
+      </li>`).join("");
+
+    quizStage.innerHTML = `
+      <header class="quiz-header">
+        <p class="eyebrow">${escapeHtml(t("quizEyebrow"))}</p>
+        <h1 id="quizTitle" tabindex="-1">${escapeHtml(t("quizTitle"))}</h1>
+        <p class="learn-summary">${escapeHtml(t("quizIntro"))}</p>
+      </header>
+      <h2 class="quiz-subhead">${escapeHtml(t("quizPickLength"))}</h2>
+      <div class="quiz-lengths">${lengths}</div>
+      <p class="quiz-note">${escapeHtml(t("quizLengthNote"))}</p>
+      <ol class="belt-ladder">${ladder}</ol>`;
+    $("quizTitle").focus({ preventScroll: true });
+  }
+
+  function renderDanIntro() {
+    quiz.stage = "danIntro";
+    quizStage.innerHTML = `
+      <header class="quiz-header dan-header">
+        <p class="eyebrow">${escapeHtml(t("quizDanEyebrow"))}</p>
+        <h1 id="quizTitle" tabindex="-1">${escapeHtml(t("quizDanTitle"))}</h1>
+        <p class="learn-summary">${escapeHtml(t("quizDanIntro"))}</p>
+      </header>
+      ${beltArt("#15181c", "#f2f5f8", 0, "plain")}
+      <div class="quiz-actions">
+        <button class="primary-button" type="button" data-quiz-start-dan>${escapeHtml(t("quizDanStart"))}</button>
+      </div>`;
+    $("quizTitle").focus({ preventScroll: true });
+  }
+
+  function startQuiz(count, { dan = false } = {}) {
+    quiz.questions = quizEngine.draw(count, { hardOnly: dan });
+    quiz.index = 0;
+    quiz.correct = 0;
+    quiz.chosen = null;
+    quiz.dan = dan;
+    quiz.stage = "playing";
+    renderQuestion();
+  }
+
+  function renderQuestion() {
+    const question = quiz.questions[quiz.index];
+    if (!question) return renderQuizResult();
+
+    const total = quiz.questions.length;
+    const answered = quiz.chosen !== null;
+    const pct = Math.round((quiz.index / total) * 100);
+
+    const options = question.options.map((option, i) => {
+      const isAnswer = i === question.answer;
+      const isChosen = i === quiz.chosen;
+      const state = !answered ? "" : isAnswer ? " is-correct" : isChosen ? " is-wrong" : " is-muted";
+      return `<button class="quiz-option${state}" type="button" data-quiz-option="${i}"
+        ${answered ? "disabled" : ""}><kbd>${i + 1}</kbd><span>${escapeHtml(option)}</span></button>`;
+    }).join("");
+
+    const verdict = !answered ? "" : `
+      <p class="quiz-verdict ${quiz.chosen === question.answer ? "good" : "bad"}">
+        <strong>${escapeHtml(quiz.chosen === question.answer ? t("quizCorrect") : t("quizWrong"))}</strong>
+        ${quiz.chosen === question.answer ? "" :
+          escapeHtml(t("quizAnswerWas", { answer: question.options[question.answer] }))}
+      </p>`;
+
+    const last = quiz.index === total - 1;
+    quizStage.innerHTML = `
+      <div class="quiz-bar" role="progressbar" aria-valuenow="${quiz.index}" aria-valuemin="0" aria-valuemax="${total}">
+        <span style="width:${pct}%"></span>
+      </div>
+      <div class="quiz-meta">
+        <span>${escapeHtml(t("quizProgress", { n: quiz.index + 1, total }))}</span>
+        <span>${escapeHtml(t("quizScore", { n: quiz.correct }))}</span>
+      </div>
+      <p class="quiz-prompt" id="quizPrompt" tabindex="-1">${escapeHtml(question.prompt).replace(/\n/g, "<br>")}</p>
+      <div class="quiz-options">${options}</div>
+      ${verdict}
+      <div class="quiz-actions">
+        ${answered ? `<button class="primary-button" type="button" data-quiz-next>
+          ${escapeHtml(last ? t("quizFinish") : t("quizNext"))}</button>` : ""}
+        <p class="quiz-note">${escapeHtml(t("quizKeyHint"))}</p>
+      </div>`;
+    $("quizPrompt").focus({ preventScroll: true });
+  }
+
+  function answerQuestion(choice) {
+    if (quiz.stage !== "playing" || quiz.chosen !== null) return;
+    const question = quiz.questions[quiz.index];
+    if (!question || choice < 0 || choice >= question.options.length) return;
+    quiz.chosen = choice;
+    if (choice === question.answer) quiz.correct += 1;
+    renderQuestion();
+  }
+
+  function advanceQuestion() {
+    if (quiz.stage !== "playing" || quiz.chosen === null) return;
+    quiz.chosen = null;
+    quiz.index += 1;
+    if (quiz.index >= quiz.questions.length) renderQuizResult();
+    else renderQuestion();
+  }
+
+  function renderQuizResult() {
+    quiz.stage = "result";
+    const total = quiz.questions.length;
+    const percent = total ? Math.round((quiz.correct / total) * 100) : 0;
+
+    if (quiz.dan) {
+      const dan = window.ATLAS_QUIZ.danFor(percent);
+      const style = dan?.style ?? "plain";
+      const colour = style === "red" ? "#c0392b" : "#15181c";
+      const art = beltArt(colour, style === "red" ? "#f2f5f8" : "#f2f5f8", dan?.rank ?? 0, style);
+      const beltWord = dan
+        ? t(style === "red" ? "quizDanBeltRed" : style === "kohaku" ? "quizDanBeltKohaku" : "quizDanBeltBlack")
+        : t("quizDanBeltBlack");
+      quizStage.innerHTML = `
+        <header class="quiz-header result-header">
+          <p class="eyebrow">${escapeHtml(t("quizDanTitle"))}</p>
+          <h1 id="quizTitle" tabindex="-1">${escapeHtml(t("quizResultTitle", { correct: quiz.correct, total }))}</h1>
+          <p class="quiz-percent">${escapeHtml(t("quizResultPercent", { n: percent }))}</p>
+        </header>
+        ${art}
+        <p class="quiz-award">${escapeHtml(dan
+          ? t("quizDanAwarded", { rank: dan.rank, name: dan.name })
+          : t("quizDanNone", { n: percent }))}</p>
+        <p class="quiz-note">${escapeHtml(beltWord)}</p>
+        <div class="quiz-actions">
+          <button class="primary-button" type="button" data-quiz-start-dan>${escapeHtml(t("quizAgain"))}</button>
+          <a class="ghost-button" href="#">${escapeHtml(t("quizBackToAtlas"))}</a>
+        </div>`;
+      $("quizTitle").focus({ preventScroll: true });
+      return;
+    }
+
+    const belt = window.ATLAS_QUIZ.beltFor(percent, total);
+    const uncapped = window.ATLAS_QUIZ.BELTS.filter((b) => percent >= b.min).pop();
+    const gated = uncapped && uncapped.id !== belt.id;
+    if (belt.id === "black") quiz.unlockedDan = true;
+
+    quizStage.innerHTML = `
+      <header class="quiz-header result-header">
+        <h1 id="quizTitle" tabindex="-1">${escapeHtml(t("quizResultTitle", { correct: quiz.correct, total }))}</h1>
+        <p class="quiz-percent">${escapeHtml(t("quizResultPercent", { n: percent }))}</p>
+      </header>
+      ${beltArt(belt.colour, belt.ink)}
+      <p class="quiz-award">${escapeHtml(t("quizBeltAwarded", { belt: beltName(belt) }))}</p>
+      ${percent === 100 ? `<p class="quiz-note">${escapeHtml(t("quizPerfect"))}</p>` : ""}
+      ${gated ? `<p class="quiz-note">${escapeHtml(t("quizGatedNote", { belt: beltName(belt) }))}</p>` : ""}
+      ${quiz.unlockedDan ? `<div class="dan-door">
+        <p>${escapeHtml(t("quizDanUnlocked"))}</p>
+        <a class="primary-button" href="#quiz/dan">${escapeHtml(t("quizDanEnter"))}</a>
+      </div>` : ""}
+      <div class="quiz-actions">
+        <button class="primary-button" type="button" data-quiz-restart>${escapeHtml(t("quizAgain"))}</button>
+        <a class="ghost-button" href="#">${escapeHtml(t("quizBackToAtlas"))}</a>
+      </div>`;
+    $("quizTitle").focus({ preventScroll: true });
+  }
+
+  function openQuiz(updateHash = true, { dan = false } = {}) {
+    if (dialog.open) dialog.close();
+    state.learning = null;
+    state.math = null;
+    state.mathIndex = false;
+    state.mathOrigin = null;
+
+    if (dan) renderDanIntro();
+    else if (quiz.stage === "playing") renderQuestion();
+    else renderQuizMenu();
+
+    showView("quiz");
+    document.title = dan ? t("quizDanTitle") : t("quizTitle");
+    window.scrollTo({ top: 0, behavior: "auto" });
+
+    const target = dan ? "#quiz/dan" : "#quiz";
+    if (updateHash && location.hash !== target) history.pushState({ quiz: true }, "", target);
+  }
+
+  quizStage.addEventListener("click", (event) => {
+    const length = event.target.closest("[data-quiz-length]");
+    if (length) return startQuiz(Number(length.dataset.quizLength));
+    if (event.target.closest("[data-quiz-option]")) {
+      return answerQuestion(Number(event.target.closest("[data-quiz-option]").dataset.quizOption));
+    }
+    if (event.target.closest("[data-quiz-next]")) return advanceQuestion();
+    if (event.target.closest("[data-quiz-restart]")) return renderQuizMenu();
+    if (event.target.closest("[data-quiz-start-dan]")) return startQuiz(window.ATLAS_QUIZ.DAN_LENGTH, { dan: true });
+  });
+
+  /* Number keys answer, Enter advances — the whole game is playable without
+     a mouse, like everything else in the atlas. */
+  document.addEventListener("keydown", (event) => {
+    if (quizView.hidden || quiz.stage !== "playing") return;
+    if (event.metaKey || event.ctrlKey || event.altKey) return;
+    const active = document.activeElement;
+    if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) return;
+
+    if (event.key >= "1" && event.key <= "4") {
+      event.preventDefault();
+      answerQuestion(Number(event.key) - 1);
+    } else if (event.key === "Enter" && quiz.chosen !== null) {
+      event.preventDefault();
+      advanceQuestion();
+    }
+  });
+
   /**
    * Idempotent and fully authoritative: given a hash it decides which of the
-   * four panels is showing. `#learn` and `#math` win over `#concept`, so a
+   * five panels is showing. `#learn` and `#math` win over `#concept`, so a
    * page and the dialog can never be open at once.
    */
   function handleRoute() {
@@ -1447,6 +1730,9 @@
     syncLanguageLinks();
 
     const hash = decodeURIComponent(location.hash);
+    if (hash === "#quiz/dan") { openQuiz(false, { dan: true }); return; }
+    if (hash === "#quiz") { openQuiz(false); return; }
+
     const math = hash.match(/^#math\/(.+)$/);
     const learn = hash.match(/^#learn\/(.+)$/);
     const concept = hash.match(/^#concept\/(.+)$/);

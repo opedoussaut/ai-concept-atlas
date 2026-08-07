@@ -62,9 +62,11 @@ browser and nothing is stored — so a link you share renders the same page for
 whoever opens it, and the "no cookies, no analytics, no tracking" line in the
 footer stays literally true.
 
-French currently covers the interface and the name and one-line summary of all
-125 concepts: everything on a card, in search, in the graph and in the filters.
-The longer explanations are still English and carry a small **EN** marker on
+The **mathematics layer is fully translated** — all 38 pages, including the
+intuitions, equation notes, worked examples and symbol legends. On the AI side
+French covers the interface and the name and one-line summary of all 87
+concepts: everything on a card, in search, in the graph and in the filters. The
+longer explanations there are still English and carry a small **EN** marker on
 their heading, so you always know which you are reading rather than wondering
 whether something broke. Search works in both languages either way round — the
 French site finds "retrieval augmented", the English site finds "apprentissage
@@ -75,6 +77,28 @@ Acronyms and mathematical symbols are never translated. LoRA stays LoRA, ∇ sta
 prompt, softmax — stays in English inside the French text, because that is how
 French-speaking practitioners actually talk. Mathematical terminology is the
 opposite: it is settled in French, so it is translated properly.
+
+## The Dojo
+
+A one-shot quiz at [`#quiz`](https://opedoussaut.github.io/ai-concept-atlas/#quiz).
+Pick 10, 25, 50 or 100 questions, answer as well as you can, and earn a judo
+belt: white, yellow, orange, green, blue, brown, black. Brown and black are only
+awarded on the 100-question run.
+
+Questions are generated from the atlas data — acronyms, domains, relationships,
+mathematical foundations, symbols, prerequisites, relation verbs and difficulty —
+so they are different every time, work in both languages, and can never
+contradict the atlas. Adding a concept adds questions by itself.
+
+Nothing is stored. No score, no account, no cookie, no leaderboard. A run lives
+in the page and dies with it, which is the same promise as the rest of the site.
+
+Earn a black belt and the dojo opens one more door: a hundred hard-only
+questions graded across the ten dan, from Shodan to Judan. Black belt for 1st
+to 5th dan, the red-and-white kōhaku obi for 6th to 8th, red for 9th and 10th.
+Almost nobody sees the tenth.
+
+Playable entirely from the keyboard: 1–4 to answer, Enter to continue.
 
 ## The relationship graph spans both layers
 

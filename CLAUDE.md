@@ -34,6 +34,7 @@ styles.css                  All styling (single stylesheet, CSS custom propertie
 app.js                      Search, filtering, routing, dialog, clipboard (one IIFE)
 data.js                     Concept + category data (window.AI_CONCEPTS, window.AI_CATEGORIES)
 math-data.js                Mathematics layer (window.MATH_CONCEPTS, window.MATH_CATEGORIES)
+quiz.js                     The Dojo — question generators, belt and dan tables (pure, no DOM)
 i18n.js                     Language selection, UI strings (en/fr), the localize() overlay fold
 data-fr.js                  French overlay for the AI layer (window.AI_CONCEPTS_FR, window.AI_CATEGORIES_FR)
 math-data-fr.js             French overlay for mathematics (window.MATH_CONCEPTS_FR, window.MATH_CATEGORIES_FR)
@@ -166,6 +167,41 @@ outcome is a reader concluding the atlas lacks something it plainly has.
 bottom. Each route returns early, and an exception in any `open*` call must not
 be able to strand the language links pointing at a page the reader already left.
 
+**The Dojo is generated, like the hero map.** `quiz.js` builds questions at
+runtime from acronyms, domains, `related`, `mathFoundations`, symbols, branches,
+`prerequisites`, relation verbs and difficulty. A written question bank would
+restate the atlas in a second place and rot the moment a concept changed — the
+same failure `usedByMath` and the French overlay both exist to avoid. Generating
+means the quiz cannot contradict the atlas, is bilingual for free because the
+data it reads is already localized, and grows when a concept is added.
+
+**Distractors are the whole difficulty.** A wrong option that is also right makes
+a question unanswerable; an absurd one makes it free. Every generator excludes
+the concept's entire true answer *set*, not just the answer it picked — all of a
+concept's `related` slugs, all of its `mathFoundations` — and draws distractors
+from the same population as the answer, so a domain question offers four domains.
+
+Two properties of `draw()` are load-bearing and were both found by testing.
+Deduplication is on prompt **and** options together: some generators have very
+few possible prompts (there are only eight domains), and deduplicating on the
+prompt alone threw away all but the first, starving a pool that is otherwise four
+figures deep. And no single generator may exceed a quarter of a run — drawing
+uniformly sounds fair, but the cheap generators never run out of material while
+the narrow ones do, so an uncapped run drifts toward acronym questions.
+
+**Nothing is stored.** No score, no progress, no registration, no `localStorage`.
+A run lives in a closure and dies with the page. That is the footer's promise
+kept literally, and the reason there is no leaderboard to game.
+
+Brown and black are `gated: true` and need the 100-question run; without that a
+lucky streak on ten questions would award a brown belt and the top of the ladder
+would mean nothing. Earning black reveals the Dan challenge — 100 hard-only
+questions graded across the ten dan, black for 1–5, kōhaku red-and-white for 6–8
+and red for 9–10. The validator checks the tables rather than the questions:
+thresholds strictly ascending, every belt reachable at its own threshold, gated
+belts unreachable on a short run, and a perfect dan run awarding Judan. An
+unearnable grade is invisible in play and would never otherwise be noticed.
+
 **Search.** `app.js` builds an in-memory index at startup. Queries are normalized
 (lower-cased, accent-folded, punctuation and hyphens collapsed to spaces), split
 into tokens, matched with AND semantics, and ranked — exact acronym match scores
@@ -224,8 +260,8 @@ the failure mode the original brief warned about.
    Mathematical foundations section, the optional `math` block and a prominent
    reference card.
 
-**Four top-level panels**, mutually exclusive, switched only through `showView()`:
-`atlasView`, `learnView`, `mathIndexView` and `mathView`. `handleRoute()` is fully
+**Five top-level panels**, mutually exclusive, switched only through `showView()`:
+`atlasView`, `learnView`, `mathIndexView`, `mathView` and `quizView`. `handleRoute()` is fully
 authoritative — given a hash it decides which single panel is showing — so a page
 and the dialog can never be open at once, and a deep link opened cold resolves
 through exactly the same function.
@@ -390,6 +426,8 @@ Four public routes, all stable contracts:
 | `#learn/<slug>` | Opens the full concept page, hiding the atlas |
 | `#mathematics` | Opens the mathematics overview |
 | `#math/<slug>` | Opens a mathematics concept page |
+| `#quiz` | Opens the Dojo |
+| `#quiz/dan` | Opens the Dan challenge directly |
 
 `?lang=fr` selects French and composes with all four, so
 `…/?lang=fr#math/dot-product` is a valid public URL. It is a **query parameter,
@@ -536,8 +574,12 @@ Also confirm manually:
 - `?lang=fr`: the FR/EN switch preserves the current route from every panel,
   a French deep link opened cold resolves, an English link is unchanged, and
   `?lang=de` falls back to English rather than rendering blanks
-- In French, confirm the "EN" chip appears on Why/How/Example and on Intuitive
-  explanation, and does **not** appear anywhere on the English site
+- In French, confirm the "EN" chip appears on Why/How/Example and on the
+  Mathematical foundations heading, does **not** appear anywhere on a
+  mathematics page, and does **not** appear anywhere on the English site
+- The Dojo: each of 10/25/50/100; that a perfect short run caps at blue; that
+  100 can reach brown and black; that black reveals the Dan door; that
+  `#quiz/dan` resolves cold; and that 1–4 and Enter play it without a mouse
 - Keyboard-only pass: `/` focuses search, arrows move suggestions, Enter opens,
   Tab reaches graph nodes and Enter opens them, Escape closes, focus returns to
   the triggering card
@@ -607,11 +649,13 @@ with **zero warnings**. Keep it that way: a new concept must arrive with a
   Sampling. Splitting them today would create stubs, not pages.
 - Add a glossary index and a compare mode for two concepts.
 - Add downloadable PNG/PDF concept cards.
-- Translate the four explanation layers into French. `data-fr.js` carries
-  `name` and `summary` for all 87 concepts (and `math-data-fr.js` the same for
-  all 38); `why`, `how`, `example`, `intuition`, `equationNote`, `worked` and
-  `whyInAI` are still English and say so on the page. ~19,000 words remain.
-  Nothing needs building first — add the field to the overlay and it renders.
+- Finish the French layer. The mathematics layer is **fully translated** — all
+  38 pages carry `intuition`, `equationNote`, `worked`, `whyInAI` and `legend`.
+  What remains is the AI side: `why`, `how` and `example` for all 87 concepts
+  (~12,300 words) and the 261 `mathFoundations` notes (~3,900 words, added to
+  `data-fr.js` under `foundations`, keyed by mathematics slug). Nothing needs
+  building first — the plumbing takes all of these already; add the field to the
+  overlay and it renders, and the "EN" chip disappears on its own.
 - Add a third language if one is ever wanted. `i18n.js` takes a new code in
   `SUPPORTED` plus a string table and one more overlay file; nothing in `app.js`
   is language-specific.
