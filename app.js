@@ -1462,26 +1462,35 @@
   }, t);
 
   const quiz = {
-    stage: "menu",   // menu | playing | result | danIntro
+    stage: "menu",   // menu | rei | playing | result | danIntro
     questions: [],
     index: 0,
     correct: 0,
+    streak: 0,       // consecutive correct, for the judo calls
+    best: 0,
     chosen: null,
+    call: "",
+    pending: null,   // the run chosen at the bow, started on rei
     dan: false,
     unlockedDan: false
   };
 
   const beltName = (belt) => t(`belt${belt.id[0].toUpperCase()}${belt.id.slice(1)}`);
 
+  /** "6ᵗʰ kyū" / "1ˢᵗ kyū" — the ordinal is irregular at 1 in both languages. */
+  const kyuLabel = (belt) =>
+    belt.kyu === 0 ? "" : belt.kyu === 1 ? t("dojoKyuFirst") : t("dojoKyu", { n: belt.kyu });
+  const danLabel = (dan) =>
+    dan.rank === 1 ? t("dojoDanFirst") : t("dojoDanRank", { n: dan.rank });
+
   /**
    * The belt itself, drawn rather than described.
    *
-   * A kōhaku (6th–8th dan) belt is red and white in alternating panels and a
-   * 9th–10th is solid red, so the dan styles are not just a colour swap.
-   * Dan grades add one stripe per rank at the tip, which is how they are
-   * actually marked on a real obi.
+   * A kōhaku (6th–8th dan) obi is red and white in alternating panels and a
+   * 9th–10th is solid red, so the dan styles are not a colour swap. Dan grades
+   * add one stripe per rank at the tip, which is how a real obi is marked.
    */
-  function beltArt(colour, ink, stripes = 0, style = "plain") {
+  function beltArt(colour, ink, stripes = 0, style = "plain", extraClass = "") {
     const panels = style === "kohaku"
       ? [0, 1, 2, 3, 4, 5].map((i) =>
           `<rect x="${10 + i * 46.7}" y="34" width="46.7" height="26" fill="${i % 2 ? "#f4f6f8" : "#c0392b"}" />`).join("")
@@ -1490,13 +1499,44 @@
     const marks = Array.from({ length: stripes }, (_, i) =>
       `<rect x="${248 - i * 11}" y="38" width="6" height="18" rx="1" fill="${escapeHtml(ink)}" opacity=".9" />`).join("");
 
-    return `<svg class="belt-art" viewBox="0 0 300 110" role="img" aria-hidden="true">
+    return `<svg class="belt-art ${extraClass}" viewBox="0 0 300 110" role="img" aria-hidden="true">
       ${panels}${marks}
       <rect x="118" y="24" width="64" height="46" rx="6" fill="${style === "kohaku" ? "#c0392b" : escapeHtml(colour)}" />
       <rect x="118" y="24" width="64" height="46" rx="6" fill="none" stroke="rgba(0,0,0,.28)" />
       <path d="M132 70 L124 100 L146 92 Z" fill="${style === "kohaku" ? "#f4f6f8" : escapeHtml(colour)}" stroke="rgba(0,0,0,.2)" />
       <path d="M168 70 L176 100 L154 92 Z" fill="${style === "kohaku" ? "#c0392b" : escapeHtml(colour)}" stroke="rgba(0,0,0,.2)" />
     </svg>`;
+  }
+
+  /** The rack on the atlas invitation. Rendered from the same belt table. */
+  function renderInviteRack() {
+    const rack = $("dojoInviteRack");
+    if (!rack) return;
+    rack.innerHTML = window.ATLAS_QUIZ.BELTS.map((belt) =>
+      `<i class="${belt.gated ? "is-locked" : ""}" style="background:${escapeHtml(belt.colour)}"></i>`).join("");
+  }
+
+  /* The wall of belts, shown before you start and again while you play. Seeing
+     brown and black hanging out of reach is the argument for the long run. */
+  function beltWall(currentId) {
+    const rows = window.ATLAS_QUIZ.BELTS.map((belt) => {
+      const rank = belt.kyu === 0 ? t("quizDanBeltBlack") : kyuLabel(belt);
+      return `<li class="belt-row${belt.id === currentId ? " is-current" : ""}${belt.gated ? " is-gated" : ""}">
+        <span class="belt-swatch" style="background:${escapeHtml(belt.colour)}"></span>
+        <span class="belt-kanji" lang="ja">${escapeHtml(belt.kanji)}</span>
+        <span class="belt-names">
+          <strong>${escapeHtml(belt.romaji)}</strong>
+          <small>${escapeHtml(beltName(belt))} · ${escapeHtml(rank)}</small>
+        </span>
+        <span class="belt-min">${belt.min}%</span>
+        ${belt.gated ? `<span class="belt-lock" title="${escapeHtml(t("dojoLocked"))}">🔒</span>` : ""}
+      </li>`;
+    }).join("");
+    return `<div class="belt-wall">
+      <h2>${escapeHtml(t("dojoBeltWallTitle"))}</h2>
+      <ol>${rows}</ol>
+      <p class="quiz-note">${escapeHtml(t("dojoBeltWallNote"))}</p>
+    </div>`;
   }
 
   function renderQuizMenu() {
@@ -1507,14 +1547,8 @@
         <span>${escapeHtml(t("quizQuestions", { n }))}</span>
       </button>`).join("");
 
-    const ladder = window.ATLAS_QUIZ.BELTS.map((belt) => `
-      <li class="belt-step${belt.gated ? " gated" : ""}">
-        <span class="belt-swatch" style="background:${escapeHtml(belt.colour)}"></span>
-        <span class="belt-label">${escapeHtml(beltName(belt))}</span>
-        <span class="belt-min">${belt.min}%+</span>
-      </li>`).join("");
-
     quizStage.innerHTML = `
+      <p class="dojo-shomen" lang="ja" aria-hidden="true">${escapeHtml(t("dojoShomen"))}</p>
       <header class="quiz-header">
         <p class="eyebrow">${escapeHtml(t("quizEyebrow"))}</p>
         <h1 id="quizTitle" tabindex="-1">${escapeHtml(t("quizTitle"))}</h1>
@@ -1523,21 +1557,27 @@
       <h2 class="quiz-subhead">${escapeHtml(t("quizPickLength"))}</h2>
       <div class="quiz-lengths">${lengths}</div>
       <p class="quiz-note">${escapeHtml(t("quizLengthNote"))}</p>
-      <ol class="belt-ladder">${ladder}</ol>`;
+      ${beltWall(null)}`;
     $("quizTitle").focus({ preventScroll: true });
   }
 
-  function renderDanIntro() {
-    quiz.stage = "danIntro";
+  /**
+   * Rei — the bow.
+   *
+   * A deliberate pause between choosing and starting. It is also the honest
+   * place to say that there is one run and nothing is recorded, at the last
+   * moment where that still matters to the reader.
+   */
+  function renderRei(count, dan) {
+    quiz.stage = "rei";
+    quiz.pending = { count, dan };
     quizStage.innerHTML = `
-      <header class="quiz-header dan-header">
-        <p class="eyebrow">${escapeHtml(t("quizDanEyebrow"))}</p>
-        <h1 id="quizTitle" tabindex="-1">${escapeHtml(t("quizDanTitle"))}</h1>
-        <p class="learn-summary">${escapeHtml(t("quizDanIntro"))}</p>
-      </header>
-      ${beltArt("#15181c", "#f2f5f8", 0, "plain")}
-      <div class="quiz-actions">
-        <button class="primary-button" type="button" data-quiz-start-dan>${escapeHtml(t("quizDanStart"))}</button>
+      <div class="dojo-rei">
+        <p class="rei-kanji" lang="ja" aria-hidden="true">${escapeHtml(t("dojoReiTitle"))}</p>
+        <h1 id="quizTitle" tabindex="-1">${escapeHtml(t("dojoReiRomaji"))}</h1>
+        <p>${escapeHtml(t("dojoReiBody"))}</p>
+        <p class="rei-count">${escapeHtml(t("quizQuestions", { n: count }))}</p>
+        <button class="primary-button" type="button" data-quiz-rei>${escapeHtml(t("dojoReiGo"))}</button>
       </div>`;
     $("quizTitle").focus({ preventScroll: true });
   }
@@ -1546,8 +1586,11 @@
     quiz.questions = quizEngine.draw(count, { hardOnly: dan });
     quiz.index = 0;
     quiz.correct = 0;
+    quiz.streak = 0;
+    quiz.best = 0;
     quiz.chosen = null;
     quiz.dan = dan;
+    quiz.call = t("dojoHajime");
     quiz.stage = "playing";
     renderQuestion();
   }
@@ -1575,6 +1618,14 @@
           escapeHtml(t("quizAnswerWas", { answer: question.options[question.answer] }))}
       </p>`;
 
+    /* The grade you are currently on track for. Shown against the questions
+       ANSWERED so far, not the whole run — a percentage of a run you have not
+       taken yet would read as a prediction, and would sit at white until the
+       very end. It makes the grade something you feel moving. */
+    const seen = quiz.index + (answered ? 1 : 0);
+    const running = seen ? Math.round((quiz.correct / seen) * 100) : 0;
+    const onTrack = window.ATLAS_QUIZ.beltFor(running, total);
+
     const last = quiz.index === total - 1;
     quizStage.innerHTML = `
       <div class="quiz-bar" role="progressbar" aria-valuenow="${quiz.index}" aria-valuemin="0" aria-valuemax="${total}">
@@ -1582,7 +1633,11 @@
       </div>
       <div class="quiz-meta">
         <span>${escapeHtml(t("quizProgress", { n: quiz.index + 1, total }))}</span>
-        <span>${escapeHtml(t("quizScore", { n: quiz.correct }))}</span>
+        <span class="dojo-call" lang="ja">${escapeHtml(quiz.call ?? "")}</span>
+        <span class="dojo-track">
+          <i class="belt-swatch" style="background:${escapeHtml(onTrack.colour)}"></i>
+          ${escapeHtml(t("dojoOnTrack", { belt: beltName(onTrack) }))}
+        </span>
       </div>
       <p class="quiz-prompt" id="quizPrompt" tabindex="-1">${escapeHtml(question.prompt).replace(/\n/g, "<br>")}</p>
       <div class="quiz-options">${options}</div>
@@ -1600,7 +1655,22 @@
     const question = quiz.questions[quiz.index];
     if (!question || choice < 0 || choice >= question.options.length) return;
     quiz.chosen = choice;
-    if (choice === question.answer) quiz.correct += 1;
+
+    if (choice === question.answer) {
+      quiz.correct += 1;
+      quiz.streak += 1;
+      quiz.best = Math.max(quiz.best, quiz.streak);
+      /* Judo scores waza-ari for a near-perfect throw and ippon for a decisive
+         one. Three in a row earns the first, five the second — a call rather
+         than a points system, so it flavours the run without becoming a second
+         score competing with the belt. */
+      quiz.call = quiz.streak >= 5 ? t("dojoIppon")
+        : quiz.streak >= 3 ? t("dojoWazaAri")
+        : t("dojoStreak", { n: quiz.streak });
+    } else {
+      quiz.streak = 0;
+      quiz.call = "";
+    }
     renderQuestion();
   }
 
@@ -1612,16 +1682,38 @@
     else renderQuestion();
   }
 
+  /**
+   * Sore made — that is all.
+   *
+   * The belt is tied on rather than simply appearing. Under
+   * prefers-reduced-motion the ceremony is skipped outright and the grade is
+   * shown immediately: a reader who has asked for less movement has not asked
+   * to wait longer for the same information.
+   */
   function renderQuizResult() {
     quiz.stage = "result";
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) return renderAward();
+
+    quizStage.innerHTML = `
+      <div class="dojo-ceremony">
+        <p class="rei-kanji" lang="ja" aria-hidden="true">${escapeHtml(t("dojoSoreMade"))}</p>
+        <p class="quiz-note">${escapeHtml(t("dojoTie"))}</p>
+      </div>`;
+    window.clearTimeout(renderQuizResult.timer);
+    renderQuizResult.timer = window.setTimeout(renderAward, 1250);
+  }
+
+  function renderAward() {
     const total = quiz.questions.length;
     const percent = total ? Math.round((quiz.correct / total) * 100) : 0;
+    const streakNote = quiz.best >= 3
+      ? `<p class="quiz-note">${escapeHtml(t("dojoStreak", { n: quiz.best }))}</p>` : "";
 
     if (quiz.dan) {
       const dan = window.ATLAS_QUIZ.danFor(percent);
       const style = dan?.style ?? "plain";
       const colour = style === "red" ? "#c0392b" : "#15181c";
-      const art = beltArt(colour, style === "red" ? "#f2f5f8" : "#f2f5f8", dan?.rank ?? 0, style);
       const beltWord = dan
         ? t(style === "red" ? "quizDanBeltRed" : style === "kohaku" ? "quizDanBeltKohaku" : "quizDanBeltBlack")
         : t("quizDanBeltBlack");
@@ -1631,11 +1723,14 @@
           <h1 id="quizTitle" tabindex="-1">${escapeHtml(t("quizResultTitle", { correct: quiz.correct, total }))}</h1>
           <p class="quiz-percent">${escapeHtml(t("quizResultPercent", { n: percent }))}</p>
         </header>
-        ${art}
+        ${beltArt(colour, "#f2f5f8", dan?.rank ?? 0, style, "is-tied")}
+        ${dan ? `<p class="award-kanji" lang="ja">${escapeHtml(dan.kanji)}</p>` : ""}
         <p class="quiz-award">${escapeHtml(dan
-          ? t("quizDanAwarded", { rank: dan.rank, name: dan.name })
+          ? `${dan.name} — ${danLabel(dan)}`
           : t("quizDanNone", { n: percent }))}</p>
         <p class="quiz-note">${escapeHtml(beltWord)}</p>
+        ${streakNote}
+        <p class="quiz-note dojo-seal">${escapeHtml(t("dojoAwardedIn"))}</p>
         <div class="quiz-actions">
           <button class="primary-button" type="button" data-quiz-start-dan>${escapeHtml(t("quizAgain"))}</button>
           <a class="ghost-button" href="#">${escapeHtml(t("quizBackToAtlas"))}</a>
@@ -1648,16 +1743,21 @@
     const uncapped = window.ATLAS_QUIZ.BELTS.filter((b) => percent >= b.min).pop();
     const gated = uncapped && uncapped.id !== belt.id;
     if (belt.id === "black") quiz.unlockedDan = true;
+    const rank = belt.kyu === 0 ? t("quizDanBeltBlack") : kyuLabel(belt);
 
     quizStage.innerHTML = `
       <header class="quiz-header result-header">
         <h1 id="quizTitle" tabindex="-1">${escapeHtml(t("quizResultTitle", { correct: quiz.correct, total }))}</h1>
         <p class="quiz-percent">${escapeHtml(t("quizResultPercent", { n: percent }))}</p>
       </header>
-      ${beltArt(belt.colour, belt.ink)}
-      <p class="quiz-award">${escapeHtml(t("quizBeltAwarded", { belt: beltName(belt) }))}</p>
+      ${beltArt(belt.colour, belt.ink, 0, "plain", "is-tied")}
+      <p class="award-kanji" lang="ja">${escapeHtml(belt.kanji)}</p>
+      <p class="quiz-award">${escapeHtml(belt.romaji)}</p>
+      <p class="award-sub">${escapeHtml(t("quizBeltAwarded", { belt: beltName(belt) }))} · ${escapeHtml(rank)}</p>
       ${percent === 100 ? `<p class="quiz-note">${escapeHtml(t("quizPerfect"))}</p>` : ""}
+      ${streakNote}
       ${gated ? `<p class="quiz-note">${escapeHtml(t("quizGatedNote", { belt: beltName(belt) }))}</p>` : ""}
+      <p class="quiz-note dojo-seal">${escapeHtml(t("dojoAwardedIn"))}</p>
       ${quiz.unlockedDan ? `<div class="dan-door">
         <p>${escapeHtml(t("quizDanUnlocked"))}</p>
         <a class="primary-button" href="#quiz/dan">${escapeHtml(t("quizDanEnter"))}</a>
@@ -1665,6 +1765,30 @@
       <div class="quiz-actions">
         <button class="primary-button" type="button" data-quiz-restart>${escapeHtml(t("quizAgain"))}</button>
         <a class="ghost-button" href="#">${escapeHtml(t("quizBackToAtlas"))}</a>
+      </div>`;
+    $("quizTitle").focus({ preventScroll: true });
+  }
+
+  function renderDanIntro() {
+    quiz.stage = "danIntro";
+    const grades = window.ATLAS_QUIZ.DANS.map((dan) => `
+      <li class="dan-row dan-${dan.style}">
+        <span class="belt-kanji" lang="ja">${escapeHtml(dan.kanji)}</span>
+        <span class="belt-names"><strong>${escapeHtml(dan.name)}</strong><small>${escapeHtml(danLabel(dan))}</small></span>
+        <span class="belt-min">${dan.min}%</span>
+      </li>`).join("");
+
+    quizStage.innerHTML = `
+      <p class="dojo-shomen" lang="ja" aria-hidden="true">${escapeHtml(t("dojoShomen"))}</p>
+      <header class="quiz-header dan-header">
+        <p class="eyebrow">${escapeHtml(t("quizDanEyebrow"))}</p>
+        <h1 id="quizTitle" tabindex="-1">${escapeHtml(t("quizDanTitle"))}</h1>
+        <p class="learn-summary">${escapeHtml(t("quizDanIntro"))}</p>
+      </header>
+      ${beltArt("#15181c", "#f2f5f8", 0, "plain")}
+      <ol class="dan-ladder">${grades}</ol>
+      <div class="quiz-actions">
+        <button class="primary-button" type="button" data-quiz-start-dan>${escapeHtml(t("quizDanStart"))}</button>
       </div>`;
     $("quizTitle").focus({ preventScroll: true });
   }
@@ -1690,23 +1814,33 @@
 
   quizStage.addEventListener("click", (event) => {
     const length = event.target.closest("[data-quiz-length]");
-    if (length) return startQuiz(Number(length.dataset.quizLength));
+    if (length) return renderRei(Number(length.dataset.quizLength), false);
+    if (event.target.closest("[data-quiz-rei]")) {
+      const pending = quiz.pending ?? { count: window.ATLAS_QUIZ.LENGTHS[0], dan: false };
+      return startQuiz(pending.count, { dan: pending.dan });
+    }
     if (event.target.closest("[data-quiz-option]")) {
       return answerQuestion(Number(event.target.closest("[data-quiz-option]").dataset.quizOption));
     }
     if (event.target.closest("[data-quiz-next]")) return advanceQuestion();
     if (event.target.closest("[data-quiz-restart]")) return renderQuizMenu();
-    if (event.target.closest("[data-quiz-start-dan]")) return startQuiz(window.ATLAS_QUIZ.DAN_LENGTH, { dan: true });
+    if (event.target.closest("[data-quiz-start-dan]")) return renderRei(window.ATLAS_QUIZ.DAN_LENGTH, true);
   });
 
   /* Number keys answer, Enter advances — the whole game is playable without
      a mouse, like everything else in the atlas. */
   document.addEventListener("keydown", (event) => {
-    if (quizView.hidden || quiz.stage !== "playing") return;
+    if (quizView.hidden) return;
+    if (quiz.stage !== "playing" && quiz.stage !== "rei") return;
     if (event.metaKey || event.ctrlKey || event.altKey) return;
     const active = document.activeElement;
     if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) return;
 
+    if (event.key === "Enter" && quiz.stage === "rei") {
+      event.preventDefault();
+      const pending = quiz.pending ?? { count: window.ATLAS_QUIZ.LENGTHS[0], dan: false };
+      return startQuiz(pending.count, { dan: pending.dan });
+    }
     if (event.key >= "1" && event.key <= "4") {
       event.preventDefault();
       answerQuestion(Number(event.key) - 1);
@@ -1995,6 +2129,7 @@
     }
   }
 
+  renderInviteRack();
   renderFilters();
   renderMathFilters();
   renderMathIndex();

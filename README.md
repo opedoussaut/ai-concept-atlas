@@ -98,7 +98,15 @@ questions graded across the ten dan, from Shodan to Judan. Black belt for 1st
 to 5th dan, the red-and-white kōhaku obi for 6th to 8th, red for 9th and 10th.
 Almost nobody sees the tenth.
 
-Playable entirely from the keyboard: 1–4 to answer, Enter to continue.
+It is built as a dojo rather than a quiz screen. A tatami floor, the belt wall
+hanging where you can read it before you commit, a bow — 礼 — between choosing
+your run and the first question, the judo calls during play (`waza-ari` at three
+in a row, `ippon` at five), and `sore made` before the belt is tied on and the
+grade announced. Grades carry their real names: 白帯 Shiro-obi at 6th kyū up to
+黒帯 Kuro-obi, then 初段 Shodan through 十段 Judan.
+
+Playable entirely from the keyboard: Enter to bow in, 1–4 to answer, Enter to
+continue.
 
 ## The relationship graph spans both layers
 

@@ -286,6 +286,36 @@ window.ATLAS_I18N = (() => {
       quizGatedNote: "Brown and black belts need the hundred-question run. You reached {belt}.",
       quizPerfect: "A perfect run.",
 
+
+      /* Dojo — entry panel on the atlas ------------------------------- */
+      dojoInviteEyebrow: "道場 · The Dojo",
+      dojoInviteTitle: "Think you know the atlas?",
+      dojoInviteBody: "One run, no second chances, nothing saved. Answer well and you leave with a belt — but brown and black are only tied on the hundred-question run, and beyond them the ten dan wait.",
+      dojoInviteCta: "Enter the dojo",
+      dojoInviteBelts: "Seven belts, ten dan",
+
+      /* Dojo — room and ritual ---------------------------------------- */
+      dojoShomen: "道場",
+      dojoBeltWallTitle: "The belts",
+      dojoBeltWallNote: "Grades below black count downwards: a beginner is 6ᵗʰ kyū, and 1ˢᵗ kyū is the last step before the black belt.",
+      dojoKyu: "{n}ᵗʰ kyū",
+      dojoKyuFirst: "1ˢᵗ kyū",
+      dojoDanRank: "{n}ᵗʰ dan",
+      dojoDanFirst: "1ˢᵗ dan",
+      dojoLocked: "Hundred-question run only",
+      dojoReiTitle: "礼",
+      dojoReiRomaji: "Rei",
+      dojoReiBody: "Bow in. Nothing here is recorded, and there is no way back once you begin — you have one run.",
+      dojoReiGo: "Rei — begin",
+      dojoHajime: "始め · Hajime",
+      dojoSoreMade: "それまで · Sore made",
+      dojoIppon: "一本 · Ippon",
+      dojoWazaAri: "技あり · Waza-ari",
+      dojoStreak: "{n} in a row",
+      dojoOnTrack: "On track: {belt}",
+      dojoCurrentNone: "No grade yet",
+      dojoTie: "Tying your belt…",
+      dojoAwardedIn: "Awarded in the dojo of the atlas",
       /* Belt names ------------------------------------------------------ */
       beltWhite: "White",
       beltYellow: "Yellow",
@@ -545,6 +575,36 @@ window.ATLAS_I18N = (() => {
       quizGatedNote: "Les ceintures marron et noire exigent la série de cent questions. Vous atteignez {belt}.",
       quizPerfect: "Un parcours parfait.",
 
+
+      /* Dojo — entry panel on the atlas ------------------------------- */
+      dojoInviteEyebrow: "道場 · Le Dojo",
+      dojoInviteTitle: "Vous pensez connaître l’atlas ?",
+      dojoInviteBody: "Une seule tentative, aucune seconde chance, rien d’enregistré. Répondez bien et vous repartez ceinturé — mais la marron et la noire ne se nouent que sur la série de cent questions, et au-delà les dix dans attendent.",
+      dojoInviteCta: "Entrer dans le dojo",
+      dojoInviteBelts: "Sept ceintures, dix dans",
+
+      /* Dojo — room and ritual ---------------------------------------- */
+      dojoShomen: "道場",
+      dojoBeltWallTitle: "Les ceintures",
+      dojoBeltWallNote: "Les grades sous la noire se comptent à rebours : un débutant est 6ᵉ kyū, et le 1ᵉʳ kyū est la dernière marche avant la ceinture noire.",
+      dojoKyu: "{n}ᵉ kyū",
+      dojoKyuFirst: "1ᵉʳ kyū",
+      dojoDanRank: "{n}ᵉ dan",
+      dojoDanFirst: "1ᵉʳ dan",
+      dojoLocked: "Série de cent questions uniquement",
+      dojoReiTitle: "礼",
+      dojoReiRomaji: "Rei",
+      dojoReiBody: "Saluez. Rien ici n’est enregistré, et il n’y a pas de retour en arrière une fois commencé — vous avez une seule tentative.",
+      dojoReiGo: "Rei — commencer",
+      dojoHajime: "始め · Hajime",
+      dojoSoreMade: "それまで · Sore made",
+      dojoIppon: "一本 · Ippon",
+      dojoWazaAri: "技あり · Waza-ari",
+      dojoStreak: "{n} d’affilée",
+      dojoOnTrack: "En passe d’obtenir : {belt}",
+      dojoCurrentNone: "Pas encore de grade",
+      dojoTie: "On noue votre ceinture…",
+      dojoAwardedIn: "Décerné dans le dojo de l’atlas",
       /* Belt names ------------------------------------------------------ */
       beltWhite: "blanche",
       beltYellow: "jaune",

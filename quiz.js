@@ -33,14 +33,23 @@ window.ATLAS_QUIZ = (() => {
   /* brown belt, and the top of the ladder would mean nothing.          */
   /* ================================================================= */
 
+  /**
+   * `kyu` counts DOWN as you improve, which is genuinely how it works: a
+   * beginner is 6th kyu and the grade immediately below black is 1st kyu.
+   * Getting this backwards is the most common mistake in belt systems built
+   * by people who have not trained, so it is written out explicitly rather
+   * than derived from the array index.
+   *
+   * `obi` is the belt itself — 帯 — and the kanji is the colour plus 帯.
+   */
   const BELTS = [
-    { id: "white",  min: 0,  colour: "#eceff1", ink: "#11202f", gated: false },
-    { id: "yellow", min: 40, colour: "#f4d03f", ink: "#11202f", gated: false },
-    { id: "orange", min: 55, colour: "#e8873a", ink: "#11202f", gated: false },
-    { id: "green",  min: 68, colour: "#2fa96b", ink: "#04140c", gated: false },
-    { id: "blue",   min: 78, colour: "#2e86de", ink: "#04121f", gated: false },
-    { id: "brown",  min: 86, colour: "#7b4b2a", ink: "#f6ece5", gated: true  },
-    { id: "black",  min: 94, colour: "#15181c", ink: "#f2f5f8", gated: true  }
+    { id: "white",  min: 0,  kyu: 6, kanji: "白帯", romaji: "Shiro-obi",  colour: "#eceff1", ink: "#11202f", gated: false },
+    { id: "yellow", min: 40, kyu: 5, kanji: "黄帯", romaji: "Ki-obi",     colour: "#f4d03f", ink: "#11202f", gated: false },
+    { id: "orange", min: 55, kyu: 4, kanji: "橙帯", romaji: "Daidai-obi", colour: "#e8873a", ink: "#11202f", gated: false },
+    { id: "green",  min: 68, kyu: 3, kanji: "緑帯", romaji: "Midori-obi", colour: "#2fa96b", ink: "#04140c", gated: false },
+    { id: "blue",   min: 78, kyu: 2, kanji: "青帯", romaji: "Ao-obi",     colour: "#2e86de", ink: "#04121f", gated: false },
+    { id: "brown",  min: 86, kyu: 1, kanji: "茶帯", romaji: "Cha-obi",    colour: "#7b4b2a", ink: "#f6ece5", gated: true  },
+    { id: "black",  min: 94, kyu: 0, kanji: "黒帯", romaji: "Kuro-obi",   colour: "#15181c", ink: "#f2f5f8", gated: true  }
   ];
 
   const FULL_LENGTH = 100;
@@ -52,17 +61,22 @@ window.ATLAS_QUIZ = (() => {
    * below the first threshold no dan is awarded and the black belt stands.
    */
   const DANS = [
-    { rank: 1,  min: 60, name: "Shodan",    style: "black" },
-    { rank: 2,  min: 65, name: "Nidan",     style: "black" },
-    { rank: 3,  min: 70, name: "Sandan",    style: "black" },
-    { rank: 4,  min: 75, name: "Yondan",    style: "black" },
-    { rank: 5,  min: 80, name: "Godan",     style: "black" },
-    { rank: 6,  min: 85, name: "Rokudan",   style: "kohaku" },
-    { rank: 7,  min: 89, name: "Nanadan",   style: "kohaku" },
-    { rank: 8,  min: 93, name: "Hachidan",  style: "kohaku" },
-    { rank: 9,  min: 96, name: "Kudan",     style: "red" },
-    { rank: 10, min: 99, name: "Judan",     style: "red" }
+    { rank: 1,  min: 60, name: "Shodan",   kanji: "初段",   style: "black" },
+    { rank: 2,  min: 65, name: "Nidan",    kanji: "二段",   style: "black" },
+    { rank: 3,  min: 70, name: "Sandan",   kanji: "三段",   style: "black" },
+    { rank: 4,  min: 75, name: "Yondan",   kanji: "四段",   style: "black" },
+    { rank: 5,  min: 80, name: "Godan",    kanji: "五段",   style: "black" },
+    { rank: 6,  min: 85, name: "Rokudan",  kanji: "六段",   style: "kohaku" },
+    { rank: 7,  min: 89, name: "Nanadan",  kanji: "七段",   style: "kohaku" },
+    { rank: 8,  min: 93, name: "Hachidan", kanji: "八段",   style: "kohaku" },
+    { rank: 9,  min: 96, name: "Kudan",    kanji: "九段",   style: "red" },
+    { rank: 10, min: 99, name: "Judan",    kanji: "十段",   style: "red" }
   ];
+
+  /* Shodan is 初段, "first dan", not 一段 — the first rank has its own word.
+     A generated "1st dan" label would be wrong in a way a judoka would spot
+     immediately, which is the whole reason the kanji is stored per grade
+     rather than composed from the number. */
 
   const DAN_LENGTH = 100;
 

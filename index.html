@@ -162,6 +162,21 @@
       </noscript>
     </section>
 
+    <!-- The way in to the Dojo. The belt rack is rendered by app.js so it
+         cannot disagree with the belt table in quiz.js. -->
+    <aside class="dojo-invite" id="dojo-invite" aria-labelledby="dojo-invite-title">
+      <div class="dojo-invite-copy">
+        <p class="eyebrow" data-i18n="dojoInviteEyebrow">道場 · The Dojo</p>
+        <h2 id="dojo-invite-title" data-i18n="dojoInviteTitle">Think you know the atlas?</h2>
+        <p data-i18n="dojoInviteBody">One run, no second chances, nothing saved.</p>
+        <a class="primary-button" href="#quiz" data-i18n="dojoInviteCta">Enter the dojo</a>
+      </div>
+      <div class="dojo-invite-belts">
+        <div class="belt-rack" id="dojoInviteRack" aria-hidden="true"></div>
+        <p class="dojo-invite-count" data-i18n="dojoInviteBelts">Seven belts, ten dan</p>
+      </div>
+    </aside>
+
     <section class="about-section" id="about" aria-labelledby="about-title">
       <div>
         <p class="eyebrow" data-i18n="aboutEyebrow">Why this atlas exists</p>

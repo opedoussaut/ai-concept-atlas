@@ -559,8 +559,15 @@ if (!enKeys.length || !frKeys.length) {
     "bandCount",          // "{n} concept|{n} concepts" happens to be identical
     "quizQuestions"       // same word in both languages, same plural break
   ]);
+  // Japanese terminology is never translated — 礼 is 礼 and "Sore made" is
+  // "Sore made" in every language, exactly as the atlas leaves ∇ and LoRA
+  // alone. Any string carrying kana or kanji is therefore expected to match,
+  // which is a rule rather than a growing list of exceptions.
+  const JAPANESE = /[\u3040-\u30ff\u4e00-\u9faf]/;
+
   const identical = enKeys.filter((key) =>
     !SAME_BY_DESIGN.has(key) &&
+    !JAPANESE.test(String(i18nStrings.en[key])) &&
     String(i18nStrings.en[key]).length > 12 && i18nStrings.en[key] === i18nStrings.fr[key]);
   if (identical.length) identical.forEach((key) => warn(`i18n.js: "${key}" is identical in both languages`));
   else ok("i18n.js: no French string is a verbatim copy of its English original");

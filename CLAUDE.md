@@ -189,6 +189,30 @@ figures deep. And no single generator may exceed a quarter of a run — drawing
 uniformly sounds fair, but the cheap generators never run out of material while
 the narrow ones do, so an uncapped run drifts toward acronym questions.
 
+**The dojo is ceremony, not arcade.** Principle 5 says the interface is never
+game-like; the Dojo is the one room where that relaxes, and it relaxes toward
+ritual rather than points. A tatami floor, 道場 on the shomen wall, a wall of
+belts you read before you start, a bow (`rei`) between choosing and beginning,
+the judo calls during play, and `sore made` before the belt is tied on. There is
+no confetti, no sound and no second score competing with the belt — restraint is
+what keeps it a dojo rather than a quiz app in a costume.
+
+`kyu` counts **down**: white is 6th kyū and brown is 1st kyū, the last step
+before black. It is stored per belt rather than derived from the array index,
+because getting it backwards is the standard mistake and would be invisible in
+code that reads `BELTS[0]`. Shodan is 初段, not 一段 — the first dan has its own
+word, so the kanji is stored per grade rather than composed from the number.
+
+The judo calls are flavour, not a second scoring system: three correct in a row
+earns `waza-ari`, five earns `ippon`. During play a quiet indicator shows the
+belt you are currently on track for, computed against the questions **answered**
+rather than the whole run — a percentage of a run you have not taken yet would
+read as a prediction and would sit at white until the very end.
+
+Under `prefers-reduced-motion` the ceremony is skipped outright rather than
+merely un-animated: a reader who asked for less movement has not asked to wait
+the same 1.25 seconds for the same information.
+
 **Nothing is stored.** No score, no progress, no registration, no `localStorage`.
 A run lives in a closure and dies with the page. That is the footer's promise
 kept literally, and the reason there is no leaderboard to game.
@@ -577,9 +601,12 @@ Also confirm manually:
 - In French, confirm the "EN" chip appears on Why/How/Example and on the
   Mathematical foundations heading, does **not** appear anywhere on a
   mathematics page, and does **not** appear anywhere on the English site
-- The Dojo: each of 10/25/50/100; that a perfect short run caps at blue; that
-  100 can reach brown and black; that black reveals the Dan door; that
-  `#quiz/dan` resolves cold; and that 1–4 and Enter play it without a mouse
+- The Dojo: each of 10/25/50/100; that the bow appears between choosing and the
+  first question; that a perfect short run caps at blue; that 100 can reach brown
+  and black; that black reveals the Dan door; that `#quiz/dan` resolves cold; and
+  that Enter passes the bow and 1–4 plays it without a mouse
+- The Dojo under `prefers-reduced-motion`: the belt appears immediately, with no
+  `sore made` interstitial and no wait
 - Keyboard-only pass: `/` focuses search, arrows move suggestions, Enter opens,
   Tab reaches graph nodes and Enter opens them, Escape closes, focus returns to
   the triggering card
