@@ -140,7 +140,14 @@ hold it together, and each one exists because the alternative rots:
   Changing language is a navigation that reloads the page; there is no live
   re-render path to get wrong.
 
-**Missing French is a state, not a bug.** `localize()` leaves the English in
+**The French layer is complete.** All 87 AI concepts carry `name`, `summary`,
+`why`, `how`, `example`, `mathNote` and every `mathFoundations` note; all 38
+mathematics concepts carry `intuition`, `equationNote`, `worked`, `whyInAI` and
+their symbol legends. No page shows an "EN" chip today.
+
+**Missing French is a state, not a bug** — and the machinery below stays even
+though nothing currently triggers it, because the next concept added will
+arrive English-only and must degrade honestly rather than leave a hole. `localize()` leaves the English in
 place and records the field in `_en`; `markLanguage()` then puts a small "EN"
 chip on that section's heading and `setProse()` sets `lang="en"` on the body so
 screen readers switch voice. That is what makes a phased translation shippable —
@@ -688,13 +695,11 @@ with **zero warnings**. Keep it that way: a new concept must arrive with a
   Sampling. Splitting them today would create stubs, not pages.
 - Add a glossary index and a compare mode for two concepts.
 - Add downloadable PNG/PDF concept cards.
-- Finish the French layer. The mathematics layer is **fully translated** — all
-  38 pages carry `intuition`, `equationNote`, `worked`, `whyInAI` and `legend`.
-  What remains is the AI side: `why`, `how` and `example` for all 87 concepts
-  (~12,300 words) and the 261 `mathFoundations` notes (~3,900 words, added to
-  `data-fr.js` under `foundations`, keyed by mathematics slug). Nothing needs
-  building first — the plumbing takes all of these already; add the field to the
-  overlay and it renders, and the "EN" chip disappears on its own.
+- Keep French complete as concepts are added. A new concept arrives
+  English-only and will show an "EN" chip until `data-fr.js` gains its entry:
+  `name`, `summary`, `why`, `how`, `example`, plus either `foundations` keyed by
+  mathematics slug or a `mathNote`. The validator warns on a missing name or
+  summary but cannot know that a `why` is absent, so the chip is the signal.
 - Add a third language if one is ever wanted. `i18n.js` takes a new code in
   `SUPPORTED` plus a string table and one more overlay file; nothing in `app.js`
   is language-specific.

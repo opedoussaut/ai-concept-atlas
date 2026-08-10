@@ -1,0 +1,24 @@
+# Line endings are normalised here rather than left to each machine's
+# core.autocrlf, so a checkout is byte-identical everywhere and a diff never
+# shows a file as wholly rewritten because someone opened it on Windows.
+#
+# LF in the repository for everything; Git still checks out CRLF on Windows
+# where a platform expects it, per the rules below.
+* text=auto eol=lf
+
+# PowerShell is the one deliberate exception. tools/create-shortcut.ps1 is run
+# by powershell.exe — still Windows PowerShell 5.1 — and CRLF is that
+# platform's native convention. The same file is already ASCII-only for a
+# related reason: 5.1 reads a .ps1 as Windows-1252, so a UTF-8 em dash arrives
+# as three garbage bytes and the parser dies pointing at the wrong character.
+# The validator enforces the ASCII rule; this enforces the line endings.
+*.ps1 text eol=crlf
+
+# Binary: never normalise, never diff as text.
+*.png binary
+*.ico binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.woff binary
+*.woff2 binary

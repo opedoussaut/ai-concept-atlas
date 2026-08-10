@@ -62,13 +62,14 @@ browser and nothing is stored — so a link you share renders the same page for
 whoever opens it, and the "no cookies, no analytics, no tracking" line in the
 footer stays literally true.
 
-The **mathematics layer is fully translated** — all 38 pages, including the
-intuitions, equation notes, worked examples and symbol legends. On the AI side
-French covers the interface and the name and one-line summary of all 87
-concepts: everything on a card, in search, in the graph and in the filters. The
-longer explanations there are still English and carry a small **EN** marker on
-their heading, so you always know which you are reading rather than wondering
-whether something broke. Search works in both languages either way round — the
+**The translation is complete.** All 125 concepts are fully French — names,
+summaries, the why/how/example layers, the mathematical intuitions, equation
+notes, worked examples, symbol legends and every one of the 261 notes explaining
+why a given piece of mathematics matters to a given technique.
+
+If a concept is ever added without its French text, that section renders in
+English with a small **EN** marker on its heading rather than showing a hole, so
+you always know which you are reading. Search works in both languages either way round — the
 French site finds "retrieval augmented", the English site finds "apprentissage
 profond".
 
