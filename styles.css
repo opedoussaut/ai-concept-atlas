@@ -1476,3 +1476,23 @@ footer {
   .belt-hang { width: 62px; }
   .belt-wall ol, .dan-ladder { max-width: none; }
 }
+
+/* Belts, larger still ---------------------------------------------------
+   At 88px they still read as an icon beside the text. The wall is the one
+   place the belts are the subject rather than a label, so they get room:
+   large enough that the knot and the two hanging ends are legible, which
+   is what makes them read as an object you could pick up. */
+.belt-row, .dan-row { grid-template-columns: 132px 3.4rem 1fr; gap: 16px; }
+.belt-hang { width: 132px; }
+.belt-row { padding: 15px 20px; }
+.dan-row { padding: 12px 20px; }
+.belt-wall ol, .dan-ladder { max-width: 520px; }
+.belt-wall { max-width: 680px; }
+.belt-kanji { font-size: 1.55rem; }
+.belt-names strong { font-size: 1.05rem; }
+
+@media (max-width: 600px) {
+  .belt-row, .dan-row { grid-template-columns: 86px 2.6rem 1fr; gap: 11px; }
+  .belt-hang { width: 86px; }
+  .belt-kanji { font-size: 1.2rem; }
+}
