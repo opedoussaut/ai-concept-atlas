@@ -1508,14 +1508,19 @@ footer {
    every row the three columns still line up down the list. `1fr` would
    centre nothing; `max-content` would centre each row independently and
    leave the columns ragged. */
-.belt-row, .dan-row {
-  /* 13rem, not 12: the French dan sub-line "8ᵉ dan · 2 fautes tolérées" runs
-     to roughly 161px and would sit a hair from wrapping at 12rem. A fixed
-     track has to clear the longest string in EVERY language, not the one in
-     front of you. */
-  grid-template-columns: 132px 3.4rem 13rem;
-  justify-content: center;
-}
+/* The two ladders get their OWN track width, because sizing both to the wider
+   one is what made the belt wall look left-aligned even once it was centred.
+   The group was centred correctly; the names track was simply 78px wider than
+   anything the belt wall puts in it, and that surplus showed as empty space to
+   the right of every name.
+
+   Measured against the longest string in either language:
+     belt wall  "noire · Ceinture noire"      ~130px  ->  9rem (144px)
+     dan ladder "8ᵉ dan · 2 fautes tolérées"  ~153px  -> 11rem (176px)
+   Both keep roughly a 15px margin before wrapping. */
+.belt-row, .dan-row { justify-content: center; }
+.belt-row { grid-template-columns: 132px 3.4rem 9rem; }
+.dan-row  { grid-template-columns: 132px 3.4rem 11rem; }
 .belt-names small { white-space: nowrap; }
 
 @media (max-width: 600px) {
