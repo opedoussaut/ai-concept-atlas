@@ -1559,9 +1559,12 @@
           <strong lang="ja-Latn">${escapeHtml(belt.romaji)}</strong>
           <small>${escapeHtml(beltName(belt))} · ${escapeHtml(rank)}</small>
         </span>
-        <span class="sr-only">${belt.min}%</span>
       </li>`;
     }).join("");
+    /* The row no longer states a threshold at all, by request. The wall is
+       something to look at before a run rather than a specification, and the
+       gate that actually matters — brown and black needing the long run — is
+       already said above the length picker. */
     return `<section class="belt-wall" aria-labelledby="beltWallTitle">
       <h2 id="beltWallTitle">
         <span class="jp-mark" lang="ja" aria-hidden="true">帯</span>

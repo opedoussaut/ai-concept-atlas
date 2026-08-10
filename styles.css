@@ -1496,3 +1496,30 @@ footer {
   .belt-hang { width: 86px; }
   .belt-kanji { font-size: 1.2rem; }
 }
+
+/* Centring the row content ---------------------------------------------
+   Removing the threshold left a `1fr` names column absorbing every spare
+   pixel, so the belt, kanji and name packed against the left edge with
+   dead space to the right — the row looked left-aligned even though it
+   filled its container.
+
+   A fixed names column instead of `1fr` lets `justify-content: center`
+   centre the whole group, and because the track is the same width on
+   every row the three columns still line up down the list. `1fr` would
+   centre nothing; `max-content` would centre each row independently and
+   leave the columns ragged. */
+.belt-row, .dan-row {
+  /* 13rem, not 12: the French dan sub-line "8ᵉ dan · 2 fautes tolérées" runs
+     to roughly 161px and would sit a hair from wrapping at 12rem. A fixed
+     track has to clear the longest string in EVERY language, not the one in
+     front of you. */
+  grid-template-columns: 132px 3.4rem 13rem;
+  justify-content: center;
+}
+.belt-names small { white-space: nowrap; }
+
+@media (max-width: 600px) {
+  /* Too narrow to afford the slack, so the names column takes what is
+     left and the row fills the width as before. */
+  .belt-row, .dan-row { grid-template-columns: 86px 2.6rem 1fr; justify-content: stretch; }
+}
