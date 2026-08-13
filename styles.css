@@ -1352,8 +1352,6 @@ footer {
 
 @media (max-width: 600px) {
   .quiz-view { padding-inline: 14px; }
-  .belt-row { grid-template-columns: 22px 2rem 1fr auto; gap: 9px; padding: 8px 10px; }
-  .belt-row .belt-min { display: none; }
   .quiz-meta { flex-wrap: wrap; gap: 6px 14px; }
 }
 
@@ -1427,12 +1425,6 @@ footer {
 }
 .dan-ladder-title { text-align: center; margin: 34px 0 0; }
 
-/* Belts hanging on the rack ------------------------------------------- */
-.belt-hang { width: 58px; height: auto; filter: drop-shadow(0 3px 6px rgba(0,0,0,.45)); }
-.belt-row, .dan-row { grid-template-columns: 58px 3rem 1fr auto; }
-.belt-row { padding: 11px 16px; }
-.belt-wall { max-width: 600px; }
-.belt-wall h2 { text-align: center; margin-bottom: 18px; }
 /* Mincho for the kanji: a brush-derived serif is what a dojo sign uses, and
    it separates the Japanese from the interface sans without shouting. */
 .belt-kanji {
@@ -1452,10 +1444,6 @@ footer {
 
 @media (max-width: 600px) {
   .dojo-noren { height: 40px; margin-top: -26px; }
-  .belt-row, .dan-row { grid-template-columns: 44px 2.4rem 1fr auto; gap: 10px; }
-  .belt-hang { width: 44px; }
-  .belt-kanji { font-size: 1.15rem; }
-  .belt-row .belt-min { display: revert; font-size: .78rem; }
 }
 
 /* Belt wall, final proportions -----------------------------------------
@@ -1464,17 +1452,8 @@ footer {
    a column of numbers turned it into a specification. With that column
    gone the row is three items, so the list narrows and centres and the
    belts grow to where they read as objects rather than icons. */
-.belt-row, .dan-row { grid-template-columns: 88px 3.2rem 1fr; }
-.belt-hang { width: 88px; justify-self: center; }
-.belt-wall ol, .dan-ladder { max-width: 440px; margin-inline: auto; }
-.belt-wall { max-width: 640px; }
-.belt-row { padding: 13px 18px; }
-.dan-row { padding: 10px 18px; }
 
 @media (max-width: 600px) {
-  .belt-row, .dan-row { grid-template-columns: 62px 2.6rem 1fr; gap: 10px; }
-  .belt-hang { width: 62px; }
-  .belt-wall ol, .dan-ladder { max-width: none; }
 }
 
 /* Belts, larger still ---------------------------------------------------
@@ -1482,7 +1461,6 @@ footer {
    place the belts are the subject rather than a label, so they get room:
    large enough that the knot and the two hanging ends are legible, which
    is what makes them read as an object you could pick up. */
-.belt-row, .dan-row { grid-template-columns: 132px 3.4rem 1fr; gap: 16px; }
 .belt-hang { width: 132px; }
 .belt-row { padding: 15px 20px; }
 .dan-row { padding: 12px 20px; }
@@ -1518,7 +1496,19 @@ footer {
      belt wall  "noire · Ceinture noire"      ~130px  ->  9rem (144px)
      dan ladder "8ᵉ dan · 2 fautes tolérées"  ~153px  -> 11rem (176px)
    Both keep roughly a 15px margin before wrapping. */
-.belt-row, .dan-row { justify-content: center; }
+/* Everything the belt rows and the dan ladder finally resolve to, in one
+   place. This used to be five overlapping declarations of .belt-row spread
+   across four appended passes, which is precisely how the names track came to
+   be sized for the wrong ladder: each pass restated part of the rule and none
+   of them showed the whole. */
+.belt-hang { width: 132px; height: auto; justify-self: center;
+             filter: drop-shadow(0 3px 6px rgba(0,0,0,.45)); }
+.belt-wall { max-width: 680px; }
+.belt-wall h2 { text-align: center; margin-bottom: 18px; }
+.belt-wall ol, .dan-ladder { max-width: 520px; margin-inline: auto; }
+.belt-row, .dan-row { justify-content: center; gap: 16px; }
+.belt-row { padding: 15px 20px; }
+.dan-row { padding: 12px 20px; }
 .belt-row { grid-template-columns: 132px 3.4rem 9rem; }
 .dan-row  { grid-template-columns: 132px 3.4rem 11rem; }
 .belt-names small { white-space: nowrap; }
@@ -1527,4 +1517,7 @@ footer {
   /* Too narrow to afford the slack, so the names column takes what is
      left and the row fills the width as before. */
   .belt-row, .dan-row { grid-template-columns: 86px 2.6rem 1fr; justify-content: stretch; }
+  /* Tighter than the desktop 15px/20px — the only part of the old mobile rule
+     that was not superseded, and the one the consolidation nearly dropped. */
+  .belt-row { padding: 8px 10px; }
 }

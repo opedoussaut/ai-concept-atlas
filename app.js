@@ -138,6 +138,12 @@
   };
   function showView(name) {
     for (const key of Object.keys(VIEWS)) VIEWS[key].hidden = key !== name;
+    // The Dojo schedules its grading ceremony on a timer. Walking out during
+    // that pause used to leave the timer to fire and write an award into a
+    // panel the reader had already left — harmless to look at, but it graded a
+    // run that was abandoned. showView is the one authoritative switch, so it
+    // is the right place to cancel.
+    if (name !== "quiz") window.clearTimeout(renderQuizResult.timer);
   }
 
   const categoryOf = (concept) => categoryById.get(concept.category) ?? FALLBACK_CATEGORY;
@@ -1639,6 +1645,13 @@
     renderQuestion();
   }
 
+  /** Speak something once. Setting the same text twice would say nothing. */
+  function announce(message) {
+    const node = $("quizAnnounce");
+    if (!node) return;
+    node.textContent = node.textContent === message ? `${message} ` : message;
+  }
+
   function renderQuestion() {
     const question = quiz.questions[quiz.index];
     if (!question) return renderQuizResult();
@@ -1700,6 +1713,11 @@
     if (!question || choice < 0 || choice >= question.options.length) return;
     quiz.chosen = choice;
 
+    const right = choice === question.answer;
+    announce(right
+      ? t("quizCorrect")
+      : `${t("quizWrong")} ${t("quizAnswerWas", { answer: question.options[question.answer] })}`);
+
     if (choice === question.answer) {
       quiz.correct += 1;
       quiz.streak += 1;
@@ -1740,7 +1758,7 @@
     if (reduced) return renderAward();
 
     quizStage.innerHTML = `
-      <div class="dojo-ceremony">
+      <div class="dojo-ceremony" aria-hidden="true">
         <p class="rei-kanji" lang="ja" aria-hidden="true">${escapeHtml(t("dojoSoreMade"))}</p>
         <p class="quiz-note">${escapeHtml(t("dojoTie"))}</p>
       </div>`;
@@ -1791,6 +1809,7 @@
     if (belt.id === "black") quiz.unlockedDan = true;
     const rank = belt.kyu === 0 ? t("quizDanBeltBlack") : kyuLabel(belt);
 
+    announce(`${t("quizResultTitle", { correct: quiz.correct, total })} ${t("quizBeltAwarded", { belt: beltName(belt) })}`);
     quizStage.innerHTML = `
       <header class="quiz-header result-header">
         <h1 id="quizTitle" tabindex="-1">${escapeHtml(t("quizResultTitle", { correct: quiz.correct, total }))}</h1>

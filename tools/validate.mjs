@@ -573,6 +573,19 @@ if (!enKeys.length || !frKeys.length) {
   else ok("i18n.js: no French string is a verbatim copy of its English original");
 }
 
+/* The hero image's alt text names a concept count in prose. Nothing else
+   checks it, and it is exactly the kind of number that drifts silently the
+   first time a concept is added — the same failure the map's own footer
+   counts are guarded against. */
+const altCount = (i18nStrings.en?.heroImageAlt ?? "").match(/(\d+)\s+AI terms/);
+if (!altCount) {
+  warn("i18n.js: heroImageAlt no longer states a concept count — remove this check or restore it");
+} else if (Number(altCount[1]) !== concepts.length) {
+  fail(`i18n.js: heroImageAlt says ${altCount[1]} AI terms but data.js has ${concepts.length}`);
+} else {
+  ok(`heroImageAlt's "${altCount[1]} AI terms" matches the data`);
+}
+
 /* ------------------------------------------------------------------ */
 /* 2c. The Dojo                                                         */
 /*                                                                      */

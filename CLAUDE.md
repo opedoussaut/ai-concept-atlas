@@ -220,6 +220,16 @@ Under `prefers-reduced-motion` the ceremony is skipped outright rather than
 merely un-animated: a reader who asked for less movement has not asked to wait
 the same 1.25 seconds for the same information.
 
+The Dojo re-renders its whole stage on every state change, so the live region
+that announces the outcome lives **outside** `#quizStage` and only its text
+changes. A live region that is replaced rather than updated is not reliably
+announced, and focus returns to the prompt after answering — so without it a
+screen reader re-reads the question and never says whether the answer was right.
+
+`showView()` cancels the pending grading ceremony whenever it switches away
+from the quiz. Walking out during that 1.25-second pause otherwise left the
+timer to fire and grade a run the reader had abandoned.
+
 **Nothing is stored.** No score, no progress, no registration, no `localStorage`.
 A run lives in a closure and dies with the page. That is the footer's promise
 kept literally, and the reason there is no leaderboard to game.
