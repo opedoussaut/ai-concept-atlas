@@ -1202,6 +1202,7 @@
     markLanguage("learnWhyTitle", concept, "why");
     markLanguage("learnHowTitle", concept, "how");
     markLanguage("learnExampleTitle", concept, "example");
+    markLanguage("learnMathTitle", concept, "math");
 
     $("learnSourceSection").hidden = !renderReference(
       $("learnSource"), $("learnSourceLabel"), $("learnSourceHost"), concept

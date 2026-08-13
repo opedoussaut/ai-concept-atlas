@@ -448,7 +448,7 @@ documentation, then an authoritative survey. Every concept currently has a
 
 **On `math`.** Optional and deliberately dependency-free: expressions are plain
 text in a `<pre><code>` block, not LaTeX, so the site still makes zero external
-requests. Fifteen concepts carry one today — the transformer block and its parts
+requests. Twenty-five concepts carry one today — the transformer block and its parts
 (`transformer`, `attention`, `activation-function`, `layer-normalization`,
 `residual-connection`, `positional-encoding`), the efficient-attention line
 (`linear-attention`, `flash-attention`, `speculative-decoding`), and
@@ -695,10 +695,17 @@ Every AI concept now carries a mathematics mapping and the validator runs clean
 with **zero warnings**. Keep it that way: a new concept must arrive with a
 `mathIntensity`, and either foundations or an honest `mathNote`.
 
-- Write `math` blocks for the remaining concepts (15 of 87 done). This is the
-  largest open content item. Less urgent than it was — `mathFoundations` already
-  carries the conceptual link — so `math` is now only for a concept's *own*
-  formulation, and only where one genuinely helps.
+- `math` blocks are essentially done at 25 of 87, and the count is not the
+  measure. Now that `mathFoundations` carries the conceptual link, a block is
+  only for a concept's **own** formulation, and it must pass three tests: the
+  equation belongs to the concept rather than to a mathematics page; seeing it
+  teaches something the four prose layers cannot; and writing it does not
+  restate a mathematics page, which §4's "do not chain" rule forbids. Most of
+  the remaining 62 fail at least one — `llm` would restate `next-token-prediction`,
+  `qlora` would chain through LoRA and quantization, `rl` and `world-model`
+  would restate `expected-return` and `dynamical-systems`, and the 25
+  low-intensity concepts already say in their `mathNote` that they have none.
+  `jepa` and `mla` are the two genuine open calls.
 - Consider the folded mathematics concepts if any ever needs its own page:
   derivatives and partial derivatives live inside Gradients, the chain rule
   inside Backpropagation, SGD inside Gradient Descent, Monte Carlo inside

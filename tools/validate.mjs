@@ -459,6 +459,23 @@ const SHAPED = {
     if (fr.some((item) => typeof item !== "string" || !item.trim())) return "contains an empty item";
     return null;
   },
+  math: (fr, en) => {
+    if (typeof fr !== "object" || Array.isArray(fr)) return "must be an object";
+    if (!en) return "translates a math block the English concept does not have";
+    if (!String(fr.intro ?? "").trim()) return "has no intro";
+    if (!Array.isArray(fr.formulas)) return "has no formulas array";
+    if (fr.formulas.length !== (en.formulas ?? []).length) {
+      return `has ${fr.formulas.length} formulas but English has ${(en.formulas ?? []).length}`;
+    }
+    // The equation itself is never translated — W' = W_0 + B A reads the same
+    // in every language. A French `expression` would be a second copy of the
+    // one thing that must not have two versions.
+    const withExpr = fr.formulas.filter((f) => f.expression);
+    if (withExpr.length) return "carries an `expression`, which is never translated";
+    const empty = fr.formulas.filter((f) => !String(f.label ?? "").trim() || !String(f.note ?? "").trim());
+    if (empty.length) return `has ${empty.length} formulas missing a label or note`;
+    return null;
+  },
   foundations: (fr, en) => {
     if (typeof fr !== "object" || Array.isArray(fr)) return "must be an object keyed by mathematics slug";
     const known = new Set((en ?? []).map((link) => link.slug));
@@ -470,7 +487,7 @@ const SHAPED = {
 };
 
 /** Which English field a shaped overlay field is checked against. */
-const SHAPED_SOURCE = { legend: "legend", whyInAI: "whyInAI", foundations: "mathFoundations" };
+const SHAPED_SOURCE = { legend: "legend", whyInAI: "whyInAI", foundations: "mathFoundations", math: "math" };
 
 function checkOverlay(label, overlay, validSlugs, allowed, total, required = allowed, english = new Map()) {
   const keys = Object.keys(overlay);

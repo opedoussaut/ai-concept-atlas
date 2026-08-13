@@ -203,7 +203,22 @@ window.AI_CONCEPTS = [
       { slug: "matrix-multiplication", importance: "primary", note: "Convolution is implemented as a matrix multiplication over unfolded input patches." },
       { slug: "gradients", importance: "supporting", note: "Shared filter weights accumulate gradient contributions from every position they were applied to." },
       { slug: "backpropagation", importance: "supporting", note: "That weight sharing is what makes a convolutional layer parameter-efficient and still trainable end to end." }
-    ]
+    ],
+    math: {
+      intro: "A convolutional layer applies the same small filter everywhere, which is what makes it both parameter-efficient and translation-equivariant.",
+      formulas: [
+        {
+          label: "Discrete 2-D convolution",
+          expression: "y[i, j] = Σ_m Σ_n  x[i+m, j+n] · w[m, n] + b",
+          note: "One filter w slides across the whole input. The same weights are reused at every position, so a 3 × 3 filter has nine parameters whether the image is 32 or 4096 pixels wide — and a pattern learned in one corner is recognised in every other."
+        },
+        {
+          label: "Output size",
+          expression: "H_out = ⌊(H_in + 2p − k) / s⌋ + 1",
+          note: "k is the kernel size, p the padding, s the stride. This is the arithmetic behind almost every shape error in vision code, and behind the receptive field: stacking layers grows the region of input that one output value can see."
+        }
+      ]
+    }
   },
   {
     slug: "rnn", acronym: "RNN", name: "Recurrent Neural Network", category: "architectures",
@@ -220,7 +235,22 @@ window.AI_CONCEPTS = [
       { slug: "gradients", importance: "supporting", note: "That long chain of factors is exactly why gradients vanish or explode over sequence length." },
       { slug: "matrix-multiplication", importance: "supporting", note: "Each step applies the same weight matrices to the state and the new input." },
       { slug: "state-space-models", importance: "supporting", note: "A linear recurrence is a state-space model, which is how the idea was made parallel-trainable again." }
-    ]
+    ],
+    math: {
+      intro: "A recurrent network carries one hidden state forward and applies the same transformation at every step.",
+      formulas: [
+        {
+          label: "Recurrent update",
+          expression: "h_t = tanh( W_h h_{t−1} + W_x x_t + b )",
+          note: "W_h and W_x are shared across all steps, so the network handles any sequence length with a fixed parameter count. Everything the model knows about the past has to fit in h_t."
+        },
+        {
+          label: "Gradient through time",
+          expression: "∂h_t / ∂h_0 = Π_{i=1}^{t}  W_hᵀ · diag( tanh′ )",
+          note: "A product of t terms. If the factors are consistently below one the gradient vanishes; above one it explodes. This single expression is why plain RNNs fail on long sequences and why gated architectures exist."
+        }
+      ]
+    }
   },
   {
     slug: "lstm", acronym: "LSTM", name: "Long Short-Term Memory", category: "architectures",
@@ -236,7 +266,22 @@ window.AI_CONCEPTS = [
       { slug: "gradients", importance: "primary", note: "Gates exist to keep the gradient from decaying across many steps — the problem they were designed to solve." },
       { slug: "backpropagation", importance: "supporting", note: "Training is still backpropagation through the unrolled sequence." },
       { slug: "matrix-multiplication", importance: "supporting", note: "Every gate is a linear transformation of the input and previous state." }
-    ]
+    ],
+    math: {
+      intro: "An LSTM adds a second state that is updated by addition rather than by a matrix, which is what lets information survive many steps.",
+      formulas: [
+        {
+          label: "Gates",
+          expression: "f_t = σ(W_f · [h_{t−1}, x_t])\ni_t = σ(W_i · [h_{t−1}, x_t])\no_t = σ(W_o · [h_{t−1}, x_t])",
+          note: "Three sigmoids, each producing values in [0, 1] that act as soft switches: how much to forget, how much to write, how much to read out."
+        },
+        {
+          label: "Cell and hidden state",
+          expression: "c_t = f_t ⊙ c_{t−1} + i_t ⊙ tanh(W_c · [h_{t−1}, x_t])\nh_t = o_t ⊙ tanh(c_t)",
+          note: "The cell update is a gated addition, so ∂c_t/∂c_{t−1} is f_t rather than a weight matrix. With the forget gate near one the gradient passes almost unchanged — that additive path, not the gates themselves, is what solves the vanishing gradient."
+        }
+      ]
+    }
   },
   {
     slug: "transformer", acronym: "Transformer", name: "Transformer Architecture", category: "architectures",
@@ -498,7 +543,22 @@ window.AI_CONCEPTS = [
       { slug: "probability-distributions", importance: "primary", note: "Routing weights form a distribution; load-balancing terms are added to stop it collapsing onto a few experts." },
       { slug: "matrix-multiplication", importance: "supporting", note: "Each expert is an ordinary feed-forward block of matrix multiplications." },
       { slug: "gradient-descent", importance: "supporting", note: "Router and experts are trained jointly, which is what makes balanced routing genuinely hard." }
-    ]
+    ],
+    math: {
+      intro: "Every token is routed to a few experts out of many, so total capacity grows without the cost of using all of it.",
+      formulas: [
+        {
+          label: "Top-k routing",
+          expression: "g = softmax(W_r x),   E = TopK(g, k),   y = Σ_{i∈E} g_i · f_i(x)",
+          note: "The router scores every expert, the top k are chosen, and their outputs are blended by those same scores. With 64 experts and k = 2, a token touches about 3% of the parameters — the reason a trillion-parameter model can be affordable to run."
+        },
+        {
+          label: "Load-balancing loss",
+          expression: "L_aux = N · Σ_i  f_i · P_i",
+          note: "f_i is the fraction of tokens routed to expert i and P_i the mean gate probability for it. Left alone, routing collapses onto a handful of experts and the rest never train; this term is minimised when the load is even, and it is added to the main loss rather than replacing it."
+        }
+      ]
+    }
   },
   {
     slug: "gan", acronym: "GAN", name: "Generative Adversarial Network", category: "architectures",
@@ -514,7 +574,22 @@ window.AI_CONCEPTS = [
       { slug: "loss-functions", importance: "primary", note: "The adversarial objective is a minimax game between two networks with opposing losses." },
       { slug: "sampling", importance: "supporting", note: "Generation is decoding a random latent draw." },
       { slug: "gradient-descent", importance: "supporting", note: "Both networks are updated by gradient steps against each other, which is why training can oscillate rather than converge." }
-    ]
+    ],
+    math: {
+      intro: "A GAN trains two networks against each other: one to produce samples, one to tell them from real data.",
+      formulas: [
+        {
+          label: "Minimax objective",
+          expression: "min_G max_D  E_x[ log D(x) ] + E_z[ log(1 − D(G(z))) ]",
+          note: "D is rewarded for scoring real data high and generated data low; G is rewarded for the opposite. At the optimum D cannot do better than 0.5 everywhere, which is the formal statement of the generated distribution matching the real one."
+        },
+        {
+          label: "Non-saturating generator loss",
+          expression: "L_G = − E_z[ log D(G(z)) ]",
+          note: "The minimax form gives G almost no gradient early on, when D rejects everything confidently. Flipping the sign rather than negating the original is what makes training start at all — a small change that is the difference between working and not."
+        }
+      ]
+    }
   },
   {
     slug: "vae", acronym: "VAE", name: "Variational Autoencoder", category: "architectures",
@@ -531,7 +606,22 @@ window.AI_CONCEPTS = [
       { slug: "sampling", importance: "primary", note: "Generation draws a latent sample and decodes it." },
       { slug: "latent-space", importance: "supporting", note: "The structured latent space is the object of interest, not just an intermediate." },
       { slug: "loss-functions", importance: "supporting", note: "Training balances reconstruction quality against that KL term." }
-    ]
+    ],
+    math: {
+      intro: "A VAE cannot maximise the likelihood of its data directly, so it maximises a bound on it — and that bound splits cleanly into reconstruct well and stay close to the prior.",
+      formulas: [
+        {
+          label: "Evidence lower bound",
+          expression: "L = E_q[ log p(x | z) ] − D_KL( q(z | x) ‖ p(z) )",
+          note: "The first term rewards decoding z back into x. The second penalises an encoder that strays from the prior p(z), usually a standard normal. The tension between them is the entire model: drop the KL term and you have an ordinary autoencoder that cannot generate."
+        },
+        {
+          label: "Reparameterisation",
+          expression: "z = μ(x) + σ(x) ⊙ ε,   ε ~ N(0, I)",
+          note: "Sampling is not differentiable, so the randomness is moved into ε, which carries no parameters. Gradients now flow through μ and σ — without this trick the encoder could not be trained at all."
+        }
+      ]
+    }
   },
   {
     slug: "diffusion", acronym: "Diffusion", name: "Diffusion Model", category: "architectures",
@@ -716,7 +806,22 @@ window.AI_CONCEPTS = [
       { slug: "loss-functions", importance: "primary", note: "The contrastive loss has no fixed target — it only requires the match to outrank the alternatives." },
       { slug: "softmax", importance: "supporting", note: "Scores across the batch are turned into a distribution, with a temperature setting how sharply." },
       { slug: "vector-spaces", importance: "supporting", note: "The result is a shared space where proximity means relatedness, across modalities if trained that way." }
-    ]
+    ],
+    math: {
+      intro: "The model is never told what an example is, only which other example it belongs with.",
+      formulas: [
+        {
+          label: "InfoNCE loss",
+          expression: "L = − log  exp(sim(a, b⁺) / τ) / Σ_j exp(sim(a, b_j) / τ)",
+          note: "Read the fraction as a softmax over the batch: the true pair must outscore every other candidate. There is no target value anywhere — only an ordering."
+        },
+        {
+          label: "Similarity and temperature",
+          expression: "sim(a, b) = aᵀb / (‖a‖ ‖b‖)",
+          note: "Cosine similarity, so length carries no meaning. τ sets how sharply the loss separates: small τ punishes near-misses hard and is what forces fine distinctions rather than coarse clustering."
+        }
+      ]
+    }
   },
   {
     slug: "rlhf", acronym: "RLHF", name: "Reinforcement Learning from Human Feedback", category: "training",
@@ -733,7 +838,22 @@ window.AI_CONCEPTS = [
       { slug: "kl-divergence", importance: "primary", note: "A KL penalty against the original model keeps preference training from destroying base capability." },
       { slug: "loss-functions", importance: "supporting", note: "The reward model is fitted with a preference loss over ranked pairs." },
       { slug: "gradient-descent", importance: "supporting", note: "Both the reward model and the policy are trained by gradient methods." }
-    ]
+    ],
+    math: {
+      intro: "Human comparisons are turned into a reward function, and the model is then optimised against it without being allowed to drift away from what it already knew.",
+      formulas: [
+        {
+          label: "Preference model",
+          expression: "P(b ≻ a) = σ( r(b) − r(a) )",
+          note: "The Bradley–Terry model: only the difference in reward matters, so r is learned up to an additive constant. Fitting it to ranked pairs is ordinary logistic regression."
+        },
+        {
+          label: "KL-penalised objective",
+          expression: "max_π  E[ r(x) ] − β · D_KL( π ‖ π_ref )",
+          note: "Maximising the learned reward alone reliably destroys the model — it finds whatever the reward model overrates. The KL term against the pre-RLHF reference is what keeps it fluent, and β is the dial between obedience and capability."
+        }
+      ]
+    }
   },
   {
     slug: "dpo", acronym: "DPO", name: "Direct Preference Optimization", category: "training",
@@ -771,7 +891,22 @@ window.AI_CONCEPTS = [
       { slug: "kl-divergence", importance: "primary", note: "The clipped objective bounds how far the updated policy may move from the previous one." },
       { slug: "probability-distributions", importance: "supporting", note: "The ratio being clipped is between the new and old probabilities of the same action." },
       { slug: "gradient-descent", importance: "supporting", note: "Updates are ordinary gradient steps on that clipped surrogate objective." }
-    ]
+    ],
+    math: {
+      intro: "PPO improves a policy while refusing to let any single update move it far from the one that collected the data.",
+      formulas: [
+        {
+          label: "Probability ratio",
+          expression: "r(θ) = π_θ(a | s) / π_old(a | s)",
+          note: "How much more likely the updated policy makes the action that was actually taken. A ratio of 1 means nothing has changed."
+        },
+        {
+          label: "Clipped surrogate objective",
+          expression: "L = E[ min( r(θ) · A ,  clip(r(θ), 1−ε, 1+ε) · A ) ]",
+          note: "A is the advantage — how much better the action turned out than expected. The min against a clipped copy is the whole method: once the ratio leaves [1−ε, 1+ε] the gradient goes flat, so a single step cannot be rewarded for moving further. ε is typically 0.2."
+        }
+      ]
+    }
   },
   {
     slug: "distillation", acronym: "Distillation", name: "Knowledge Distillation", category: "training",
@@ -787,7 +922,22 @@ window.AI_CONCEPTS = [
       { slug: "softmax", importance: "primary", note: "A raised temperature softens the teacher's softmax so the ranking among wrong answers still carries signal." },
       { slug: "cross-entropy", importance: "primary", note: "The soft-target loss is cross-entropy against a full distribution rather than a single label." },
       { slug: "probability-distributions", importance: "supporting", note: "What transfers is the shape of the teacher's belief, not only its top answer." }
-    ]
+    ],
+    math: {
+      intro: "The student learns from the teacher's whole distribution, not just the answer it happened to pick.",
+      formulas: [
+        {
+          label: "Softened distribution",
+          expression: "p_i = exp(z_i / T) / Σ_j exp(z_j / T)",
+          note: "Dividing logits by a temperature T above 1 flattens the softmax. At T = 1 a confident teacher says almost nothing beyond its top answer; at T = 4 the relative ranking of the wrong answers becomes visible, and that ranking is the extra signal being transferred."
+        },
+        {
+          label: "Distillation loss",
+          expression: "L = α · T² · D_KL( p_teacher ‖ p_student ) + (1 − α) · H( y, p_student )",
+          note: "A weighted sum of matching the teacher and matching the true label. The T² factor restores the gradient magnitude, which softening otherwise scales down by roughly 1/T² — without it the soft term quietly stops contributing as T rises."
+        }
+      ]
+    }
   },
 
   {

@@ -754,6 +754,31 @@ window.ATLAS_I18N = (() => {
         }
       }
 
+      /* A `math` block is prose wrapped around an equation. `intro`, and each
+         formula's `label` and `note`, are translated; `expression` never is —
+         W' = W_0 + B A reads the same in every language, and translating it
+         would be as wrong as translating ∇. The formula list is positional, so
+         the overlay must match the English length exactly or it is ignored. */
+      if (item.math && Array.isArray(item.math.formulas)) {
+        const patchMath = patch?.math;
+        const sameLength = Array.isArray(patchMath?.formulas)
+          && patchMath.formulas.length === item.math.formulas.length;
+        if (patchMath && sameLength) {
+          copy.math = {
+            ...item.math,
+            intro: patchMath.intro || item.math.intro,
+            formulas: item.math.formulas.map((f, i) => ({
+              ...f,
+              label: patchMath.formulas[i]?.label || f.label,
+              note: patchMath.formulas[i]?.note || f.note
+            }))
+          };
+          untranslated.delete("math");
+        } else {
+          untranslated.add("math");
+        }
+      }
+
       if (Array.isArray(item.mathFoundations) && item.mathFoundations.length) {
         const notes = patch?.foundations;
         const withNotes = item.mathFoundations.filter((link) => link.note);

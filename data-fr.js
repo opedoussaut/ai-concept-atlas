@@ -146,6 +146,17 @@ window.AI_CONCEPTS_FR = {
       "cross-entropy": "L’entraînement minimise la log-probabilité négative attribuée au token qui a réellement suivi.",
       "maximum-likelihood": "Cette perte est une estimation par maximum de vraisemblance sur le corpus, écrite sous forme logarithmique.",
       "sampling": "Le décodage — glouton, à température, top-k, top-p — est un choix sur la façon d’échantillonner dans la distribution obtenue."
+    },
+    math: {
+      intro: "Prédire un token à la fois factorise la probabilité de toute une séquence en un produit de probabilités conditionnelles.",
+      formulas: [
+        { label: "Factorisation autorégressive",
+          note: "La règle de chaînage des probabilités. Une loi jointe intraitable sur des documents entiers devient une suite de prédictions à un pas, dont chacune tient en une seule passe avant." },
+        { label: "Des scores aux probabilités",
+          note: "Le modèle émet un logit z par entrée du vocabulaire ; le softmax les convertit en distribution. La température, le top-k et le top-p remodèlent tous cette étape." },
+        { label: "Perte d’entraînement",
+          note: "Entropie croisée contre le token réellement apparu — de façon équivalente, maximum de vraisemblance sur le corpus. La perplexité vaut exp(L)." }
+      ]
     }
   },
 
@@ -175,6 +186,15 @@ window.AI_CONCEPTS_FR = {
       "matrix-multiplication": "La convolution s’implémente comme une multiplication matricielle sur des patches d’entrée dépliés.",
       "gradients": "Les poids de filtre partagés accumulent les contributions de gradient de toutes les positions où ils ont été appliqués.",
       "backpropagation": "Ce partage de poids est ce qui rend une couche convolutive économe en paramètres tout en restant entraînable de bout en bout."
+    },
+    math: {
+      intro: "Une couche convolutive applique le même petit filtre partout, ce qui la rend à la fois économe en paramètres et équivariante par translation.",
+      formulas: [
+        { label: "Convolution 2-D discrète",
+          note: "Un filtre w glisse sur toute l’entrée. Les mêmes poids sont réutilisés à chaque position : un filtre 3 × 3 a donc neuf paramètres que l’image fasse 32 ou 4096 pixels de large — et un motif appris dans un coin est reconnu dans tous les autres." },
+        { label: "Taille de sortie",
+          note: "k est la taille du noyau, p le remplissage, s le pas. C’est l’arithmétique derrière presque toute erreur de forme en code de vision, et derrière le champ récepteur : empiler des couches agrandit la région d’entrée qu’une valeur de sortie peut voir." }
+      ]
     }
   },
   rnn: {
@@ -189,6 +209,15 @@ window.AI_CONCEPTS_FR = {
       "gradients": "Cette longue chaîne de facteurs est exactement la raison pour laquelle les gradients s’évanouissent ou explosent avec la longueur de séquence.",
       "matrix-multiplication": "Chaque pas applique les mêmes matrices de poids à l’état et à la nouvelle entrée.",
       "state-space-models": "Une récurrence linéaire est un modèle à espace d’états, ce qui a permis de rendre l’idée de nouveau entraînable en parallèle."
+    },
+    math: {
+      intro: "Un réseau récurrent propage un seul état caché et applique la même transformation à chaque pas.",
+      formulas: [
+        { label: "Mise à jour récurrente",
+          note: "W_h et W_x sont partagées entre tous les pas : le réseau traite donc n’importe quelle longueur de séquence à nombre de paramètres fixe. Tout ce que le modèle sait du passé doit tenir dans h_t." },
+        { label: "Gradient dans le temps",
+          note: "Un produit de t termes. Si les facteurs restent constamment sous un, le gradient s’évanouit ; au-dessus de un, il explose. Cette seule expression explique pourquoi les RNN simples échouent sur les longues séquences et pourquoi les architectures à portes existent." }
+      ]
     }
   },
   lstm: {
@@ -202,6 +231,15 @@ window.AI_CONCEPTS_FR = {
       "gradients": "Les portes existent pour empêcher le gradient de décroître sur de nombreux pas — le problème même qu’elles ont été conçues pour résoudre.",
       "backpropagation": "L’entraînement reste une rétropropagation dans la séquence déroulée.",
       "matrix-multiplication": "Chaque porte est une transformation linéaire de l’entrée et de l’état précédent."
+    },
+    math: {
+      intro: "Un LSTM ajoute un second état mis à jour par addition plutôt que par une matrice, ce qui permet à l’information de survivre à de nombreux pas.",
+      formulas: [
+        { label: "Portes",
+          note: "Trois sigmoïdes, produisant chacune des valeurs dans [0, 1] qui agissent comme des interrupteurs progressifs : combien oublier, combien écrire, combien relire." },
+        { label: "État de cellule et état caché",
+          note: "La mise à jour de la cellule est une addition contrôlée par une porte : ∂c_t/∂c_{t−1} vaut donc f_t et non une matrice de poids. Avec la porte d’oubli proche de un, le gradient passe presque inchangé — c’est ce chemin additif, et non les portes elles-mêmes, qui résout l’évanouissement du gradient." }
+      ]
     }
   },
   transformer: {
@@ -217,6 +255,15 @@ window.AI_CONCEPTS_FR = {
       "vector-norms": "La normalisation de couche remet chaque représentation à l’échelle selon ses propres statistiques pour garder les activations exploitables.",
       "backpropagation": "Les gradients remontent à travers chaque couche ; les connexions résiduelles existent pour empêcher ce chemin de s’évanouir.",
       "gradient-descent": "Entraîner la pile est une descente de gradient ordinaire, à très grande échelle."
+    },
+    math: {
+      intro: "L’attention par produit scalaire mis à l’échelle est l’opération centrale. Les requêtes sont confrontées aux clés pour produire des poids sur les valeurs.",
+      formulas: [
+        { label: "Attention par produit scalaire mis à l’échelle",
+          note: "Q, K et V sont les matrices de requêtes, de clés et de valeurs. d_k est la dimension des clés ; diviser par √d_k empêche les produits scalaires de croître avec la dimension et de saturer le softmax." },
+        { label: "Attention multi-têtes",
+          note: "Chaque tête projette dans son propre sous-espace, si bien que le modèle peut prêter attention à plusieurs types de relation à la fois." }
+      ]
     }
   },
   attention: {
@@ -232,6 +279,17 @@ window.AI_CONCEPTS_FR = {
       "vector-spaces": "Requêtes, clés et valeurs sont des projections dans des sous-espaces appris distincts d’une même représentation.",
       "probability-distributions": "Les poids d’attention d’une position forment une distribution sur toute la séquence.",
       "basis-projection": "Requêtes, clés et valeurs sont trois projections apprises d’une même représentation dans des bases distinctes."
+    },
+    math: {
+      intro: "L’attention est une moyenne pondérée de valeurs, où les poids viennent de la correspondance entre chaque requête et chaque clé.",
+      formulas: [
+        { label: "Attention par produit scalaire mis à l’échelle",
+          note: "Q Kᵀ confronte chaque requête à chaque clé par un produit scalaire. Diviser par √d_k empêche ces scores de croître avec la dimension et de saturer le softmax. Le softmax les transforme en poids de somme un, et V est moyenné selon ces poids." },
+        { label: "Une position, écrite en toutes lettres",
+          note: "αᵢⱼ est la part d’attention que la position i porte à la position j. Tout le mécanisme est un produit scalaire pour la pertinence, un softmax pour la normalisation et une somme pondérée pour le résultat." },
+        { label: "Coût en longueur de séquence",
+          note: "Chaque position est comparée à toutes les autres : le coût croît donc avec le carré de la longueur de séquence. C’est la raison pour laquelle un long contexte coûte cher et pour laquelle le cache KV existe." }
+      ]
     }
   },
   "activation-function": {
@@ -245,6 +303,15 @@ window.AI_CONCEPTS_FR = {
       "backpropagation": "La règle de chaînage multiplie une dérivée d’activation par couche : un choix saturant fait donc s’évanouir les gradients avec la profondeur.",
       "numerical-stability": "Les exponentielles de la sigmoïde et de GELU demandent des précautions en basse précision, d’où des noyaux fusionnés qui les calculent dans un format plus large.",
       "matrix-multiplication": "L’activation s’intercale entre deux multiplications matricielles ; une variante à porte exige une troisième projection, ce qui explique que les largeurs cachées soient rognées en compensation."
+    },
+    math: {
+      intro: "Une activation se choisit autant pour la forme de sa dérivée que pour la sienne propre, car c’est cette dérivée qui se multiplie dans tous les gradients situés derrière elle.",
+      formulas: [
+        { label: "Trois activations courantes",
+          note: "Toutes trois laissent les grandes valeurs positives à peu près intactes et rétrécissent les négatives. ReLU les supprime purement, ce qui donne une dérivée exactement nulle — une unité poussée là cesse d’apprendre. SiLU et GELU conservent une petite queue négative, si bien que le gradient ne s’annule jamais complètement." },
+        { label: "Unité linéaire à porte (SwiGLU)",
+          note: "⊙ est la multiplication terme à terme. Deux projections sont calculées au lieu d’une : W₂ porte le contenu et W₁ produit une porte qui le module. La largeur cachée est en général ramenée à environ deux tiers pour que le nombre de paramètres égale celui d’un bloc sans porte." }
+      ]
     }
   },
   "layer-normalization": {
@@ -258,6 +325,15 @@ window.AI_CONCEPTS_FR = {
       "numerical-stability": "L’ε du dénominateur n’existe que pour empêcher une division par une norme quasi nulle ; c’est la différence entre un modèle stable et un entraînement plein de NaN.",
       "gradients": "Normaliser remodèle la surface de perte de sorte que la magnitude du gradient cesse de dépendre de l’échelle des activations entrantes.",
       "probability-distributions": "Moyenne et variance sur les caractéristiques sont les seules statistiques utilisées — un résumé volontairement grossier qui se révèle suffisant."
+    },
+    math: {
+      intro: "Les deux variantes divisent un vecteur par une mesure de sa propre taille. Elles ne diffèrent que sur le retrait préalable de la moyenne.",
+      formulas: [
+        { label: "Normalisation de couche",
+          note: "Les statistiques sont prises sur les d caractéristiques d’un token, non sur le lot — d’où un comportement identique à une taille de lot de un comme de mille. γ et β sont appris, si bien que la couche peut défaire la normalisation si cela se révèle utile." },
+        { label: "Normalisation RMS",
+          note: "Ni soustraction de la moyenne ni terme de décalage. C’est ‖x‖₂ divisé par √d : l’opération est donc une simple remise à une longueur fixe. ε éloigne le dénominateur de zéro lorsqu’un vecteur est presque vide." }
+      ]
     }
   },
   "residual-connection": {
@@ -270,6 +346,13 @@ window.AI_CONCEPTS_FR = {
       "backpropagation": "La dérivée de x + f(x) contient un terme identité : la règle de chaînage dispose donc toujours d’un chemin non atténué vers les couches antérieures.",
       "gradients": "L’évanouissement du gradient avec la profondeur est précisément le problème que les connexions résiduelles ont été introduites pour résoudre.",
       "vector-spaces": "Le flux résiduel est un espace partagé unique où chaque couche lit et écrit, ce qui rend possible le travail d’interprétabilité qui s’y appuie."
+    },
+    math: {
+      intro: "Tout l’argument tient en une dérivée. Dériver le chemin de contournement produit un terme additif que rien ne peut réduire.",
+      formulas: [
+        { label: "Bloc résiduel et son gradient",
+          note: "Le terme identité est l’essentiel. À travers L couches empilées, un réseau ordinaire multiplie L jacobiennes entre elles, et tout ce qui reste constamment sous un s’effondre ; un réseau résiduel multiplie des termes de la forme (I + ∂f/∂x), si bien qu’un chemin de gradient de force un survit toujours jusqu’en bas." }
+      ]
     }
   },
   "positional-encoding": {
@@ -283,6 +366,15 @@ window.AI_CONCEPTS_FR = {
       "basis-projection": "L’embedding est découpé en sous-espaces de dimension deux, chacun tourné dans son propre plan à sa propre fréquence.",
       "matrix-multiplication": "La rotation est une matrice orthogonale diagonale par blocs, appliquée en pratique comme un simple échange par paires plutôt qu’une multiplication complète.",
       "vector-spaces": "La position devient une propriété géométrique de la direction d’un vecteur, non une caractéristique ajoutée à côté."
+    },
+    math: {
+      intro: "L’encodage rotatif fonctionne parce qu’une rotation préserve les produits scalaires. Faites tourner les deux côtés de leur propre position et seul l’écart entre eux subsiste.",
+      formulas: [
+        { label: "Rotation selon la position",
+          note: "L’embedding est découpé en d/2 paires de coordonnées, chaque paire étant tournée dans son propre plan, avec θ décroissant d’une paire à l’autre pour que les paires tournent à des rythmes différents — les rapides distinguent les tokens voisins, les lentes portent la position à longue portée." },
+        { label: "Pourquoi le score devient relatif",
+          note: "R est orthogonale, donc R_mᵀ R_n = R_{n−m}. Les positions absolues s’annulent et seul n − m demeure : deux tokens distants de dix obtiennent le même score qu’ils soient aux positions 5 et 15 ou 5005 et 5015." }
+      ]
     }
   },
   "linear-attention": {
@@ -297,6 +389,15 @@ window.AI_CONCEPTS_FR = {
       "matrix-rank": "Un état d × d ne peut porter que d directions indépendantes ; au-delà, les associations interfèrent. C’est le coût exact de l’abandon du softmax.",
       "state-space-models": "Écrite comme une récurrence, une couche d’attention linéaire est un modèle à espace d’états dont l’état est une matrice.",
       "dot-product": "Relire l’état reste un produit scalaire entre une requête et ce qui a été stocké dans chaque direction de clé."
+    },
+    math: {
+      intro: "Un seul déplacement d’associativité constitue toute l’idée. La multiplication matricielle permet de bouger les parenthèses, et le terme quadratique disparaît avec elles.",
+      formulas: [
+        { label: "Déplacer les parenthèses",
+          note: "φ est une transformation de caractéristiques appliquée séparément aux requêtes et aux clés — ELU + 1 dans la version d’origine, pour que les scores restent positifs. Une fois le softmax retiré d’entre les deux, le produit peut être réassocié. La matrice de scores n × n n’est jamais formée, et l’intermédiaire dépend de la largeur du modèle, non de la longueur de séquence." },
+        { label: "La forme récurrente",
+          note: "Lue de gauche à droite, c’est un réseau récurrent dont l’état est une matrice : chaque token ajoute un produit extérieur et rien n’est jamais retiré. Ce budget fixe de d × d est le compromis — dès que plus d’associations sont écrites que l’état ne peut en séparer, elles commencent à interférer, ce que la règle delta et les variantes à porte ont été introduites pour gérer." }
+      ]
     }
   },
   ssm: {
@@ -376,6 +477,15 @@ window.AI_CONCEPTS_FR = {
       "probability-distributions": "Les poids de routage forment une distribution ; des termes d’équilibrage de charge sont ajoutés pour l’empêcher de se replier sur quelques experts.",
       "matrix-multiplication": "Chaque expert est un bloc feed-forward ordinaire de multiplications matricielles.",
       "gradient-descent": "Routeur et experts sont entraînés conjointement, ce qui rend l’équilibrage du routage réellement difficile."
+    },
+    math: {
+      intro: "Chaque token est acheminé vers quelques experts parmi beaucoup, si bien que la capacité totale croît sans le coût de l’utiliser entièrement.",
+      formulas: [
+        { label: "Routage top-k",
+          note: "Le routeur note chaque expert, les k premiers sont retenus, et leurs sorties sont mélangées selon ces mêmes scores. Avec 64 experts et k = 2, un token touche environ 3 % des paramètres — la raison pour laquelle un modèle à mille milliards de paramètres peut rester abordable à exécuter." },
+        { label: "Perte d’équilibrage de charge",
+          note: "f_i est la fraction de tokens acheminés vers l’expert i et P_i la probabilité moyenne de porte pour lui. Laissé à lui-même, le routage se replie sur une poignée d’experts et les autres ne s’entraînent jamais ; ce terme est minimal quand la charge est répartie, et il s’ajoute à la perte principale plutôt que de la remplacer." }
+      ]
     }
   },
   gan: {
@@ -389,6 +499,15 @@ window.AI_CONCEPTS_FR = {
       "loss-functions": "L’objectif antagoniste est un jeu minimax entre deux réseaux aux pertes opposées.",
       "sampling": "La génération consiste à décoder un tirage latent aléatoire.",
       "gradient-descent": "Les deux réseaux sont mis à jour par pas de gradient l’un contre l’autre, d’où un entraînement qui peut osciller au lieu de converger."
+    },
+    math: {
+      intro: "Un GAN entraîne deux réseaux l’un contre l’autre : l’un pour produire des échantillons, l’autre pour les distinguer des données réelles.",
+      formulas: [
+        { label: "Objectif minimax",
+          note: "D est récompensé lorsqu’il note haut les données réelles et bas les données générées ; G l’est pour l’inverse. À l’optimum, D ne peut faire mieux que 0,5 partout, ce qui est l’énoncé formel de l’égalité entre distribution générée et distribution réelle." },
+        { label: "Perte non saturante du générateur",
+          note: "La forme minimax ne donne presque aucun gradient à G au début, quand D rejette tout avec assurance. Inverser le signe plutôt que de nier l’original est ce qui permet à l’entraînement de démarrer — un petit changement qui fait la différence entre fonctionner et ne pas fonctionner." }
+      ]
     }
   },
   vae: {
@@ -403,6 +522,15 @@ window.AI_CONCEPTS_FR = {
       "sampling": "La génération tire un échantillon latent et le décode.",
       "latent-space": "L’espace latent structuré est l’objet d’intérêt, non un simple intermédiaire.",
       "loss-functions": "L’entraînement arbitre entre qualité de reconstruction et ce terme KL."
+    },
+    math: {
+      intro: "Un VAE ne peut pas maximiser directement la vraisemblance de ses données : il maximise donc une borne, et cette borne se scinde nettement en bien reconstruire et rester proche de l’a priori.",
+      formulas: [
+        { label: "Borne inférieure de l’évidence",
+          note: "Le premier terme récompense le décodage de z vers x. Le second pénalise un encodeur qui s’écarte de l’a priori p(z), en général une normale centrée réduite. La tension entre les deux est tout le modèle : retirez le terme KL et vous avez un auto-encodeur ordinaire, incapable de générer." },
+        { label: "Reparamétrisation",
+          note: "L’échantillonnage n’est pas dérivable : le hasard est donc déplacé dans ε, qui ne porte aucun paramètre. Les gradients passent désormais par μ et σ — sans cette astuce l’encodeur ne pourrait pas être entraîné du tout." }
+      ]
     }
   },
   diffusion: {
@@ -417,6 +545,17 @@ window.AI_CONCEPTS_FR = {
       "loss-functions": "Le modèle est entraîné à prédire le bruit ajouté, évalué par erreur quadratique.",
       "gradients": "Les formulations par score le disent explicitement : le réseau estime le gradient de la log-densité.",
       "dynamical-systems": "La boucle d’échantillonnage est la discrétisation d’un processus continu, ce qui a permis de dériver des solveurs plus rapides."
+    },
+    math: {
+      intro: "Un modèle de diffusion apprend à inverser un processus de bruitage fixé.",
+      formulas: [
+        { label: "Processus direct (bruitage)",
+          note: "β_t est le calendrier de variance. Du bruit est ajouté sur T étapes jusqu’à ce que l’échantillon soit approximativement gaussien standard." },
+        { label: "Forme close à une étape quelconque",
+          note: "N’importe quelle étape bruitée peut être échantillonnée directement depuis l’image propre, ce qui rend l’entraînement traitable." },
+        { label: "Objectif d’entraînement",
+          note: "Le réseau ε_θ prédit le bruit ajouté ; la génération remonte ensuite cette prédiction à rebours depuis du bruit pur." }
+      ]
     }
   },
   jepa: {
@@ -516,6 +655,15 @@ window.AI_CONCEPTS_FR = {
       "vector-spaces": "Choisir le rang r confine la mise à jour à un sous-espace de dimension r parmi tous les changements possibles.",
       "gradient-descent": "Seuls B et A reçoivent des gradients ; l’optimiseur est par ailleurs inchangé.",
       "singular-value-decomposition": "La meilleure approximation de rang r d’une matrice est sa SVD tronquée, ce qui rend un petit r défendable plutôt qu’arbitraire."
+    },
+    math: {
+      intro: "LoRA gèle les poids pré-entraînés et apprend à côté une mise à jour de rang faible.",
+      formulas: [
+        { label: "Mise à jour de poids de rang faible",
+          note: "W_0 est gelée. B est de forme d x r, A de forme r x k, et le rang r est très inférieur à min(d, k) : seuls r(d + k) paramètres sont entraînés au lieu de d x k." },
+        { label: "Passe avant avec mise à l’échelle",
+          note: "α est un facteur d’échelle constant. A est initialisée aléatoirement et B à zéro, si bien que ΔW part de zéro et que l’entraînement commence exactement depuis le modèle pré-entraîné." }
+      ]
     }
   },
   qlora: {
@@ -544,6 +692,15 @@ window.AI_CONCEPTS_FR = {
       "loss-functions": "La perte contrastive n’a pas de cible fixe — elle exige seulement que la correspondance devance les alternatives.",
       "softmax": "Les scores du lot sont convertis en distribution, une température réglant la netteté.",
       "vector-spaces": "Le résultat est un espace partagé où la proximité signifie la parenté, entre modalités si l’entraînement le prévoit."
+    },
+    math: {
+      intro: "On ne dit jamais au modèle ce qu’est un exemple, seulement avec quel autre exemple il va.",
+      formulas: [
+        { label: "Perte InfoNCE",
+          note: "Lisez la fraction comme un softmax sur le lot : la vraie paire doit devancer tous les autres candidats. Il n’y a aucune valeur cible nulle part — seulement un ordre." },
+        { label: "Similarité et température",
+          note: "Similarité cosinus : la longueur ne porte donc aucun sens. τ règle la netteté de la séparation ; un τ petit sanctionne durement les quasi-erreurs et c’est ce qui force des distinctions fines plutôt qu’un regroupement grossier." }
+      ]
     }
   },
   rlhf: {
@@ -558,6 +715,15 @@ window.AI_CONCEPTS_FR = {
       "kl-divergence": "Une pénalité KL contre le modèle d’origine empêche l’entraînement sur préférences de détruire la capacité de base.",
       "loss-functions": "Le modèle de récompense est ajusté par une perte de préférence sur des paires classées.",
       "gradient-descent": "Le modèle de récompense comme la politique sont entraînés par des méthodes de gradient."
+    },
+    math: {
+      intro: "Les comparaisons humaines sont converties en fonction de récompense, puis le modèle est optimisé contre elle sans avoir le droit de s’éloigner de ce qu’il savait déjà.",
+      formulas: [
+        { label: "Modèle de préférence",
+          note: "Le modèle de Bradley–Terry : seule la différence de récompense compte, si bien que r est appris à une constante additive près. L’ajuster sur des paires classées est une régression logistique ordinaire." },
+        { label: "Objectif pénalisé par une KL",
+          note: "Maximiser la seule récompense apprise détruit le modèle de façon fiable — il trouve tout ce que le modèle de récompense surévalue. Le terme KL contre la référence d’avant RLHF est ce qui le garde fluide, et β est le curseur entre obéissance et capacité." }
+      ]
     }
   },
   dpo: {
@@ -571,6 +737,13 @@ window.AI_CONCEPTS_FR = {
       "kl-divergence": "DPO se dérive d’un objectif contraint par une KL ; cette contrainte est exactement ce qui donne sa forme close.",
       "loss-functions": "Il en résulte une unique perte de type classification sur des paires de préférence, sans modèle de récompense séparé.",
       "maximum-likelihood": "Ajuster cette perte revient à un maximum de vraisemblance sur les préférences observées."
+    },
+    math: {
+      intro: "DPO optimise un objectif de préférence directement sur la politique, sans modèle de récompense séparé ni boucle d’apprentissage par renforcement.",
+      formulas: [
+        { label: "Perte d’optimisation directe des préférences",
+          note: "y_w est la réponse préférée et y_l la réponse rejetée. π_ref est le modèle de référence gelé, σ la fonction logistique, et β règle l’ampleur de la dérive autorisée par rapport à la référence." }
+      ]
     }
   },
   ppo: {
@@ -584,6 +757,15 @@ window.AI_CONCEPTS_FR = {
       "kl-divergence": "L’objectif écrêté borne l’écart entre la politique mise à jour et la précédente.",
       "probability-distributions": "Le rapport que l’on écrête est celui des probabilités nouvelle et ancienne de la même action.",
       "gradient-descent": "Les mises à jour sont des pas de gradient ordinaires sur cet objectif de substitution écrêté."
+    },
+    math: {
+      intro: "PPO améliore une politique tout en refusant qu’une seule mise à jour l’éloigne beaucoup de celle qui a collecté les données.",
+      formulas: [
+        { label: "Rapport de probabilité",
+          note: "De combien la politique mise à jour rend plus probable l’action réellement entreprise. Un rapport de 1 signifie que rien n’a changé." },
+        { label: "Objectif de substitution écrêté",
+          note: "A est l’avantage — de combien l’action s’est révélée meilleure que prévu. Le minimum face à une copie écrêtée est toute la méthode : dès que le rapport sort de [1−ε, 1+ε] le gradient devient plat, si bien qu’un pas unique ne peut être récompensé d’aller plus loin. ε vaut typiquement 0,2." }
+      ]
     }
   },
   distillation: {
@@ -597,6 +779,15 @@ window.AI_CONCEPTS_FR = {
       "softmax": "Une température relevée adoucit le softmax de l’enseignant pour que le classement entre mauvaises réponses porte encore du signal.",
       "cross-entropy": "La perte sur cibles douces est une entropie croisée contre une distribution complète plutôt qu’une étiquette unique.",
       "probability-distributions": "Ce qui se transfère est la forme de la croyance de l’enseignant, non seulement sa meilleure réponse."
+    },
+    math: {
+      intro: "L’élève apprend de toute la distribution de l’enseignant, non de la seule réponse qu’il a retenue.",
+      formulas: [
+        { label: "Distribution adoucie",
+          note: "Diviser les logits par une température T supérieure à 1 aplatit le softmax. À T = 1, un enseignant sûr de lui ne dit presque rien au-delà de sa meilleure réponse ; à T = 4, le classement relatif des mauvaises réponses devient visible, et ce classement est le signal supplémentaire transféré." },
+        { label: "Perte de distillation",
+          note: "Une somme pondérée entre épouser l’enseignant et épouser la vraie étiquette. Le facteur T² restitue la magnitude du gradient, que l’adoucissement réduirait sinon d’environ 1/T² — sans lui, le terme doux cesse discrètement de contribuer à mesure que T monte." }
+      ]
     }
   },
 
@@ -642,6 +833,15 @@ window.AI_CONCEPTS_FR = {
       "latent-space": "L’espace d’embeddings est un espace latent appris : ses axes sont inventés par l’entraînement, non conçus.",
       "vector-norms": "La longueur porte la magnitude plutôt que le sens, d’où la normalisation habituelle des embeddings avant comparaison.",
       "basis-projection": "Un embedding est un jeu de coordonnées sur des directions apprises ; les comparer relève de l’arithmétique de projection."
+    },
+    math: {
+      intro: "Les embeddings placent des éléments dans un espace vectoriel où la proximité géométrique tient lieu de similarité sémantique.",
+      formulas: [
+        { label: "Similarité cosinus",
+          note: "Varie de -1 à 1. Comme elle ignore la magnitude et ne compare que la direction, c’est le choix habituel pour comparer des embeddings de texte." },
+        { label: "Distance euclidienne",
+          note: "Sur des vecteurs normalisés en L2, distance euclidienne et similarité cosinus classent les résultats de façon identique : d² = 2(1 − cos)." }
+      ]
     }
   },
   "vector-db": {
@@ -827,6 +1027,13 @@ window.AI_CONCEPTS_FR = {
       "softmax": "L’identité de remise à l’échelle en ligne, qui permet d’accumuler un softmax bloc par bloc, est le cœur mathématique de la méthode.",
       "numerical-stability": "Suivre un maximum courant et le soustraire avant d’exponentier est ce qui garde les valeurs intermédiaires représentables.",
       "matrix-multiplication": "Les blocs sont dimensionnés aux formes que les tensor cores multiplient efficacement, ce qui explique le choix des tailles de tuile."
+    },
+    math: {
+      intro: "La méthode repose sur une identité : un softmax calculé sur deux blocs peut être corrigé en le softmax de leur union, à l’aide du seul maximum courant et de la somme courante.",
+      formulas: [
+        { label: "Remettre à l’échelle un softmax partiel",
+          note: "m est le maximum courant de la ligne, ℓ la somme courante des exponentielles et O la sortie pondérée courante. Chaque nouveau bloc remet à l’échelle ce qui précède par un unique facteur, si bien que le résultat final égale le softmax sur toute la ligne. Soustraire le maximum avant d’exponentier est aussi ce qui empêche les exponentielles de déborder." }
+      ]
     }
   },
   gqa: {
@@ -852,6 +1059,13 @@ window.AI_CONCEPTS_FR = {
       "probability-distributions": "L’acceptation compare les distributions cible et brouillon token par token ; l’accélération attendue est fonction de leur écart.",
       "conditional-probability": "Chaque token proposé est conditionné par les précédents : un seul rejet invalide donc tout le reste du brouillon.",
       "kl-divergence": "La proximité entre brouillon et cible — et donc le nombre de tokens qui survivent — est précisément ce qu’optimise la distillation du brouillon depuis la cible."
+    },
+    math: {
+      intro: "L’argument de correction est l’échantillonnage par rejet. La règle d’acceptation et la règle de rééchantillonnage reproduisent ensemble exactement la distribution cible.",
+      formulas: [
+        { label: "Accepter, ou rééchantillonner le résidu",
+          note: "p est la distribution du grand modèle et q celle du brouillon. Un token que le brouillon propose trop souvent n’est accepté qu’à proportion de ce que la cible en voulait réellement ; la masse de probabilité qui survit au rejet est exactement le déficit p − q, si bien que rééchantillonner sa partie positive normalisée restitue p. Plus q est proche de p, plus de tokens sont acceptés." }
+      ]
     }
   },
   quantization: {
@@ -865,6 +1079,17 @@ window.AI_CONCEPTS_FR = {
       "rounding-error": "Chaque valeur se cale sur la plus proche représentable, avec une erreur bornée par un demi-pas.",
       "numerical-stability": "Ces erreurs se composent d’une couche à l’autre : un schéma correct sur une matrice peut malgré tout ruiner une pile entière.",
       "vector-norms": "Les facteurs d’échelle sont fixés d’après les magnitudes présentes dans chaque bloc, ce qui explique le caractère si dommageable d’un seul poids aberrant."
+    },
+    math: {
+      intro: "La quantification affine (asymétrique) envoie une plage en virgule flottante sur une petite plage d’entiers.",
+      formulas: [
+        { label: "Quantifier",
+          note: "s est l’échelle et z le point zéro, choisis pour que la plage observée de x se projette sur [q_min, q_max]. Pour l’int8, cette plage va de -128 à 127." },
+        { label: "Déquantifier",
+          note: "L’erreur de reconstruction |x − x̂| est bornée par s/2 : une plage plus étroite par tenseur, par canal ou par groupe signifie donc moins d’erreur." },
+        { label: "Échelle et point zéro",
+          note: "Les valeurs aberrantes élargissent la plage et coûtent de la précision à toutes les autres, d’où l’importance des schémas tenant compte des aberrations à l’échelle des LLM." }
+      ]
     }
   },
   pruning: {
