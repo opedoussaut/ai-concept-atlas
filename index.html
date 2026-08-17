@@ -29,13 +29,13 @@
   <meta name="twitter:image" content="https://opedoussaut.github.io/ai-concept-atlas/assets/ai-concept-map.png" />
   <title>AI Concept Atlas — From LoRA to MCP</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
-  <link rel="preload" href="assets/ai-concept-map.svg?v=2026-08-07k" as="image" type="image/svg+xml" />
+  <link rel="preload" href="assets/ai-concept-map.svg?v=2026-08-07l" as="image" type="image/svg+xml" />
   <!-- Version token on every local script and stylesheet. GitHub Pages serves
        these with max-age=600, so without it a returning visitor can get a fresh
        index.html alongside a stale app.js and see half a page. Bump the token
        whenever app.js, styles.css, data.js or math-data.js changes; the
        validator fails the build if the four ever disagree. -->
-  <link rel="stylesheet" href="styles.css?v=2026-08-07k" />
+  <link rel="stylesheet" href="styles.css?v=2026-08-07l" />
 </head>
 <body>
   <a class="skip-link" href="#atlas" data-i18n="skipLink">Skip to the atlas</a>
@@ -54,6 +54,7 @@
       <a class="ghost-button" href="#mathematics" data-i18n="navMath">Mathematics</a>
       <a class="ghost-button" href="#about" data-i18n="navAbout">About</a>
       <a class="ghost-button" href="#quiz" data-i18n="navQuiz">Dojo</a>
+      <a class="ghost-button" href="#workshop" data-i18n="navWorkshop">Workshop</a>
       <!-- Real links, not buttons: switching language is a navigation to a
            different URL, so it should be openable in a new tab, crawlable and
            bookmarkable. app.js keeps the hash in sync as the reader moves. -->
@@ -91,7 +92,7 @@
         </div>
       </div>
       <figure class="hero-visual">
-        <img src="assets/ai-concept-map.svg?v=2026-08-07k" width="1200" height="820" decoding="async"
+        <img src="assets/ai-concept-map.svg?v=2026-08-07l" width="1200" height="820" decoding="async"
              data-i18n-attr="alt:heroImageAlt"
              alt="Concept map of 87 AI terms grouped into eight domains — foundations, model architectures, training and adaptation, retrieval and knowledge, agents and orchestration, inference and optimization, multimodal AI, and evaluation, safety and reliability — arranged around a central hub encircled by the seven branches of mathematics they rest on: linear algebra, probability, information theory, optimization, numerics, graphs and dynamics." />
         <span class="visual-glow" aria-hidden="true"></span>
@@ -174,6 +175,18 @@
       <div class="dojo-invite-belts">
         <div class="belt-rack" id="dojoInviteRack" aria-hidden="true"></div>
         <p class="dojo-invite-count" data-i18n="dojoInviteBelts">Seven belts, ten dan</p>
+      </div>
+    </aside>
+
+    <aside class="dojo-invite workshop-invite" aria-labelledby="workshop-invite-title">
+      <div class="dojo-invite-copy">
+        <p class="eyebrow" data-i18n="workshopInviteEyebrow">The Workshop</p>
+        <h2 id="workshop-invite-title" data-i18n="workshopInviteTitle">Now go and build something.</h2>
+        <p data-i18n="workshopInviteBody">Places worth knowing.</p>
+        <a class="primary-button" href="#workshop" data-i18n="workshopInviteCta">Open the workshop</a>
+      </div>
+      <div class="dojo-invite-belts">
+        <div class="workshop-rack" id="workshopInviteRack" aria-hidden="true"></div>
       </div>
     </aside>
 
@@ -346,6 +359,27 @@
        </aside>
      </div>
    </article>
+   <!-- The Workshop, routed at #workshop. Rendered by app.js. -->
+   <section id="workshopView" class="workshop-view" aria-labelledby="workshopTitle" hidden>
+     <nav class="learn-back" data-i18n-attr="aria-label:breadcrumbAria" aria-label="Breadcrumb">
+       <a class="ghost-button" href="#" data-i18n="backToAtlas">← Back to the atlas</a>
+     </nav>
+     <header class="workshop-header">
+       <p class="eyebrow" data-i18n="workshopEyebrow">Where to go and actually do this</p>
+       <h1 id="workshopTitle" tabindex="-1" data-i18n="workshopTitle">The Workshop</h1>
+       <p class="learn-summary" data-i18n="workshopIntro">The atlas explains the vocabulary.</p>
+       <div class="hero-stats" data-i18n-attr="aria-label:workshopStatsAria" aria-label="Workshop statistics">
+         <span><strong id="toolCount">0</strong> <span data-i18n="statTools">places</span></span>
+         <span><strong id="toolSectionCount">0</strong> <span data-i18n="statToolSections">questions</span></span>
+       </div>
+     </header>
+     <div class="filter-row" id="workshopFilters" role="group"
+          data-i18n-attr="aria-label:workshopFiltersAria" aria-label="Filter the workshop by question"></div>
+     <p class="sr-only" id="workshopStatus" role="status" aria-live="polite"></p>
+     <div id="workshopSections"></div>
+     <p class="quiz-note workshop-footnote" data-i18n="workshopNote">Every link was checked on the date shown.</p>
+   </section>
+
    <!-- The Dojo, routed at #quiz and #quiz/dan. Rendered by app.js. -->
    <section id="quizView" class="quiz-view" aria-labelledby="quizTitle" hidden>
      <nav class="learn-back" data-i18n-attr="aria-label:breadcrumbAria" aria-label="Breadcrumb">
@@ -416,12 +450,14 @@
   <!-- Order matters: the English data publishes its globals, the French
        overlays publish theirs, i18n.js decides which language is in force, and
        app.js folds them together exactly once. -->
-  <script src="data.js?v=2026-08-07k"></script>
-  <script src="math-data.js?v=2026-08-07k"></script>
-  <script src="data-fr.js?v=2026-08-07k"></script>
-  <script src="math-data-fr.js?v=2026-08-07k"></script>
-  <script src="i18n.js?v=2026-08-07k"></script>
-  <script src="quiz.js?v=2026-08-07k"></script>
-  <script src="app.js?v=2026-08-07k"></script>
+  <script src="data.js?v=2026-08-07l"></script>
+  <script src="math-data.js?v=2026-08-07l"></script>
+  <script src="data-fr.js?v=2026-08-07l"></script>
+  <script src="math-data-fr.js?v=2026-08-07l"></script>
+  <script src="i18n.js?v=2026-08-07l"></script>
+  <script src="tools-data.js?v=2026-08-07l"></script>
+  <script src="tools-data-fr.js?v=2026-08-07l"></script>
+  <script src="quiz.js?v=2026-08-07l"></script>
+  <script src="app.js?v=2026-08-07l"></script>
 </body>
 </html>

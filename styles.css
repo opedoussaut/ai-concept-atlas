@@ -1521,3 +1521,107 @@ footer {
      that was not superseded, and the one the consolidation nearly dropped. */
   .belt-row { padding: 8px 10px; }
 }
+
+/* =====================================================================
+   The Workshop
+   ---------------------------------------------------------------------
+   Cards rather than the atlas's dense concept grid, because each entry
+   carries four distinct things — what it is, the question it answers,
+   the concepts it touches, and when it was last verified — and they need
+   to stay visually separable.
+   ===================================================================== */
+
+.workshop-view { padding: 34px 0 110px; }
+.workshop-header { text-align: center; margin-bottom: 34px; }
+.workshop-header h1 { max-width: none; margin: 6px 0 16px; font-size: clamp(2.1rem, 5vw, 3rem); }
+.workshop-header .learn-summary { margin-inline: auto; max-width: 68ch; }
+.workshop-header .hero-stats { justify-content: center; margin-top: 22px; }
+.workshop-view .filter-row { justify-content: center; margin-bottom: 34px; }
+.workshop-footnote { max-width: 62ch; margin: 40px auto 0 !important; }
+
+.tool-section { margin-bottom: 46px; }
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 14px;
+}
+.tool-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--card-accent);
+  /* A single-sided accent, so no rounding on that edge — a radius on one
+     border reads as a rendering mistake rather than a choice. */
+  border-radius: 0 14px 14px 0;
+  background: var(--surface);
+  transition: border-color .18s ease, transform .18s ease;
+}
+.tool-card:hover { transform: translateY(-2px); border-color: rgba(93,231,255,.4); }
+.tool-open { text-decoration: none; display: block; }
+.tool-open h4 {
+  margin: 0;
+  font-size: 1.08rem;
+  letter-spacing: -.01em;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.tool-arrow { color: var(--card-accent); font-size: .85rem; }
+.tool-host { color: var(--muted); font-size: .76rem; font-variant-numeric: tabular-nums; }
+.tool-open:hover h4 { color: var(--cyan); }
+.tool-what { margin: 0; color: var(--text); font-size: .92rem; line-height: 1.6; }
+.tool-answers { margin: 0; color: var(--muted); font-size: .88rem; line-height: 1.55; font-style: italic; }
+.tool-answers span {
+  display: block;
+  font-style: normal;
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--card-accent);
+  margin-bottom: 3px;
+}
+.tool-related { margin-top: auto; }
+.tool-related-label {
+  display: block;
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 7px;
+}
+.tool-related .related-links button { padding: 5px 9px; font-size: .78rem; }
+/* Deliberately quiet. The date matters when an entry looks old, and not
+   before — a prominent date on every card would read as a warning. */
+.tool-checked {
+  margin: 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: .72rem;
+  letter-spacing: .03em;
+  opacity: .75;
+}
+
+/* The rack on the atlas invitation: one bar per question, width by count. */
+.workshop-invite .primary-button {
+  background: linear-gradient(135deg, var(--violet), #d8bcff);
+  box-shadow: 0 10px 28px rgba(181,140,255,.18);
+}
+.workshop-invite { border-color: rgba(181,140,255,.3); }
+.workshop-invite .eyebrow { color: var(--violet); }
+.workshop-rack { display: grid; gap: 9px; }
+.workshop-rack i {
+  display: block;
+  height: 10px;
+  border-radius: 999px;
+  opacity: .8;
+}
+
+@media (max-width: 600px) {
+  .tool-grid { grid-template-columns: 1fr; }
+  .tool-card { padding: 16px 18px; }
+}

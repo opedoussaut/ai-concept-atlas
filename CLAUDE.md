@@ -35,6 +35,8 @@ app.js                      Search, filtering, routing, dialog, clipboard (one I
 data.js                     Concept + category data (window.AI_CONCEPTS, window.AI_CATEGORIES)
 math-data.js                Mathematics layer (window.MATH_CONCEPTS, window.MATH_CATEGORIES)
 quiz.js                     The Dojo — question generators, belt and dan tables (pure, no DOM)
+tools-data.js               The Workshop — 36 external resources (window.ATLAS_TOOLS, window.TOOL_CATEGORIES)
+tools-data-fr.js            French overlay for the Workshop
 i18n.js                     Language selection, UI strings (en/fr), the localize() overlay fold
 data-fr.js                  French overlay for the AI layer (window.AI_CONCEPTS_FR, window.AI_CATEGORIES_FR)
 math-data-fr.js             French overlay for mathematics (window.MATH_CONCEPTS_FR, window.MATH_CATEGORIES_FR)
@@ -255,6 +257,30 @@ belt reachable at its own threshold, every dan reachable at `DAN_LENGTH`, gated
 belts unreachable on a short run, and a flawless dan run awarding Judan. An
 unearnable grade is invisible in play and would never otherwise be noticed.
 
+**The Workshop is the one section built to expect rot.** Everything else is
+chosen to outlast the moment — slugs are permanent, `ssm` exists rather than
+`mamba`, and all 125 references are papers and DOIs because a DOI is permanent.
+A directory of tools is the opposite: sites die, get acquired and quietly stop
+being what they were, and a dead link there costs more than a missing one
+because it makes a reader doubt the 125.
+
+So `tools-data.js` is **organised by question, not by tool**. "Where do I
+compare models on cost and latency?" stays valid for years; today's answer to
+it may not. When an entry dies the question survives with a gap rather than the
+structure breaking — the same reasoning that produced `ssm`.
+
+Three rules keep it honest: `checked` is a real date and is **shown**, so an
+entry that looks old looks old; there are no rankings or scores, because those
+go stale silently where a description of what a thing *is* does not; and
+`related` points back into the atlas, which is what makes it part of the atlas
+rather than a bookmark list. The validator is stricter here than anywhere else
+— HTTPS only, every `related` slug must resolve, every entry must be dated and
+not in the future, and `--links` **fails** rather than warns, because
+publishers block bots but tool sites generally do not.
+
+Thirty-six entries, deliberately. The hero map's rule applies: show fewer
+things brightly.
+
 **Search.** `app.js` builds an in-memory index at startup. Queries are normalized
 (lower-cased, accent-folded, punctuation and hyphens collapsed to spaces), split
 into tokens, matched with AND semantics, and ranked — exact acronym match scores
@@ -313,8 +339,8 @@ the failure mode the original brief warned about.
    Mathematical foundations section, the optional `math` block and a prominent
    reference card.
 
-**Five top-level panels**, mutually exclusive, switched only through `showView()`:
-`atlasView`, `learnView`, `mathIndexView`, `mathView` and `quizView`. `handleRoute()` is fully
+**Six top-level panels**, mutually exclusive, switched only through `showView()`:
+`atlasView`, `learnView`, `mathIndexView`, `mathView`, `quizView` and `workshopView`. `handleRoute()` is fully
 authoritative — given a hash it decides which single panel is showing — so a page
 and the dialog can never be open at once, and a deep link opened cold resolves
 through exactly the same function.
@@ -481,6 +507,7 @@ Four public routes, all stable contracts:
 | `#math/<slug>` | Opens a mathematics concept page |
 | `#quiz` | Opens the Dojo |
 | `#quiz/dan` | Opens the Dan challenge directly |
+| `#workshop` | Opens the Workshop |
 
 `?lang=fr` selects French and composes with all four, so
 `…/?lang=fr#math/dot-product` is a valid public URL. It is a **query parameter,

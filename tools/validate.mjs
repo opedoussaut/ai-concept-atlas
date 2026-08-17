@@ -45,6 +45,8 @@ const REQUIRED_FILES = [
   "data-fr.js",
   "math-data-fr.js",
   "quiz.js",
+  "tools-data.js",
+  "tools-data-fr.js",
   "README.md",
   "LICENSE",
   "CLAUDE.md",
@@ -81,6 +83,10 @@ let mathConceptsFr = {};
 let mathCategoriesFr = {};
 let i18nStrings = {};
 let quizApi = null;
+let tools = [];
+let toolCategories = [];
+let toolsFr = {};
+let toolCategoriesFr = {};
 
 try {
   new vm.Script(read("data.js"), { filename: "data.js" }).runInContext(sandbox);
@@ -133,6 +139,24 @@ try {
   ok("i18n.js parses and evaluates");
 } catch (error) {
   fail(`i18n.js failed to evaluate: ${error.message}`);
+}
+
+try {
+  new vm.Script(read("tools-data.js"), { filename: "tools-data.js" }).runInContext(sandbox);
+  tools = sandbox.window.ATLAS_TOOLS ?? [];
+  toolCategories = sandbox.window.TOOL_CATEGORIES ?? [];
+  ok("tools-data.js parses and evaluates");
+} catch (error) {
+  fail(`tools-data.js failed to evaluate: ${error.message}`);
+}
+
+try {
+  new vm.Script(read("tools-data-fr.js"), { filename: "tools-data-fr.js" }).runInContext(sandbox);
+  toolsFr = sandbox.window.ATLAS_TOOLS_FR ?? {};
+  toolCategoriesFr = sandbox.window.TOOL_CATEGORIES_FR ?? {};
+  ok("tools-data-fr.js parses and evaluates");
+} catch (error) {
+  fail(`tools-data-fr.js failed to evaluate: ${error.message}`);
 }
 
 try {
@@ -604,6 +628,54 @@ if (!altCount) {
 }
 
 /* ------------------------------------------------------------------ */
+/* 2d. The Workshop                                                     */
+/*                                                                      */
+/* This is the one section of the atlas whose content is expected to    */
+/* rot: sites die, rebrand and quietly change purpose. The checks are   */
+/* therefore stricter than anywhere else — a dead link here costs more  */
+/* than a missing one, because it makes a reader doubt the 125 paper    */
+/* references too.                                                      */
+/* ------------------------------------------------------------------ */
+section("The Workshop");
+
+const TOOL_REQUIRED = ["id", "name", "url", "category", "what", "answers", "related", "checked"];
+const toolIds = new Set();
+const toolCategoryIds = new Set(toolCategories.map((c) => c.id));
+const conceptAndMathSlugs = new Set([...slugs, ...mathSlugs]);
+let toolProblems = 0;
+
+for (const tool of tools) {
+  const missing = TOOL_REQUIRED.filter((f) => tool[f] === undefined || tool[f] === "");
+  if (missing.length) { fail(`workshop "${tool.id ?? "?"}" is missing: ${missing.join(", ")}`); toolProblems += 1; continue; }
+  if (toolIds.has(tool.id)) { fail(`workshop id "${tool.id}" is used twice`); toolProblems += 1; }
+  toolIds.add(tool.id);
+  if (!toolCategoryIds.has(tool.category)) { fail(`workshop "${tool.id}" has unknown section "${tool.category}"`); toolProblems += 1; }
+  if (!/^https:\/\//.test(tool.url)) { fail(`workshop "${tool.id}" is not HTTPS`); toolProblems += 1; }
+  // A date the reader is shown has to be real, and cannot be in the future.
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(tool.checked)) {
+    fail(`workshop "${tool.id}" has a malformed checked date: ${tool.checked}`); toolProblems += 1;
+  } else if (new Date(`${tool.checked}T00:00:00Z`) > new Date()) {
+    fail(`workshop "${tool.id}" claims to have been checked in the future`); toolProblems += 1;
+  }
+  // The link back into the atlas is what makes this more than a bookmark list.
+  const stray = (tool.related ?? []).filter((slug) => !conceptAndMathSlugs.has(slug));
+  if (stray.length) { fail(`workshop "${tool.id}" points at concepts that do not exist: ${stray.join(", ")}`); toolProblems += 1; }
+  if (!(tool.related ?? []).length) { fail(`workshop "${tool.id}" links to no atlas concept`); toolProblems += 1; }
+}
+if (!toolProblems) ok(`${tools.length} workshop entries: HTTPS, dated, and every atlas link resolves`);
+
+const emptySections = toolCategories.filter((c) => !tools.some((t) => t.category === c.id));
+if (emptySections.length) emptySections.forEach((c) => fail(`workshop section "${c.id}" has no entries`));
+else ok(`all ${toolCategories.length} workshop sections have entries`);
+
+const strayFr = Object.keys(toolsFr).filter((id) => !toolIds.has(id));
+if (strayFr.length) strayFr.forEach((id) => fail(`tools-data-fr.js: "${id}" is not a workshop entry`));
+else ok("tools-data-fr.js: every key matches a real entry");
+const untranslated = [...toolIds].filter((id) => !toolsFr[id]?.what || !toolsFr[id]?.answers);
+if (untranslated.length) warn(`${untranslated.length} workshop entries lack French`);
+else ok(`all ${toolIds.size} workshop entries are translated`);
+
+/* ------------------------------------------------------------------ */
 /* 2c. The Dojo                                                         */
 /*                                                                      */
 /* The quiz generates its questions from the atlas, so most of what     */
@@ -800,7 +872,7 @@ else ok("no placeholder GitHub URL");
 // A shared version token prevents that — but only if every file carries the
 // same one, so a partial bump must fail rather than ship a subtler mismatch.
 const VERSIONED = ["styles.css", "data.js", "math-data.js", "data-fr.js", "math-data-fr.js",
-  "i18n.js", "quiz.js", "app.js", "assets/ai-concept-map.svg"];
+  "tools-data.js", "tools-data-fr.js", "i18n.js", "quiz.js", "app.js", "assets/ai-concept-map.svg"];
 const versions = new Map();
 for (const file of VERSIONED) {
   const match = html.match(new RegExp(`(?:href|src)="${file.replace(".", "\\.")}\\?v=([^"]+)"`));
@@ -919,7 +991,9 @@ const WORKFLOW_CHECKS = [
   [/cp .*\bi18n\.js\b.* _site\//, "i18n.js is staged for publication"],
   [/cp .*\bdata-fr\.js\b.* _site\//, "data-fr.js is staged for publication"],
   [/cp .*\bmath-data-fr\.js\b.* _site\//, "math-data-fr.js is staged for publication"],
-  [/cp .*\bquiz\.js\b.* _site\//, "quiz.js is staged for publication"]
+  [/cp .*\bquiz\.js\b.* _site\//, "quiz.js is staged for publication"],
+  [/cp .*\btools-data\.js\b.* _site\//, "tools-data.js is staged for publication"],
+  [/cp .*\btools-data-fr\.js\b.* _site\//, "tools-data-fr.js is staged for publication"]
 ];
 
 for (const [pattern, label] of WORKFLOW_CHECKS) {

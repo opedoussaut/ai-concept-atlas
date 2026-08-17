@@ -95,6 +95,7 @@
     mathDifficulty: "all",
     graphLayer: "both",
     graphFocus: null,
+    workshop: "all",
     activeSuggestion: -1,
     lastTrigger: null
   };
@@ -117,6 +118,7 @@
   const mathIndexView = $("mathIndexView");
   const mathView = $("mathView");
   const quizView = $("quizView");
+  const workshopView = $("workshopView");
   const quizStage = $("quizStage");
   const mathBranches = $("mathBranches");
   const mathFilters = $("mathFilters");
@@ -134,7 +136,8 @@
 
   /** The four top-level panels are mutually exclusive; this is the only switch. */
   const VIEWS = {
-    atlas: atlasView, learn: learnView, mathIndex: mathIndexView, math: mathView, quiz: quizView
+    atlas: atlasView, learn: learnView, mathIndex: mathIndexView, math: mathView,
+    quiz: quizView, workshop: workshopView
   };
   function showView(name) {
     for (const key of Object.keys(VIEWS)) VIEWS[key].hidden = key !== name;
@@ -1918,9 +1921,157 @@
     }
   });
 
+
+  /* ================================================================= */
+  /* The Workshop (#workshop)                                           */
+  /*                                                                    */
+  /* Organised by the question a reader is trying to answer rather than */
+  /* by tool, because the questions outlast the answers — the same      */
+  /* reasoning that gave the atlas `ssm` instead of `mamba`. Each entry */
+  /* links back into the concepts it exercises, which is what makes     */
+  /* this part of the atlas rather than a bookmark list.                */
+  /* ================================================================= */
+
+  const tools = i18n.localize(
+    (window.ATLAS_TOOLS ?? []).map((item) => ({ ...item, slug: item.id })),
+    window.ATLAS_TOOLS_FR, ["what", "answers"]
+  );
+  const toolCategories = i18n.localize(
+    (window.TOOL_CATEGORIES ?? []).map((item) => ({ ...item, slug: item.id })),
+    window.TOOL_CATEGORIES_FR, ["name", "short"]
+  );
+
+  $("toolCount").textContent = String(tools.length);
+  $("toolSectionCount").textContent = String(toolCategories.length);
+
+  /* A date the reader can judge. Written in their own locale rather than
+     ISO, because "17 août 2026" tells a French reader how stale a link is
+     and "2026-08-17" makes them stop and parse it. */
+  const checkedLabel = (iso) => {
+    const parsed = new Date(`${iso}T00:00:00Z`);
+    if (Number.isNaN(parsed.getTime())) return iso;
+    return parsed.toLocaleDateString(i18n.lang, { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
+  };
+
+  function toolCard(tool) {
+    const category = toolCategories.find((c) => c.id === tool.category);
+    const links = (tool.related ?? [])
+      .map((slug) => {
+        const concept = conceptBySlug.get(slug);
+        if (concept) {
+          return `<button type="button" data-slug="${escapeHtml(slug)}">${escapeHtml(concept.acronym || concept.name)}</button>`;
+        }
+        const math = mathBySlug.get(slug);
+        return math
+          ? `<button type="button" data-math="${escapeHtml(slug)}">${escapeHtml(math.name)}</button>`
+          : "";
+      }).join("");
+
+    return `<article class="tool-card" style="--card-accent:${escapeHtml(category?.color ?? "#5de7ff")}">
+      <a class="tool-open" href="${escapeHtml(tool.url)}" target="_blank" rel="noopener noreferrer"
+         aria-label="${escapeHtml(t("workshopOpens", { name: tool.name }))}">
+        <h4>${escapeHtml(tool.name)} <span class="tool-arrow" aria-hidden="true">↗</span></h4>
+        <span class="tool-host">${escapeHtml(hostOf(tool.url))}</span>
+      </a>
+      <p class="tool-what">${escapeHtml(tool.what)}</p>
+      <p class="tool-answers"><span>${escapeHtml(t("workshopAnswers"))}</span> ${escapeHtml(tool.answers)}</p>
+      <div class="tool-related">
+        <span class="tool-related-label">${escapeHtml(t("workshopRelated"))}</span>
+        <div class="related-links">${links}</div>
+      </div>
+      <p class="tool-checked">${escapeHtml(t("workshopChecked", { date: checkedLabel(tool.checked) }))}</p>
+    </article>`;
+  }
+
+  function renderWorkshopFilters() {
+    const items = [{ id: "all", short: t("workshopAllSections") }, ...toolCategories];
+    $("workshopFilters").innerHTML = items.map((category) => {
+      const active = state.workshop === category.id;
+      const accent = category.color ? ` style="--chip-accent:${escapeHtml(category.color)}"` : "";
+      return `<button class="filter-button${active ? " active" : ""}" data-workshop="${escapeHtml(category.id)}"
+        type="button" aria-pressed="${active}"${accent}>${escapeHtml(category.short || category.name)}</button>`;
+    }).join("");
+  }
+
+  function renderWorkshop() {
+    const sections = toolCategories.map((category) => {
+      if (state.workshop !== "all" && state.workshop !== category.id) return "";
+      const items = tools.filter((tool) => tool.category === category.id);
+      if (!items.length) return "";
+      return `<section class="tool-section" style="--band-accent:${escapeHtml(category.color)}"
+               aria-labelledby="tools-${escapeHtml(category.id)}">
+        <div class="band-heading">
+          <h2 id="tools-${escapeHtml(category.id)}">${escapeHtml(category.name)}</h2>
+          <span class="band-count">${escapeHtml(t("bandCount", { n: items.length }))}</span>
+          <button class="band-filter" type="button" data-workshop="${escapeHtml(category.id)}"
+                  aria-pressed="${state.workshop === category.id}">
+            ${escapeHtml(state.workshop === category.id ? t("workshopShowAll") : t("bandFocus"))}
+          </button>
+        </div>
+        <div class="tool-grid">${items.map(toolCard).join("")}</div>
+      </section>`;
+    }).join("");
+
+    $("workshopSections").innerHTML = sections
+      || `<div class="empty-state"><h3>${escapeHtml(t("workshopEmpty"))}</h3></div>`;
+
+    const shown = tools.filter((tool) => state.workshop === "all" || tool.category === state.workshop).length;
+    $("workshopStatus").textContent = t("bandCount", { n: shown });
+  }
+
+  function setWorkshopFilter(id) {
+    state.workshop = state.workshop === id && id !== "all" ? "all" : id;
+    renderWorkshopFilters();
+    renderWorkshop();
+  }
+
+  function openWorkshop(updateHash = true) {
+    if (dialog.open) dialog.close();
+    state.learning = null;
+    state.math = null;
+    state.mathIndex = false;
+    state.mathOrigin = null;
+
+    renderWorkshopFilters();
+    renderWorkshop();
+    showView("workshop");
+    document.title = t("workshopTitleDoc");
+    window.scrollTo({ top: 0, behavior: "auto" });
+    $("workshopTitle").focus({ preventScroll: true });
+
+    if (updateHash && location.hash !== "#workshop") {
+      history.pushState({ workshop: true }, "", "#workshop");
+    }
+  }
+
+  /* The rack on the atlas invitation, one bar per question, coloured from
+     the same table the workshop itself renders from. */
+  function renderWorkshopRack() {
+    const rack = $("workshopInviteRack");
+    if (!rack) return;
+    rack.innerHTML = toolCategories.map((category) => {
+      const n = tools.filter((tool) => tool.category === category.id).length;
+      return `<i style="background:${escapeHtml(category.color)};width:${18 + n * 9}%"></i>`;
+    }).join("");
+  }
+
+  $("workshopFilters").addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-workshop]");
+    if (button) setWorkshopFilter(button.dataset.workshop);
+  });
+
+  $("workshopSections").addEventListener("click", (event) => {
+    const band = event.target.closest("button[data-workshop]");
+    if (band) return setWorkshopFilter(band.dataset.workshop);
+    const concept = event.target.closest("button[data-slug]");
+    if (concept) return openConcept(concept.dataset.slug);
+    const math = event.target.closest("button[data-math]");
+    if (math) return openMath(math.dataset.math);
+  });
+
   /**
    * Idempotent and fully authoritative: given a hash it decides which of the
-   * five panels is showing. `#learn` and `#math` win over `#concept`, so a
+   * six panels is showing. `#learn` and `#math` win over `#concept`, so a
    * page and the dialog can never be open at once.
    */
   function handleRoute() {
@@ -1932,6 +2083,7 @@
     syncLanguageLinks();
 
     const hash = decodeURIComponent(location.hash);
+    if (hash === "#workshop") { openWorkshop(false); return; }
     if (hash === "#quiz/dan") { openQuiz(false, { dan: true }); return; }
     if (hash === "#quiz") { openQuiz(false); return; }
 
@@ -2198,6 +2350,7 @@
   }
 
   renderInviteRack();
+  renderWorkshopRack();
   renderFilters();
   renderMathFilters();
   renderMathIndex();

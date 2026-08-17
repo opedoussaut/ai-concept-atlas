@@ -362,6 +362,30 @@ window.ATLAS_I18N = (() => {
       qIntensity: "What is the mathematical intensity of {name}?",
       qDifficulty: "Which of these is an {level}-level mathematical concept?",
 
+
+      /* The Workshop --------------------------------------------------- */
+      navWorkshop: "Workshop",
+      workshopTitle: "The Workshop",
+      workshopTitleDoc: "The Workshop | AI Concept Atlas",
+      workshopEyebrow: "Where to go and actually do this",
+      workshopIntro: "The atlas explains the vocabulary. This is where the work happens: the places to compare models, run them, connect them to your own systems, and check whether any of it is doing what you think. Organised by the question you are trying to answer, because the questions outlast the answers.",
+      workshopNote: "Every link was checked on the date shown. Nothing here is ranked or scored — a ranking goes stale quietly, a description of what a thing is does not.",
+      workshopStatsAria: "Workshop statistics",
+      statTools: "places",
+      statToolSections: "questions",
+      workshopAnswers: "Answers",
+      workshopRelated: "In the atlas",
+      workshopChecked: "Checked {date}",
+      workshopOpens: "{name} — opens in a new tab",
+      workshopFiltersAria: "Filter the workshop by question",
+      workshopAllSections: "Everything",
+      workshopShowAll: "Show every question",
+      workshopEmpty: "Nothing here matches that filter.",
+      workshopInviteEyebrow: "The Workshop",
+      workshopInviteTitle: "Now go and build something.",
+      workshopInviteBody: "Thirty-six places worth knowing — to compare models, run them locally, connect them through MCP, and evaluate them honestly. Each one linked back to the concepts it exercises.",
+      workshopInviteCta: "Open the workshop",
+
       /* Footer --------------------------------------------------------- */
       footerName: "AI Concept Atlas",
       footerNote: "Built as an open educational resource. No cookies, no analytics, no tracking."
@@ -656,6 +680,30 @@ window.ATLAS_I18N = (() => {
       qRelation: "Quelle relation {concept} entretient-il avec {math} ?",
       qIntensity: "Quelle est l’intensité mathématique de {name} ?",
       qDifficulty: "Lequel de ces concepts mathématiques est de niveau {level} ?",
+
+
+      /* The Workshop --------------------------------------------------- */
+      navWorkshop: "Atelier",
+      workshopTitle: "L’Atelier",
+      workshopTitleDoc: "L’Atelier | AI Concept Atlas",
+      workshopEyebrow: "Où aller pour passer à la pratique",
+      workshopIntro: "L’atlas explique le vocabulaire. Voici où le travail se fait : les endroits pour comparer des modèles, les exécuter, les relier à vos propres systèmes et vérifier que tout cela fait bien ce que vous croyez. Le classement suit la question que vous vous posez, parce que les questions survivent aux réponses.",
+      workshopNote: "Chaque lien a été vérifié à la date indiquée. Rien ici n’est classé ni noté — un classement se périme en silence, la description de ce qu’est une chose non.",
+      workshopStatsAria: "Statistiques de l’atelier",
+      statTools: "ressources",
+      statToolSections: "questions",
+      workshopAnswers: "Répond à",
+      workshopRelated: "Dans l’atlas",
+      workshopChecked: "Vérifié le {date}",
+      workshopOpens: "{name} — s’ouvre dans un nouvel onglet",
+      workshopFiltersAria: "Filtrer l’atelier par question",
+      workshopAllSections: "Tout",
+      workshopShowAll: "Voir toutes les questions",
+      workshopEmpty: "Rien ne correspond à ce filtre.",
+      workshopInviteEyebrow: "L’Atelier",
+      workshopInviteTitle: "À vous de construire.",
+      workshopInviteBody: "Trente-six ressources qui valent la peine d’être connues — pour comparer des modèles, les exécuter en local, les relier via MCP et les évaluer honnêtement. Chacune renvoie aux concepts qu’elle met en œuvre.",
+      workshopInviteCta: "Ouvrir l’atelier",
 
       /* Footer --------------------------------------------------------- */
       footerName: "AI Concept Atlas",
