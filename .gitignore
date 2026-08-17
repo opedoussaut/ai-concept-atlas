@@ -28,3 +28,5 @@ desktop.ini
 # Temporary validation output
 *.log
 tmp/
+proposals/
+linkedin-post-update.md

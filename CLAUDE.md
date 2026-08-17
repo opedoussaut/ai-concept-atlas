@@ -581,6 +581,29 @@ because a partial bump is worse than none.
   local configuration.
 - The **deploy** job consumes that artifact.
 
+`.github/workflows/link-check.yml` runs separately, every Monday, and is the
+only thing in the project that watches for decay. It is deliberately NOT part
+of the deployment: a publisher rate-limiting a DOI on a Tuesday must never be
+able to stop the site shipping. Paper references that fail are warnings —
+publishers block bots routinely — but a **Workshop** link that fails is an error
+and opens an issue, because a tool site that stops answering has usually
+actually gone.
+
+`--links` checks concurrently, eight at a time. Sequentially, 161 links at a
+15-second timeout is a twenty-minute job in the worst case, which is too slow to
+run in CI and therefore too slow to run at all.
+
+**On automating the atlas itself.** There is a scheduled monthly review that
+searches for developments and writes `proposals/YYYY-MM-atlas-review.md`. It
+proposes and never edits, and that boundary is not timidity — it follows from
+three properties of this project. Slugs are permanent public URLs, so every
+addition is irreversible. Every reference is a paper a human has checked, and an
+automated writer produces plausible citations rather than verified ones — the
+failure the atlas's own `hallucination` page describes. And the value is that
+there are 87 concepts rather than 500; anything that grows by itself becomes the
+scraped list this is positioned against. Automate noticing. Do not automate
+judgment.
+
 **One-time repository setting:** Settings → Pages → Build and deployment →
 Source → **GitHub Actions**. Without it, `actions/configure-pages` fails with
 "Get Pages site failed / Not Found". This cannot be set from the repository.

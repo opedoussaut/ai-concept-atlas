@@ -1069,34 +1069,87 @@ if (existsSync(join(ROOT, ".claude/settings.local.json"))) {
 /* ------------------------------------------------------------------ */
 /* Optional: reachability of every primary reference (--links)          */
 /* ------------------------------------------------------------------ */
+/**
+ * Check a batch of URLs concurrently.
+ *
+ * Sequentially, 161 links at a 15-second timeout is a twenty-minute job in the
+ * worst case, which is too slow to run in CI and therefore too slow to run at
+ * all. Eight at a time keeps it under a minute without hammering anyone.
+ */
+async function checkUrls(items, { method = "HEAD", concurrency = 8 } = {}) {
+  const results = [];
+  const queue = items.slice();
+
+  async function worker() {
+    while (queue.length) {
+      const item = queue.shift();
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 15000);
+      try {
+        let response = await fetch(item.url, {
+          method, redirect: "follow", signal: controller.signal,
+          headers: { "User-Agent": "ai-concept-atlas-link-check", ...(method === "GET" ? { Range: "bytes=0-0" } : {}) }
+        });
+        // Some hosts reject HEAD outright; retry once with a ranged GET.
+        if (response.status === 405 || response.status === 501) {
+          response = await fetch(item.url, {
+            method: "GET", redirect: "follow", signal: controller.signal,
+            headers: { "User-Agent": "ai-concept-atlas-link-check", Range: "bytes=0-0" }
+          });
+        }
+        results.push({ item, ok: response.ok || response.status === 206, detail: `HTTP ${response.status}` });
+      } catch (error) {
+        results.push({ item, ok: false, detail: error.name === "AbortError" ? "timed out" : error.message });
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+  }
+
+  await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, worker));
+  return results;
+}
+
 if (CHECK_LINKS) {
   section("Reference reachability (--links)");
   const targets = [...concepts, ...mathConcepts].filter((item) => item.source?.url);
-  let reachable = 0;
-  const problems = [];
-
-  for (const concept of targets) {
-    const url = concept.source.url;
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 15000);
-      let response = await fetch(url, { method: "HEAD", redirect: "follow", signal: controller.signal });
-      // Some publishers reject HEAD outright; retry once with a ranged GET.
-      if (response.status === 405 || response.status === 501) {
-        response = await fetch(url, { method: "GET", redirect: "follow", headers: { Range: "bytes=0-0" }, signal: controller.signal });
-      }
-      clearTimeout(timer);
-      if (response.ok || response.status === 206) reachable += 1;
-      else problems.push(`${concept.slug}: HTTP ${response.status} — ${url}`);
-    } catch (error) {
-      problems.push(`${concept.slug}: ${error.name === "AbortError" ? "timed out" : error.message} — ${url}`);
-    }
-  }
+  const refResults = await checkUrls(targets.map((c) => ({ url: c.source.url, slug: c.slug })));
+  const reachable = refResults.filter((r) => r.ok).length;
+  const problems = refResults.filter((r) => !r.ok).map((r) => `${r.item.slug}: ${r.detail} — ${r.item.url}`);
 
   ok(`${reachable}/${targets.length} references responded successfully`);
   // Treated as warnings: bot protection and rate limits produce false alarms.
   problems.forEach((problem) => warn(problem));
   if (problems.length) console.warn("  → check these by hand; publishers often block automated requests");
+
+  /* The Workshop is checked separately and STRICTLY.
+   *
+   * A paper reference that 403s is usually a publisher blocking bots — hence
+   * the warnings above. A tool site that stops responding has usually actually
+   * gone, and the Workshop is the one part of the atlas built to expect that.
+   * A dead link there costs more than a missing one, because it makes a reader
+   * doubt the 125 references too. So these fail the build. */
+  section("Workshop reachability (--links)");
+  // GET rather than HEAD: several of these are single-page apps behind a CDN
+  // that answers HEAD with 405 while serving GET perfectly well.
+  const toolResults = await checkUrls(tools.map((t) => ({ url: t.url, slug: t.id })), { method: "GET" });
+  const toolsReachable = toolResults.filter((r) => r.ok).length;
+  const toolProblems2 = toolResults.filter((r) => !r.ok).map((r) => `${r.item.slug}: ${r.detail} — ${r.item.url}`);
+
+  ok(`${toolsReachable}/${tools.length} workshop links responded successfully`);
+  toolProblems2.forEach((problem) => fail(problem));
+  if (toolProblems2.length) {
+    console.error("  → a workshop entry that no longer resolves must be replaced or removed");
+  }
+
+  /* Staleness is not breakage, but it is worth surfacing: an entry checked a
+     year ago may still resolve while having quietly become something else. */
+  const stale = tools.filter((tool) => {
+    const age = (Date.now() - new Date(`${tool.checked}T00:00:00Z`)) / 86400000;
+    return age > 180;
+  });
+  if (stale.length) warn(`${stale.length} workshop entries have not been re-checked in 6 months: ${stale.map((t) => t.id).join(", ")}`);
+  else ok("every workshop entry has been checked within the last 6 months");
 }
 
 /* ------------------------------------------------------------------ */

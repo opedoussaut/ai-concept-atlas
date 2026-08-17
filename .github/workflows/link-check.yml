@@ -1,0 +1,105 @@
+name: Weekly link check
+
+# The atlas is built to outlast the moment, with one exception: the Workshop
+# points at live sites, and sites die. This job is the thing that notices.
+#
+# It is deliberately NOT part of the Pages deployment. A publisher rate-limiting
+# a DOI on a Tuesday must never be able to stop the site from deploying, so link
+# rot is reported here and nowhere else.
+on:
+  schedule:
+    # 07:00 UTC every Monday. Weekly is the right cadence: a link that died on
+    # Tuesday is worth knowing about, but not worth a notification every day.
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: link-check
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Check every external link
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # `--links` exits non-zero only when a WORKSHOP link fails. Unreachable
+      # paper references are warnings, because publishers routinely block
+      # automated requests and a 403 from one is not news.
+      - name: Validate, including external links
+        id: links
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          node tools/validate.mjs --links 2>&1 | tee link-report.txt
+
+      - name: Open an issue if something stopped resolving
+        if: steps.links.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('link-report.txt', 'utf8');
+            const failures = report.split('\n').filter((l) => l.includes('✗'));
+            const stale = report.split('\n').filter((l) => l.includes('re-checked in 6 months'));
+            const today = new Date().toISOString().slice(0, 10);
+
+            const body = [
+              'The weekly link check found entries that no longer resolve.',
+              '',
+              'A Workshop link that fails has usually actually gone, which is why it',
+              'fails the check rather than warning. Either replace the entry or remove',
+              'it — the question it answered survives either way, which is the point of',
+              'organising that section by question rather than by tool.',
+              '',
+              '### Not resolving',
+              '```',
+              failures.join('\n') || '(none)',
+              '```',
+              stale.length ? '### Also worth a look\n```\n' + stale.join('\n') + '\n```' : '',
+              '',
+              'Re-run locally with `node tools/validate.mjs --links`.',
+              'After fixing, update that entry\'s `checked` date in `tools-data.js`.'
+            ].join('\n');
+
+            // Reuse an open issue rather than filing a new one every Monday.
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'link-rot'
+            });
+
+            if (existing.data.length) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing.data[0].number,
+                body: `Still failing as of ${today}.\n\n${body}`
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title: `Link rot detected — ${today}`,
+                labels: ['link-rot'],
+                body
+              });
+            }
+
+      - name: Keep the report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: link-report
+          path: link-report.txt
+          retention-days: 30
