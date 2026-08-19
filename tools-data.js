@@ -30,7 +30,7 @@
  * FAILS rather than warns: publishers block bots, tool sites generally do not,
  * so a non-200 here is real news.
  *
- * Deliberately ~36 entries, not 200. The hero map's rule applies: show fewer
+ * Deliberately ~38 entries, not 200. The hero map's rule applies: show fewer
  * things brightly. A long list reads as unfiltered.
  */
 window.TOOL_CATEGORIES = [
@@ -203,6 +203,16 @@ window.ATLAS_TOOLS = [
     answers: "How do I connect a server to something I actually use day to day?",
     related: ["mcp", "tool-use", "guardrails"],
     checked: "2026-08-17"
+  },
+  {
+    id: "a2a-spec",
+    name: "A2A Protocol Specification",
+    url: "https://a2a-protocol.org/latest/specification/",
+    category: "connect",
+    what: "The Linux Foundation specification for agents built by different vendors to discover one another, exchange messages and coordinate a task.",
+    answers: "How would an agent somebody else operates talk to mine?",
+    related: ["mcp", "multi-agent", "agent"],
+    checked: "2026-08-19"
   },
   {
     id: "tiktokenizer",
@@ -425,5 +435,15 @@ window.ATLAS_TOOLS = [
     answers: "Does what I am building fall under this, and what does that oblige?",
     related: ["guardrails", "alignment", "evals"],
     checked: "2026-08-17"
+  },
+  {
+    id: "owasp-genai",
+    name: "OWASP GenAI Security Project",
+    url: "https://genai.owasp.org/",
+    category: "follow",
+    what: "The community-governed home of the Top 10 for LLM Applications, with agentic-security guidance, a red-teaming taxonomy and a maintained glossary alongside it.",
+    answers: "Which security risks will I be asked about in writing, named the way everyone else names them?",
+    related: ["prompt-injection", "guardrails", "hallucination", "agent"],
+    checked: "2026-08-19"
   }
 ];

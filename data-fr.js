@@ -1132,6 +1132,20 @@ window.AI_CONCEPTS_FR = {
     mathNote: "Le débit est une mesure système du volume servi, gouvernée par le traitement par lots, la bande passante mémoire et l’ordonnancement."
   },
 
+  "test-time-compute": {
+    name: "Mise à l’échelle du calcul à l’inférence",
+    summary: "Dépenser plus de calcul au moment de l’inférence — échantillonner, chercher ou réviser — pour améliorer une réponse sans modifier les poids du modèle.",
+    why: "La qualité s’achète désormais par requête et non plus seulement par entraînement. C’est pourquoi une page tarifaire ou la documentation d’une API expose maintenant un budget de réflexion ou un niveau d’effort de raisonnement comme un réglage que l’acheteur choisit, et pourquoi un même modèle peut coûter très différemment pour la même question.",
+    how: "Le calcul supplémentaire sert à produire plusieurs réponses candidates puis à choisir parmi elles, à explorer les étapes intermédiaires face à un vérificateur ou à un modèle de récompense, ou à laisser le modèle réviser son propre brouillon. Répartir le budget selon la difficulté apparente de la question fait mieux que le dépenser uniformément sur toutes.",
+    example: "Un problème d’arithmétique difficile est résolu en échantillonnant plusieurs solutions et en renvoyant celle qu’un vérificateur valide, pour plusieurs fois le coût d’une passe unique.",
+    foundations: {
+      "sampling": "Tirer plusieurs réponses candidates puis n’en garder qu’une est une procédure de Monte-Carlo ; ce que N échantillons apportent dépend de leur écart les uns aux autres.",
+      "expected-return": "Décider combien de calcul mérite une question est un problème d’allocation — maximiser la qualité attendue de la réponse à budget fixé, ce qui explique qu’une allocation sensible à la difficulté batte une allocation uniforme.",
+      "probability-distributions": "Le best-of-N ne fonctionne que parce que la distribution des réponses du modèle place déjà une masse réelle sur une bonne réponse qu’un échantillon unique manque souvent.",
+      "conditional-probability": "Une révision est conditionnée par la tentative qui la précède : dépenser le budget séquentiellement et le dépenser en parallèle n’achètent donc pas la même chose."
+    }
+  },
+
   /* Multimodal AI ------------------------------------------------------ */
   multimodal: {
     name: "Intelligence artificielle multimodale",
@@ -1285,6 +1299,14 @@ window.AI_CONCEPTS_FR = {
     how: "Les contrôles peuvent inclure validation, permissions, vérifications de politique, filtres, bac à sable, points d’approbation et journaux d’audit.",
     example: "Un agent peut rédiger une commande fournisseur mais ne peut pas la soumettre sans validation humaine et contrôle budgétaire.",
     mathNote: "Les garde-fous sont des contrôles de politique, de validation et de permissions. Leur valeur vient précisément de ne pas dépendre du jugement du modèle : ils sont délibérément non statistiques."
+  },
+  "prompt-injection": {
+    name: "Injection de prompt",
+    summary: "Une attaque qui glisse des instructions dans le texte que lit un modèle, de sorte qu’il suive l’intention de l’attaquant plutôt que celle de l’exploitant.",
+    why: "Tout système qui laisse un modèle lire du texte qu’il n’a pas écrit hérite de ce risque, ce qui lui vaut la première place du Top 10 OWASP pour les applications LLM à chaque édition depuis 2023. C’est le terme qu’un professionnel rencontre dans une revue de sécurité, un questionnaire fournisseur ou une grille d’achat.",
+    how: "L’injection directe place l’instruction dans la saisie de l’utilisateur ; l’injection indirecte la dissimule dans un document, une page web, un e-mail ou un résultat d’outil que le modèle récupérera plus tard. Comme les instructions et les données arrivent par le même canal, le modèle n’a aucun moyen fiable de les distinguer : les défenses encadrent donc ce qu’une action peut faire plutôt que de compter sur le modèle pour s’en apercevoir.",
+    example: "Une page du corpus de recherche se termine par une ligne demandant à l’assistant d’ignorer ses instructions et de transmettre la conversation ailleurs ; l’assistant qui résume cette page obéit.",
+    mathNote: "L’injection de prompt n’a pas de fondement mathématique. Elle découle d’une architecture où instructions et données partagent un même canal : ce qui cède est une frontière de confiance, pas un calcul — et c’est aussi pourquoi aucun gain de qualité du modèle ne la referme."
   }
 };
 

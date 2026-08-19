@@ -35,7 +35,7 @@ app.js                      Search, filtering, routing, dialog, clipboard (one I
 data.js                     Concept + category data (window.AI_CONCEPTS, window.AI_CATEGORIES)
 math-data.js                Mathematics layer (window.MATH_CONCEPTS, window.MATH_CATEGORIES)
 quiz.js                     The Dojo — question generators, belt and dan tables (pure, no DOM)
-tools-data.js               The Workshop — 36 external resources (window.ATLAS_TOOLS, window.TOOL_CATEGORIES)
+tools-data.js               The Workshop — 38 external resources (window.ATLAS_TOOLS, window.TOOL_CATEGORIES)
 tools-data-fr.js            French overlay for the Workshop
 i18n.js                     Language selection, UI strings (en/fr), the localize() overlay fold
 data-fr.js                  French overlay for the AI layer (window.AI_CONCEPTS_FR, window.AI_CATEGORIES_FR)
@@ -110,7 +110,7 @@ comes out as a solid blob. Use a real SVG renderer, or a browser.
 are loaded as classic scripts at the end of `<body>`, in that order: the data
 files publish the globals, the overlays publish theirs, `i18n.js` decides which
 language is in force, and `app.js` folds them together exactly once.
-There are currently **87 concepts across 8 domains** and **38 mathematics concepts
+There are currently **89 concepts across 8 domains** and **38 mathematics concepts
 across 7 branches**, each with a primary reference.
 
 **The mathematics layer is cross-cutting, not a ninth domain.** It is the answer to
@@ -142,7 +142,7 @@ hold it together, and each one exists because the alternative rots:
   Changing language is a navigation that reloads the page; there is no live
   re-render path to get wrong.
 
-**The French layer is complete.** All 87 AI concepts carry `name`, `summary`,
+**The French layer is complete.** All 89 AI concepts carry `name`, `summary`,
 `why`, `how`, `example`, `mathNote` and every `mathFoundations` note; all 38
 mathematics concepts carry `intuition`, `equationNote`, `worked`, `whyInAI` and
 their symbol legends. No page shows an "EN" chip today.
@@ -154,7 +154,7 @@ place and records the field in `_en`; `markLanguage()` then puts a small "EN"
 chip on that section's heading and `setProse()` sets `lang="en"` on the body so
 screen readers switch voice. That is what makes a phased translation shippable —
 the site is never half-broken, only partly translated, and it says which parts.
-Today the overlays carry `name` and `summary` for all 125 concepts; the four
+Today the overlays carry `name` and `summary` for all 127 concepts; the four
 explanation layers are still English.
 
 **What is deliberately never translated:** `acronym` and `symbol`. LoRA is LoRA
@@ -259,10 +259,10 @@ unearnable grade is invisible in play and would never otherwise be noticed.
 
 **The Workshop is the one section built to expect rot.** Everything else is
 chosen to outlast the moment — slugs are permanent, `ssm` exists rather than
-`mamba`, and all 125 references are papers and DOIs because a DOI is permanent.
+`mamba`, and all 127 references are papers and DOIs because a DOI is permanent.
 A directory of tools is the opposite: sites die, get acquired and quietly stop
 being what they were, and a dead link there costs more than a missing one
-because it makes a reader doubt the 125.
+because it makes a reader doubt the 127.
 
 So `tools-data.js` is **organised by question, not by tool**. "Where do I
 compare models on cost and latency?" stays valid for years; today's answer to
@@ -278,7 +278,7 @@ rather than a bookmark list. The validator is stricter here than anywhere else
 not in the future, and `--links` **fails** rather than warns, because
 publishers block bots but tool sites generally do not.
 
-Thirty-six entries, deliberately. The hero map's rule applies: show fewer
+Thirty-eight entries, deliberately. The hero map's rule applies: show fewer
 things brightly.
 
 **Search.** `app.js` builds an in-memory index at startup. Queries are normalized
@@ -292,8 +292,8 @@ adding fields to a concept, decide deliberately whether they join the index.
 
 - *Domains* (default) — concepts grouped into coloured bands, one per domain.
   Bands with no match are omitted entirely when searching or filtering.
-- *Graph* — an SVG relationship map spanning **both layers**. 125 nodes: AI
-  concepts as circles, mathematics as diamonds. 547 edges, each carrying a
+- *Graph* — an SVG relationship map spanning **both layers**. 127 nodes: AI
+  concepts as circles, mathematics as diamonds. 559 edges, each carrying a
   relation verb. Node radius scales with degree. The layout is a deterministic
   force simulation (`computeGraphLayout`): pairwise repulsion, springs weighted
   by edge strength, and a mild pull toward each group's anchor. Nodes are
@@ -313,7 +313,7 @@ namespaces can never collide. Edges are undirected, deduplicated, and typed:
 
 Prerequisites are collected before plain relations so the stronger verb wins a
 duplicated pair. Weight drives both spring strength and stroke opacity, which is
-how 547 edges stay legible without hiding any of them.
+how 559 edges stay legible without hiding any of them.
 
 **Three layer modes**, each with its **own cached layout**, simulated lazily on
 first view: `both` (AI domains on an outer ring, mathematics branches on an inner
@@ -324,10 +324,10 @@ searching only re-render.
 **Focus view.** Selecting a concept in the focus control replaces the force graph
 with a radial star: that concept at the centre, its *direct* mathematical
 dependencies around it, and — this is the only place they fit — the relation verb
-written on every edge. Core dependencies get a larger diamond. Only the 62
+written on every edge. Core dependencies get a larger diamond. Only the 63
 concepts that declare foundations appear in the selector.
 
-Do not label edges in the force view. 547 labels is unreadable, which is exactly
+Do not label edges in the force view. 559 labels is unreadable, which is exactly
 the failure mode the original brief warned about.
 
 **Three levels of depth** for one concept, all sharing the same data:
@@ -467,7 +467,7 @@ Every entry in `window.MATH_CONCEPTS`. Required except `legend`, `worked`,
 4. Slugs are public URLs. `#math/<slug>` and `#learn/<slug>` are separate namespaces,
    but the validator warns on a collision because it confuses readers.
 
-**On `source`.** All 87 concepts carry one. Prefer, in order: the paper that
+**On `source`.** All 89 concepts carry one. Prefer, in order: the paper that
 introduced the idea, a DOI over a publisher URL (DOIs are permanent), official
 documentation, then an authoritative survey. Every concept currently has a
 *distinct* reference; the validator warns if two share one.
@@ -589,7 +589,7 @@ publishers block bots routinely — but a **Workshop** link that fails is an err
 and opens an issue, because a tool site that stops answering has usually
 actually gone.
 
-`--links` checks concurrently, eight at a time. Sequentially, 161 links at a
+`--links` checks concurrently, eight at a time. Sequentially, 165 links at a
 15-second timeout is a twenty-minute job in the worst case, which is too slow to
 run in CI and therefore too slow to run at all.
 
@@ -600,7 +600,7 @@ three properties of this project. Slugs are permanent public URLs, so every
 addition is irreversible. Every reference is a paper a human has checked, and an
 automated writer produces plausible citations rather than verified ones — the
 failure the atlas's own `hallucination` page describes. And the value is that
-there are 87 concepts rather than 500; anything that grows by itself becomes the
+there are 89 concepts rather than 500; anything that grows by itself becomes the
 scraped list this is positioned against. Automate noticing. Do not automate
 judgment.
 
@@ -619,7 +619,7 @@ Run before every commit:
 ```bash
 node tools/build-map.mjs          # only if data.js changed
 node tools/validate.mjs           # offline checks; this is what CI runs
-node tools/validate.mjs --links   # additionally HEADs all 125 reference URLs
+node tools/validate.mjs --links   # additionally HEADs all 127 reference URLs
 ```
 
 It checks required files, JavaScript syntax (`data.js` and `math-data.js`
@@ -745,15 +745,15 @@ Every AI concept now carries a mathematics mapping and the validator runs clean
 with **zero warnings**. Keep it that way: a new concept must arrive with a
 `mathIntensity`, and either foundations or an honest `mathNote`.
 
-- `math` blocks are essentially done at 25 of 87, and the count is not the
+- `math` blocks are essentially done at 25 of 89, and the count is not the
   measure. Now that `mathFoundations` carries the conceptual link, a block is
   only for a concept's **own** formulation, and it must pass three tests: the
   equation belongs to the concept rather than to a mathematics page; seeing it
   teaches something the four prose layers cannot; and writing it does not
   restate a mathematics page, which §4's "do not chain" rule forbids. Most of
-  the remaining 62 fail at least one — `llm` would restate `next-token-prediction`,
+  the remaining 64 fail at least one — `llm` would restate `next-token-prediction`,
   `qlora` would chain through LoRA and quantization, `rl` and `world-model`
-  would restate `expected-return` and `dynamical-systems`, and the 25
+  would restate `expected-return` and `dynamical-systems`, and the 26
   low-intensity concepts already say in their `mathNote` that they have none.
   `jepa` and `mla` are the two genuine open calls.
 - Consider the folded mathematics concepts if any ever needs its own page:
@@ -777,11 +777,11 @@ with **zero warnings**. Keep it that way: a new concept must arrive with a
   keeps the no-third-party-requests promise — vendored into `assets/`, added to
   the workflow allow-list, never a CDN.
 
-Done and no longer open: primary references (all 125), the per-concept page,
+Done and no longer open: primary references (all 127), the per-concept page,
 image weight (the hero is a generated 35 KB SVG rather than the original 1.78 MB
-raster), the mathematics layer — 38 concepts, 261 typed links, both navigation
+raster), the mathematics layer — 38 concepts, 265 typed links, both navigation
 directions, its own overview and detail routes, the return breadcrumb, and
-validator coverage — the two-layer relationship graph (125 nodes, 547 typed
+validator coverage — the two-layer relationship graph (127 nodes, 559 typed
 edges, three cached layer layouts, a per-concept focus view), the hero map
 rebuilt around the mathematics ring with degree-weighted concepts, and cache
 busting across every local asset.
@@ -796,6 +796,33 @@ inference concepts that explain *why* it exists: `prefill-and-decode`,
 `memory-bandwidth-bound` and `speculative-decoding`. `outer-product` was added to the
 mathematics layer to support them; it is the operation a fixed-size state uses to
 write an association, and the reason a rank-r LoRA update needs so few parameters.
+
+Also closed: the August 2026 review. `prompt-injection` joins the safety domain —
+the domain described its controls (`guardrails`) without ever naming the attack
+they exist to stop, which left the atlas explaining an answer to a question it
+never asked. It cites the Greshake et al. arXiv preprint rather than the ACM DOI
+of the same paper: identical content, and it does not add a seventeenth entry to
+the publisher-blocked warning list. `test-time-compute` joins inference — the
+domain priced compute thoroughly (`latency`, `throughput`, `prefill-and-decode`,
+`memory-bandwidth-bound`) but never explained what compute now buys, which is the
+trade a reader meets as a thinking budget on a pricing page. It is deliberately
+distinct from `cot`: chain of thought is a generation pattern and stays `low`,
+while test-time compute is about how many candidates are drawn and how one is
+selected, which is a real sampling and allocation question and so `medium`.
+Reciprocal `related` links were added by hand on `guardrails`, `cot`, `agent` and
+`latency` — nothing in the validator enforces symmetry, so a one-way link leaves
+the reader who arrives from the other side unable to find the new page. The
+Workshop gained OWASP GenAI under "Follow the field", the security answer beside
+NIST and the EU AI Act, and the A2A specification under "Connect things", which
+also thins a section that was four-fifths MCP.
+
+Declined from the same review, with reasons worth keeping: `rlvr` — a real term
+with an ideal coining paper (Tülu 3), but its whole content is a distinction
+`rlhf` could carry in one clause, and `training` already holds `rlhf`, `dpo`,
+`ppo` and `sft`. `a2a` as a concept — the governance is durable but the audience
+test asks whether a reader actually meets the term, and adding it invites `acp`
+and the next three interoperability protocols; the Workshop entry serves that
+reader at a fraction of the commitment. Revisit both in six months.
 
 Two naming traps for anyone extending this line. The AI concept is `ssm`, not
 `state-space-models` — that slug belongs to the mathematics layer, and the validator

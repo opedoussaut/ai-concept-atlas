@@ -1073,7 +1073,7 @@ window.AI_CONCEPTS = [
     why: "Structured reasoning can improve performance on multi-step problems, although internal reasoning is not itself a guarantee of correctness.",
     how: "The system decomposes a problem into intermediate inferences, checks or tool calls before producing the final answer.",
     example: "A planning agent identifies dependencies, evaluates constraints and then selects an execution order.",
-    tags: ["reasoning", "decomposition", "planning"], related: ["prompt-engineering", "agent", "evals"],
+    tags: ["reasoning", "decomposition", "planning"], related: ["prompt-engineering", "test-time-compute", "agent", "evals"],
     source: { label: "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models — Wei et al. (2022)", url: "https://arxiv.org/abs/2201.11903" },
     mathIntensity: "low",
     mathNote: "Chain of thought is a prompting and decoding pattern. It lengthens the conditioning context and spends more tokens on a problem; it introduces no new mathematical object."
@@ -1106,7 +1106,7 @@ window.AI_CONCEPTS = [
     why: "Agents move AI from isolated answers toward workflows that interact with software, data and environments.",
     how: "An agent repeatedly evaluates state, selects an action, calls a tool or model and updates its plan until a stopping condition is reached.",
     example: "An engineering agent gathers requirements, searches standards, generates alternatives and requests human approval before publishing.",
-    tags: ["planning", "actions", "workflow"], related: ["tool-use", "memory", "multi-agent"],
+    tags: ["planning", "actions", "workflow"], related: ["tool-use", "memory", "multi-agent", "prompt-injection"],
     source: { label: "ReAct: Synergizing Reasoning and Acting in Language Models — Yao et al. (2022)", url: "https://arxiv.org/abs/2210.03629" },
     mathIntensity: "medium",
     mathNote: "Most agent frameworks are software and orchestration rather than new mathematics. What mathematics there is sits in the model proposing actions and in the retrieval and tools it calls.",
@@ -1344,7 +1344,7 @@ window.AI_CONCEPTS = [
     why: "Latency determines responsiveness for interactive assistants, robots and real-time applications.",
     how: "It is influenced by model size, hardware, input length, batching, network overhead and generation length.",
     example: "Time to first token measures how quickly a user sees the beginning of a generated response.",
-    tags: ["response time", "TTFT", "performance"], related: ["throughput", "batching", "prefill-and-decode", "speculative-decoding", "quantization"],
+    tags: ["response time", "TTFT", "performance"], related: ["throughput", "batching", "prefill-and-decode", "speculative-decoding", "quantization", "test-time-compute"],
     source: { label: "MLPerf Inference Benchmark — Reddi et al. (2019)", url: "https://arxiv.org/abs/1911.02549" },
     mathIntensity: "low",
     mathNote: "Latency is a systems measurement, shaped by model size, sequence length and hardware rather than by any mathematics of its own."
@@ -1359,6 +1359,23 @@ window.AI_CONCEPTS = [
     source: { label: "Efficient Memory Management for Large Language Model Serving with PagedAttention — Kwon et al. (2023)", url: "https://arxiv.org/abs/2309.06180" },
     mathIntensity: "low",
     mathNote: "Throughput is a systems measurement of served volume, governed by batching, memory bandwidth and scheduling."
+  },
+
+  {
+    slug: "test-time-compute", acronym: "Test-Time Compute", name: "Test-Time Compute Scaling", category: "inference",
+    summary: "Spending more computation at inference — sampling, searching or revising — to improve an answer without changing the model's weights.",
+    why: "Quality became something bought per request rather than only per training run. That is why a pricing page or a model's API documentation now exposes a thinking budget or a reasoning effort as a setting the buyer chooses, and why the same model can cost very different amounts to ask the same question.",
+    how: "The extra compute goes into generating several candidate answers and selecting among them, searching over intermediate steps against a verifier or reward model, or letting the model revise its own draft. Allocating the budget according to how hard a question looks beats spending it uniformly on every question.",
+    example: "A hard arithmetic problem is answered by sampling several solutions and returning the one a checker agrees with, at several times the cost of a single pass.",
+    tags: ["inference compute", "reasoning effort", "thinking budget", "best-of-n", "verifier"], related: ["cot", "latency", "speculative-decoding", "evals"],
+    source: { label: "Scaling LLM Test-Time Compute Optimally can be More Effective than Scaling Model Parameters — Snell et al. (2024)", url: "https://arxiv.org/abs/2408.03314" },
+    mathIntensity: "medium",
+    mathFoundations: [
+      { slug: "sampling", importance: "primary", note: "Drawing several candidate answers and keeping one is a Monte Carlo procedure; what N samples buy depends on how much the samples differ from each other." },
+      { slug: "expected-return", importance: "primary", note: "Deciding how much compute a question deserves is an allocation problem — maximise expected answer quality for a fixed budget, which is why a difficulty-aware allocation beats a uniform one." },
+      { slug: "probability-distributions", importance: "supporting", note: "Best-of-N only works because the model's answer distribution already places real mass on a correct answer that any single sample often misses." },
+      { slug: "conditional-probability", importance: "supporting", note: "A revision is conditioned on the attempt before it, so spending the budget sequentially and spending it in parallel do not buy the same thing." }
+    ]
   },
 
   {
@@ -1550,9 +1567,20 @@ window.AI_CONCEPTS = [
     why: "Guardrails reduce risk by enforcing boundaries that should not depend solely on model judgment.",
     how: "Controls can include validation, permissions, policy checks, filters, sandboxing, approval gates and audit logs.",
     example: "An agent may draft a supplier order but cannot submit it without human approval and budget validation.",
-    tags: ["controls", "permissions", "policy"], related: ["alignment", "agent", "multi-agent"],
+    tags: ["controls", "permissions", "policy"], related: ["prompt-injection", "alignment", "agent", "multi-agent"],
     source: { label: "AI Risk Management Framework (AI RMF 1.0) — NIST", url: "https://www.nist.gov/itl/ai-risk-management-framework" },
     mathIntensity: "low",
     mathNote: "Guardrails are policy, validation and permission controls. Their value comes precisely from not depending on model judgement, so they are deliberately not statistical."
+  },
+  {
+    slug: "prompt-injection", acronym: "Prompt Injection", name: "Prompt Injection", category: "safety",
+    summary: "An attack that smuggles instructions into the text a model reads, so the model follows the attacker's intent rather than the operator's.",
+    why: "Any system that lets a model read text it did not write inherits this risk, which is why it has held first place in the OWASP Top 10 for LLM Applications in every edition since 2023. It is the term a professional meets in a security review, a vendor questionnaire or a procurement checklist.",
+    how: "Direct injection places the instruction in user input; indirect injection hides it in a document, web page, email or tool result the model retrieves later. Because instructions and data arrive on the same channel, the model has no reliable way to tell which is which, so defences constrain what an action can do rather than trusting the model to notice.",
+    example: "A page in a retrieval corpus ends with a line telling the assistant to ignore its instructions and forward the conversation elsewhere; the assistant summarizing that page obeys it.",
+    tags: ["attack", "untrusted input", "indirect injection", "security"], related: ["guardrails", "tool-use", "agent", "rag"],
+    source: { label: "Not What You've Signed Up For: Compromising Real-World LLM-Integrated Applications with Indirect Prompt Injection — Greshake et al. (2023)", url: "https://arxiv.org/abs/2302.12173" },
+    mathIntensity: "low",
+    mathNote: "Prompt injection has no mathematical foundation. It follows from an architecture in which instructions and data share one channel, so what fails is a trust boundary rather than a computation — which is also why no amount of model quality closes it."
   }
 ];

@@ -113,7 +113,7 @@ window.ATLAS_I18N = (() => {
       statDomains: "domains",
       statDeepLinks: "Shareable deep links",
       heroImageAlt:
-        "Concept map of 87 AI terms grouped into eight domains — foundations, model architectures, training and adaptation, retrieval and knowledge, agents and orchestration, inference and optimization, multimodal AI, and evaluation, safety and reliability — arranged around a central hub encircled by the seven branches of mathematics they rest on: linear algebra, probability, information theory, optimization, numerics, graphs and dynamics.",
+        "Concept map of 89 AI terms grouped into eight domains — foundations, model architectures, training and adaptation, retrieval and knowledge, agents and orchestration, inference and optimization, multimodal AI, and evaluation, safety and reliability — arranged around a central hub encircled by the seven branches of mathematics they rest on: linear algebra, probability, information theory, optimization, numerics, graphs and dynamics.",
 
       /* Atlas section ------------------------------------------------- */
       atlasEyebrow: "Explore by domain",
@@ -432,7 +432,7 @@ window.ATLAS_I18N = (() => {
       statDomains: "domaines",
       statDeepLinks: "Liens profonds partageables",
       heroImageAlt:
-        "Carte conceptuelle de 87 termes d’IA regroupés en huit domaines — fondements, architectures de modèles, entraînement et adaptation, recherche d’information et connaissance, agents et orchestration, inférence et optimisation, IA multimodale, et évaluation, sûreté et fiabilité — disposés autour d’un noyau central encerclé par les sept branches des mathématiques sur lesquelles ils reposent : algèbre linéaire, probabilités, théorie de l’information, optimisation, analyse numérique, graphes et systèmes dynamiques.",
+        "Carte conceptuelle de 89 termes d’IA regroupés en huit domaines — fondements, architectures de modèles, entraînement et adaptation, recherche d’information et connaissance, agents et orchestration, inférence et optimisation, IA multimodale, et évaluation, sûreté et fiabilité — disposés autour d’un noyau central encerclé par les sept branches des mathématiques sur lesquelles ils reposent : algèbre linéaire, probabilités, théorie de l’information, optimisation, analyse numérique, graphes et systèmes dynamiques.",
 
       /* Atlas section ------------------------------------------------- */
       atlasEyebrow: "Explorer par domaine",

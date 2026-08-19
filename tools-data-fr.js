@@ -76,6 +76,10 @@ window.ATLAS_TOOLS_FR = {
     what: "La documentation éditeur pour relier des serveurs MCP à un assistant qui fonctionne, configuration et permissions comprises.",
     answers: "Comment relier un serveur à quelque chose que j’utilise vraiment au quotidien ?"
   },
+  "a2a-spec": {
+    what: "La spécification de la Linux Foundation permettant à des agents construits par des éditeurs différents de se découvrir, d’échanger des messages et de coordonner une tâche.",
+    answers: "Comment un agent exploité par quelqu’un d’autre parlerait-il au mien ?"
+  },
   tiktokenizer: {
     what: "Collez un texte et voyez exactement comment un modèle donné le découpe en tokens, et combien.",
     answers: "Pourquoi mon prompt coûte-t-il plus cher que prévu ?"
@@ -165,6 +169,10 @@ window.ATLAS_TOOLS_FR = {
   "eu-ai-act": {
     what: "Un texte annoté et navigable du règlement, avec les obligations attachées à chaque niveau de risque.",
     answers: "Ce que je construis relève-t-il de ce texte, et à quoi cela m’oblige-t-il ?"
+  },
+  "owasp-genai": {
+    what: "Le foyer communautaire du Top 10 pour les applications LLM, accompagné de recommandations sur la sécurité des agents, d’une taxonomie de red teaming et d’un glossaire tenu à jour.",
+    answers: "Quels risques de sécurité me demandera-t-on par écrit, nommés comme tout le monde les nomme ?"
   }
 };
 
